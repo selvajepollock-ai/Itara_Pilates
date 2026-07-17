@@ -9,7 +9,7 @@ export default async function EditarAlumnoPage({ params }: { params: Promise<{ i
   const supabase = await createClient()
   const { data: student } = await supabase
     .from('profiles')
-    .select('id, full_name, email, phone')
+    .select('id, full_name, email, phone, birth_date')
     .eq('id', id)
     .single()
 

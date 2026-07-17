@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 
 export default async function InstructoresPage() {
   const supabase = await createClient()
-  const { data: instructors } = await supabase
+  const { data: instructors, error } = await supabase
     .from('profiles')
     .select('id, full_name, username, phone, roles, active, created_at')
     .contains('roles', ['instructor'])
@@ -17,6 +17,7 @@ export default async function InstructoresPage() {
           <p className="text-xs uppercase tracking-[0.25em] text-moss">Estudio</p>
           <h1 className="mt-2 font-display text-3xl italic text-ink">Instructores</h1>
           <p className="mt-1 text-sm text-ink/50">{instructors?.length ?? 0} en el equipo</p>
+          {error && <p className="mt-1 text-sm text-clay">Error: {error.message}</p>}
         </div>
         <Link
           href="/admin/instructores/nuevo"

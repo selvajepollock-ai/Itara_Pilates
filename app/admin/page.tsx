@@ -1,11 +1,12 @@
 import Link from 'next/link'
-import { Users, UserCog, CalendarDays, ArrowUpRight } from 'lucide-react'
+import { Users, UserCog, CalendarDays, ArrowUpRight, Cake } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import { daysUntilNextBirthday, formatBirthday } from '@/lib/birthdays'
 
 export default async function AdminDashboard() {
   const supabase = await createClient()
 
-  const [{ count: studentsCount }, { count: instructorsCount }, { count: classesCount }] =
+  const [{ count: studentsCount }, { count: instructorsCount }, { count: classesCount }, { data: birthdayData }] =
     await Promise.all([
       supabase
         .from('profiles')
@@ -19,6 +20,11 @@ export default async function AdminDashboard() {
         .from('classes')
         .select('id', { count: 'exact', head: true })
         .eq('active', true),
+      supabase
+        .from('profiles')
+        .select('id, full_name, birth_date')
+        .contains('roles', ['student'])
+        .not('birth_date', 'is', null),
     ])
 
   const stats = [
@@ -26,6 +32,17 @@ export default async function AdminDashboard() {
     { label: 'Instructores', value: instructorsCount ?? 0, icon: UserCog, href: '/admin/instructores' },
     { label: 'Clases por semana', value: classesCount ?? 0, icon: CalendarDays, href: '/admin/horarios' },
   ]
+
+  const upcomingBirthdays = (birthdayData ?? [])
+    .filter((s) => s.birth_date)
+    .map((s) => ({
+      name: s.full_name,
+      birthDate: s.birth_date as string,
+      daysUntil: daysUntilNextBirthday(s.birth_date as string),
+    }))
+    .filter((s) => s.daysUntil <= 30)
+    .sort((a, b) => a.daysUntil - b.daysUntil)
+    .slice(0, 5)
 
   return (
     <div>
@@ -59,17 +76,32 @@ export default async function AdminDashboard() {
 
       <div className="mt-12 grid gap-5 sm:grid-cols-2">
         <div className="rounded-2xl border border-sand bg-white p-6">
+          <div className="flex items-center gap-2">
+            <Cake size={16} strokeWidth={2} className="text-clay" />
+            <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Próximos cumpleaños</p>
+          </div>
+
+          {upcomingBirthdays.length === 0 ? (
+            <p className="mt-3 text-sm text-ink/40">Nada en los próximos 30 días.</p>
+          ) : (
+            <ul className="mt-3 space-y-2.5">
+              {upcomingBirthdays.map((b) => (
+                <li key={b.name} className="flex items-center justify-between text-sm">
+                  <span className="text-ink">{b.name}</span>
+                  <span className="text-ink/50">
+                    {b.daysUntil === 0 ? '🎉 hoy' : formatBirthday(b.birthDate)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="rounded-2xl border border-sand bg-white p-6">
           <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Próximo paso</p>
           <p className="mt-2 font-display text-xl italic text-ink">Cuotas y bonos</p>
           <p className="mt-1 text-sm text-ink/50">
             Todavía no está armado — es lo próximo que vamos a construir.
-          </p>
-        </div>
-        <div className="rounded-2xl border border-sand bg-white p-6">
-          <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Próximo paso</p>
-          <p className="mt-2 font-display text-xl italic text-ink">Reportes</p>
-          <p className="mt-1 text-sm text-ink/50">
-            Ocupación, ingresos y ausentismo — pendiente.
           </p>
         </div>
       </div>

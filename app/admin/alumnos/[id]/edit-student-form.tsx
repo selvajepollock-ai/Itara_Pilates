@@ -3,7 +3,13 @@
 import { useState, useTransition } from 'react'
 import { updateStudent } from './actions'
 
-type Student = { id: string; full_name: string; email: string; phone: string | null }
+type Student = {
+  id: string
+  full_name: string
+  email: string
+  phone: string | null
+  birth_date: string | null
+}
 
 export function EditStudentForm({ student }: { student: Student }) {
   const [isPending, startTransition] = useTransition()
@@ -54,6 +60,18 @@ export function EditStudentForm({ student }: { student: Student }) {
         <input
           name="phone"
           defaultValue={student.phone ?? ''}
+          className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
+        />
+      </div>
+
+      <div>
+        <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
+          Fecha de nacimiento
+        </label>
+        <input
+          type="date"
+          name="birth_date"
+          defaultValue={student.birth_date ?? ''}
           className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
         />
       </div>

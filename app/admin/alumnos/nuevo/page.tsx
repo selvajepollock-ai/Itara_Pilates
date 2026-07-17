@@ -63,6 +63,17 @@ export default function NuevoAlumnoPage() {
           />
         </div>
 
+        <div>
+          <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
+            Fecha de nacimiento (opcional)
+          </label>
+          <input
+            type="date"
+            name="birth_date"
+            className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
+          />
+        </div>
+
         {error && <p className="text-sm text-clay">{error}</p>}
         {success && <p className="text-sm text-moss-dark">Alumno invitado correctamente ✓</p>}
 

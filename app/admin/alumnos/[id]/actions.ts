@@ -25,6 +25,7 @@ export async function updateStudent(studentId: string, formData: FormData) {
   const fullName = String(formData.get('full_name') ?? '').trim()
   const email = String(formData.get('email') ?? '').trim().toLowerCase()
   const phone = String(formData.get('phone') ?? '').trim()
+  const birthDate = String(formData.get('birth_date') ?? '').trim()
 
   if (!fullName || !email) return { error: 'Nombre y email son obligatorios.' }
 
@@ -35,7 +36,12 @@ export async function updateStudent(studentId: string, formData: FormData) {
 
   const { error } = await admin
     .from('profiles')
-    .update({ full_name: fullName, email, phone: phone || null })
+    .update({
+      full_name: fullName,
+      email,
+      phone: phone || null,
+      birth_date: birthDate || null,
+    })
     .eq('id', studentId)
 
   if (error) return { error: error.message }
