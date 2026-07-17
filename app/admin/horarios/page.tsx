@@ -3,16 +3,29 @@ import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
 import { DeleteClassButton } from './delete-class-button'
 
+type ClassRow = {
+  id: string
+  room: string
+  day_of_week: number
+  start_time: string
+  end_time: string
+  capacity: number
+  class_types: { name: string } | null
+  profiles: { full_name: string } | null
+}
+
 export default async function HorariosPage() {
   const supabase = await createClient()
 
-  const { data: classes } = await supabase
+  const { data } = await supabase
     .from('classes')
     .select(
       'id, room, day_of_week, start_time, end_time, capacity, class_types(name), profiles(full_name)'
     )
     .eq('active', true)
     .order('start_time', { ascending: true })
+
+  const classes = (data ?? []) as unknown as ClassRow[]
 
   const byDay = new Map<number, typeof classes>()
   for (const day of DAY_ORDER) byDay.set(day, [])
