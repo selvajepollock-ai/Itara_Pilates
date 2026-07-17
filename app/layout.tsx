@@ -1,5 +1,19 @@
 import type { Metadata } from 'next'
+import { Fraunces, Work_Sans } from 'next/font/google'
 import './globals.css'
+
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  variable: '--font-display',
+  weight: ['400', '500', '600'],
+  style: ['normal', 'italic'],
+})
+
+const workSans = Work_Sans({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  weight: ['400', '500', '600'],
+})
 
 export const metadata: Metadata = {
   title: 'Estudio Pilates',
@@ -13,8 +27,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="es">
-      <body className="min-h-screen bg-gray-50 text-gray-900">{children}</body>
+    <html lang="es" className={`${fraunces.variable} ${workSans.variable}`}>
+      <body className="min-h-screen bg-linen font-sans text-ink antialiased">{children}</body>
     </html>
   )
 }

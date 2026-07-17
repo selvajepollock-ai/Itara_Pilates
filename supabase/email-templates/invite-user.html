@@ -1,0 +1,26 @@
+<div style="max-width: 480px; margin: 0 auto; padding: 40px 32px; font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif; background-color: #faf9f6;">
+  <div style="text-align: center; margin-bottom: 32px;">
+    <p style="font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: #a3ad9e; margin: 0;">
+      Itara Pilates
+    </p>
+  </div>
+
+  <h1 style="font-size: 22px; font-weight: 500; color: #3d3d3a; text-align: center; margin: 0 0 16px;">
+    Tenés una invitación esperándote ✨
+  </h1>
+
+  <p style="font-size: 15px; line-height: 1.6; color: #6b6b66; text-align: center; margin: 0 0 32px;">
+    Creá tu contraseña para acceder a tus clases, tu estado de cuenta y tus horarios, todo en un mismo lugar.
+  </p>
+
+  <div style="text-align: center; margin-bottom: 32px;">
+    <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite&next=/auth/set-password"
+       style="display: inline-block; background-color: #7c8b73; color: #ffffff; text-decoration: none; padding: 14px 36px; border-radius: 999px; font-size: 14px; letter-spacing: 0.5px;">
+      Crear mi contraseña
+    </a>
+  </div>
+
+  <p style="font-size: 12px; color: #a3ad9e; text-align: center; margin: 0;">
+    Si no esperabas este email, podés ignorarlo.
+  </p>
+</div>

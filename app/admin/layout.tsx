@@ -26,23 +26,41 @@ export default async function AdminLayout({
   }
 
   return (
-    <div>
-      <header className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4">
-        <div>
-          <p className="text-sm text-gray-500">Panel Admin</p>
-          <p className="font-medium">{profile.full_name}</p>
+    <div className="min-h-screen bg-linen">
+      <header className="border-b border-sand bg-white/70 px-6 py-5 backdrop-blur-sm sm:px-10">
+        <div className="mx-auto flex max-w-5xl items-center justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.25em] text-moss">Panel admin</p>
+            <p className="mt-0.5 font-display text-xl italic text-ink">{profile.full_name}</p>
+          </div>
+          <LogoutButton />
         </div>
-        <LogoutButton />
       </header>
-      <nav className="flex gap-4 border-b border-gray-200 bg-white px-6 py-2 text-sm">
-        <Link href="/admin" className="text-gray-600 hover:text-gray-900">
-          Inicio
-        </Link>
-        <Link href="/admin/alumnos" className="text-gray-600 hover:text-gray-900">
-          Alumnos
-        </Link>
+
+      <nav className="border-b border-sand bg-white/40 px-6 sm:px-10">
+        <div className="mx-auto flex max-w-5xl gap-6 text-sm">
+          <Link
+            href="/admin"
+            className="border-b-2 border-transparent py-3 text-ink/60 transition hover:border-moss hover:text-ink"
+          >
+            Inicio
+          </Link>
+          <Link
+            href="/admin/alumnos"
+            className="border-b-2 border-transparent py-3 text-ink/60 transition hover:border-moss hover:text-ink"
+          >
+            Alumnos
+          </Link>
+          <Link
+            href="/admin/horarios"
+            className="border-b-2 border-transparent py-3 text-ink/60 transition hover:border-moss hover:text-ink"
+          >
+            Horarios
+          </Link>
+        </div>
       </nav>
-      <main className="p-6">{children}</main>
+
+      <main className="mx-auto max-w-5xl px-6 py-10 sm:px-10">{children}</main>
     </div>
   )
 }

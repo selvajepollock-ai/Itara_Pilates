@@ -21,15 +21,17 @@ export default async function AlumnoLayout({
     .single()
 
   return (
-    <div>
-      <header className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4">
-        <div>
-          <p className="text-sm text-gray-500">Mi Estudio</p>
-          <p className="font-medium">{profile?.full_name}</p>
+    <div className="min-h-screen bg-linen">
+      <header className="border-b border-sand bg-white/70 px-6 py-5 backdrop-blur-sm sm:px-10">
+        <div className="mx-auto flex max-w-5xl items-center justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.25em] text-moss">Mi estudio</p>
+            <p className="mt-0.5 font-display text-xl italic text-ink">{profile?.full_name}</p>
+          </div>
+          <LogoutButton />
         </div>
-        <LogoutButton />
       </header>
-      <main className="p-6">{children}</main>
+      <main className="mx-auto max-w-5xl px-6 py-10 sm:px-10">{children}</main>
     </div>
   )
 }
