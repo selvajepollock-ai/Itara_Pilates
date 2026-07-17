@@ -6,26 +6,38 @@ import { daysUntilNextBirthday, formatBirthday } from '@/lib/birthdays'
 export default async function AdminDashboard() {
   const supabase = await createClient()
 
-  const [{ count: studentsCount }, { count: instructorsCount }, { count: classesCount }, { data: birthdayData }] =
-    await Promise.all([
-      supabase
-        .from('profiles')
-        .select('id', { count: 'exact', head: true })
-        .contains('roles', ['student']),
-      supabase
-        .from('profiles')
-        .select('id', { count: 'exact', head: true })
-        .contains('roles', ['instructor']),
-      supabase
-        .from('classes')
-        .select('id', { count: 'exact', head: true })
-        .eq('active', true),
-      supabase
-        .from('profiles')
-        .select('id, full_name, birth_date')
-        .contains('roles', ['student'])
-        .not('birth_date', 'is', null),
-    ])
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const [
+    { count: studentsCount },
+    { count: instructorsCount },
+    { count: classesCount },
+    { data: birthdayData },
+    { data: myProfile },
+  ] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('id', { count: 'exact', head: true })
+      .contains('roles', ['student']),
+    supabase
+      .from('profiles')
+      .select('id', { count: 'exact', head: true })
+      .contains('roles', ['instructor']),
+    supabase
+      .from('classes')
+      .select('id', { count: 'exact', head: true })
+      .eq('active', true),
+    supabase
+      .from('profiles')
+      .select('id, full_name, birth_date')
+      .contains('roles', ['student'])
+      .not('birth_date', 'is', null),
+    supabase.from('profiles').select('full_name').eq('id', user?.id ?? '').single(),
+  ])
+
+  const firstName = myProfile?.full_name?.split(' ')[0]
 
   const stats = [
     { label: 'Alumnos activos', value: studentsCount ?? 0, icon: Users, href: '/admin/alumnos' },
@@ -47,7 +59,9 @@ export default async function AdminDashboard() {
   return (
     <div>
       <p className="text-xs uppercase tracking-[0.25em] text-moss">Panel general</p>
-      <h1 className="mt-2 font-display text-4xl italic text-ink">Bienvenida al estudio</h1>
+      <h1 className="mt-2 font-display text-4xl italic text-ink">
+        {firstName && firstName !== 'Sin' ? `Bienvenida, ${firstName}` : 'Bienvenida al estudio'}
+      </h1>
       <p className="mt-3 max-w-md text-sm text-ink/60">
         Un vistazo rápido a cómo está el estudio hoy.
       </p>

@@ -57,12 +57,15 @@ export function Sidebar({ fullName }: { fullName: string }) {
       </nav>
 
       <div className="border-t border-sand px-3 py-4">
-        <div className="flex items-center gap-3 rounded-xl px-3 py-2">
+        <Link
+          href="/admin/perfil"
+          className="flex items-center gap-3 rounded-xl px-3 py-2 transition hover:bg-linen"
+        >
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blush text-xs font-medium text-ink">
             {fullName.slice(0, 1).toUpperCase()}
           </div>
           <p className="flex-1 truncate text-sm text-ink">{fullName}</p>
-        </div>
+        </Link>
         <button
           onClick={handleLogout}
           className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-ink/50 transition hover:bg-linen hover:text-clay"

@@ -18,6 +18,7 @@ const SLOT_MINUTES = 30
 const START_HOUR = 7
 const END_HOUR = 21
 const TOTAL_SLOTS = ((END_HOUR - START_HOUR) * 60) / SLOT_MINUTES
+const ROW_HEIGHT = 26
 
 function timeToMinutes(time: string) {
   const [h, m] = time.slice(0, 5).split(':').map(Number)
@@ -127,13 +128,13 @@ export default async function CalendarioPage({
 
       <div className="mt-8 overflow-x-auto rounded-2xl border border-sand bg-white p-4">
         <div
-          className="grid min-w-[980px]"
+          className="grid min-w-[1120px]"
           style={{
-            gridTemplateColumns: `56px repeat(7, 1fr)`,
-            gridTemplateRows: `56px repeat(${TOTAL_SLOTS}, 20px)`,
+            gridTemplateColumns: `56px repeat(14, 1fr)`,
+            gridTemplateRows: `56px repeat(${TOTAL_SLOTS}, ${ROW_HEIGHT}px)`,
           }}
         >
-          {/* Header row: real dates */}
+          {/* Header row: real dates (span 2 sub-columns per day) */}
           <div />
           {weekDates.map(({ dow, date }, i) => {
             const iso = toISODate(date)
@@ -145,7 +146,7 @@ export default async function CalendarioPage({
                 className={`flex flex-col items-center justify-center gap-0.5 border-b pb-2 ${
                   isToday ? 'border-moss' : 'border-sand'
                 }`}
-                style={{ gridColumn: i + 2, gridRow: 1 }}
+                style={{ gridColumn: `${i * 2 + 2} / span 2`, gridRow: 1 }}
               >
                 <span className="text-[10px] uppercase tracking-wide text-ink/40">
                   {date.toLocaleDateString('es-AR', { weekday: 'short' })}
@@ -183,7 +184,7 @@ export default async function CalendarioPage({
               <div
                 key={`line-${hour}-${dow}`}
                 className="border-t border-sand/40"
-                style={{ gridColumn: i + 2, gridRow: minutesToSlot(hour * 60) + 2 }}
+                style={{ gridColumn: `${i * 2 + 2} / span 2`, gridRow: minutesToSlot(hour * 60) + 2 }}
               />
             ))
           )}
@@ -195,34 +196,35 @@ export default async function CalendarioPage({
               <div
                 key={`closed-${dow}`}
                 className="flex items-center justify-center text-xs text-ink/20"
-                style={{ gridColumn: i + 2, gridRow: `2 / ${TOTAL_SLOTS + 2}` }}
+                style={{ gridColumn: `${i * 2 + 2} / span 2`, gridRow: `2 / ${TOTAL_SLOTS + 2}` }}
               >
                 Cerrado
               </div>
             )
           })}
 
-          {/* Class blocks */}
+          {/* Class blocks: Reformer en la sub-columna izquierda, Fuerza en la derecha */}
           {classes.map((c) => {
-            const colIndex = DAY_ORDER.indexOf(c.day_of_week)
-            if (colIndex === -1) return null
+            const dayIndex = DAY_ORDER.indexOf(c.day_of_week)
+            if (dayIndex === -1) return null
             const startSlot = minutesToSlot(timeToMinutes(c.start_time))
             const endSlot = minutesToSlot(timeToMinutes(c.end_time))
             const enrolled = countByClass.get(c.id) ?? 0
             const isFull = enrolled >= c.capacity
             const isFuerza = c.class_types?.name?.toLowerCase().includes('fuerza')
+            const col = dayIndex * 2 + (isFuerza ? 3 : 2)
 
             return (
               <Link
                 key={c.id}
                 href={`/admin/horarios/${c.id}`}
-                className={`m-0.5 overflow-hidden rounded-lg px-2 py-1 text-[11px] leading-tight transition hover:-translate-y-px hover:shadow-md ${
+                className={`m-0.5 overflow-hidden rounded-lg px-1.5 py-1 text-[10px] leading-tight transition hover:-translate-y-px hover:shadow-md ${
                   isFuerza
                     ? 'border border-dashed border-clay/40 bg-white text-clay/80'
                     : 'border border-moss/20 bg-moss text-white shadow-sm'
                 }`}
                 style={{
-                  gridColumn: colIndex + 2,
+                  gridColumn: col,
                   gridRow: `${startSlot + 2} / ${endSlot + 2}`,
                 }}
               >
