@@ -43,6 +43,12 @@ export default async function HorariosPage() {
         </div>
         <div className="flex gap-3">
           <Link
+            href="/admin/horarios/calendario"
+            className="flex items-center gap-1.5 rounded-full border border-sand px-5 py-2.5 text-sm font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+          >
+            Ver calendario
+          </Link>
+          <Link
             href="/admin/tipos-de-clase"
             className="flex items-center gap-1.5 rounded-full border border-sand px-5 py-2.5 text-sm font-medium text-ink/70 transition hover:border-moss hover:text-moss"
           >

@@ -1,11 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { NewClassTypeForm } from './new-class-type-form'
+import { ClassTypeRow } from './class-type-row'
 
 export default async function TiposDeClasePage() {
   const supabase = await createClient()
   const { data: classTypes } = await supabase
     .from('class_types')
     .select('id, name, description, active')
+    .order('active', { ascending: false })
     .order('name')
 
   return (
@@ -16,10 +18,7 @@ export default async function TiposDeClasePage() {
 
       <ul className="mt-8 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
         {classTypes?.map((ct) => (
-          <li key={ct.id} className="px-5 py-4">
-            <p className="font-display text-lg italic text-ink">{ct.name}</p>
-            {ct.description && <p className="mt-0.5 text-sm text-ink/60">{ct.description}</p>}
-          </li>
+          <ClassTypeRow key={ct.id} classType={ct} />
         ))}
         {(!classTypes || classTypes.length === 0) && (
           <li className="px-5 py-10 text-center text-sm text-ink/40">

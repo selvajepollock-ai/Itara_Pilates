@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Plus } from 'lucide-react'
+import { Plus, Pencil } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function AlumnosPage() {
@@ -35,6 +35,7 @@ export default async function AlumnosPage() {
               <th className="px-5 py-3.5 font-medium">Email</th>
               <th className="px-5 py-3.5 font-medium">Teléfono</th>
               <th className="px-5 py-3.5 font-medium">Estado</th>
+              <th className="px-5 py-3.5 font-medium"></th>
             </tr>
           </thead>
           <tbody>
@@ -63,11 +64,20 @@ export default async function AlumnosPage() {
                     </span>
                   )}
                 </td>
+                <td className="px-5 py-3.5 text-right">
+                  <Link
+                    href={`/admin/alumnos/${s.id}`}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-moss hover:text-moss-dark"
+                  >
+                    <Pencil size={13} strokeWidth={2} />
+                    Editar
+                  </Link>
+                </td>
               </tr>
             ))}
             {(!students || students.length === 0) && (
               <tr>
-                <td colSpan={4} className="px-5 py-14 text-center text-sm text-ink/40">
+                <td colSpan={5} className="px-5 py-14 text-center text-sm text-ink/40">
                   Todavía no hay alumnos cargados.
                 </td>
               </tr>

@@ -151,4 +151,39 @@ export async function createClassType(formData: FormData) {
 
   revalidatePath('/admin/tipos-de-clase')
   revalidatePath('/admin/horarios/nuevo')
+  return { success: true }
+}
+
+export async function updateClassType(classTypeId: string, formData: FormData) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
+
+  const name = String(formData.get('name') ?? '').trim()
+  const description = String(formData.get('description') ?? '').trim()
+
+  if (!name) return { error: 'El nombre es obligatorio.' }
+
+  const { error } = await supabase
+    .from('class_types')
+    .update({ name, description })
+    .eq('id', classTypeId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/tipos-de-clase')
+  revalidatePath('/admin/horarios')
+  return { success: true }
+}
+
+export async function setClassTypeActive(classTypeId: string, active: boolean) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
+
+  const { error } = await supabase.from('class_types').update({ active }).eq('id', classTypeId)
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/tipos-de-clase')
+  revalidatePath('/admin/horarios')
 }

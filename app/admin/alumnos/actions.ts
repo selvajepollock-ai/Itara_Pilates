@@ -39,18 +39,14 @@ export async function createStudent(formData: FormData) {
   const admin = createAdminClient()
 
   const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
-    data: { full_name: fullName },
+    data: { full_name: fullName, roles: ['student'] },
     redirectTo: `${siteUrl}/auth/confirm?next=/auth/set-password`,
   })
 
   if (inviteError) return { error: inviteError.message }
 
-  const newUserId = invited.user?.id
-  if (newUserId) {
-    await admin
-      .from('profiles')
-      .update({ roles: ['student'], ...(phone ? { phone } : {}) })
-      .eq('id', newUserId)
+  if (invited.user?.id && phone) {
+    await admin.from('profiles').update({ phone }).eq('id', invited.user.id)
   }
 
   revalidatePath('/admin/alumnos')

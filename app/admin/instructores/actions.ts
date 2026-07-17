@@ -40,12 +40,13 @@ export async function createInstructor(formData: FormData) {
   }
 
   const admin = createAdminClient()
+  const roles = alsoAdmin ? ['instructor', 'admin'] : ['instructor']
 
   const { data: created, error: createError } = await admin.auth.admin.createUser({
     email: usernameToInternalEmail(username),
     password,
     email_confirm: true,
-    user_metadata: { full_name: fullName },
+    user_metadata: { full_name: fullName, username, roles },
   })
 
   if (createError) {
@@ -55,13 +56,8 @@ export async function createInstructor(formData: FormData) {
     return { error: createError.message }
   }
 
-  const newUserId = created.user?.id
-  if (newUserId) {
-    const roles = alsoAdmin ? ['instructor', 'admin'] : ['instructor']
-    await admin
-      .from('profiles')
-      .update({ roles, username, ...(phone ? { phone } : {}) })
-      .eq('id', newUserId)
+  if (created.user?.id && phone) {
+    await admin.from('profiles').update({ phone }).eq('id', created.user.id)
   }
 
   revalidatePath('/admin/instructores')
