@@ -135,6 +135,8 @@ export async function removeEnrollment(enrollmentId: string, classId: string) {
 
   revalidatePath(`/admin/horarios/${classId}`)
 }
+
+export async function createClassType(formData: FormData) {
   const auth = await assertAdmin()
   if (!auth.ok) return { error: auth.error }
   const { supabase } = auth
