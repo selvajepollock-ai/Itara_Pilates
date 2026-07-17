@@ -14,15 +14,12 @@ export async function createStudent(formData: FormData) {
     return { error: 'Nombre y email son obligatorios.' }
   }
 
-  // Confirmar que quien ejecuta esta acción es admin (defensa extra además de RLS)
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) {
-    return { error: 'No autenticado.' }
-  }
+  if (!user) return { error: 'No autenticado.' }
 
   const { data: callerProfile } = await supabase
     .from('profiles')
@@ -34,7 +31,6 @@ export async function createStudent(formData: FormData) {
     return { error: 'No tenés permisos para esta acción.' }
   }
 
-  // Armar la URL de este mismo sitio (funciona tanto en localhost como en Vercel)
   const headersList = await headers()
   const host = headersList.get('host')
   const protocol = host?.startsWith('localhost') ? 'http' : 'https'
@@ -47,13 +43,14 @@ export async function createStudent(formData: FormData) {
     redirectTo: `${siteUrl}/auth/confirm?next=/auth/set-password`,
   })
 
-  if (inviteError) {
-    return { error: inviteError.message }
-  }
+  if (inviteError) return { error: inviteError.message }
 
   const newUserId = invited.user?.id
-  if (newUserId && phone) {
-    await admin.from('profiles').update({ phone }).eq('id', newUserId)
+  if (newUserId) {
+    await admin
+      .from('profiles')
+      .update({ roles: ['student'], ...(phone ? { phone } : {}) })
+      .eq('id', newUserId)
   }
 
   revalidatePath('/admin/alumnos')

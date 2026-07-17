@@ -105,7 +105,36 @@ export async function deleteClass(classId: string) {
   revalidatePath('/admin/horarios')
 }
 
-export async function createClassType(formData: FormData) {
+export async function enrollStudent(classId: string, formData: FormData) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
+
+  const student_id = String(formData.get('student_id') ?? '')
+  if (!student_id) return { error: 'Elegí un alumno.' }
+
+  const { error } = await supabase.from('enrollments').insert({
+    student_id,
+    class_id: classId,
+    status: 'active',
+  })
+
+  if (error) return { error: error.message }
+
+  revalidatePath(`/admin/horarios/${classId}`)
+  return { success: true }
+}
+
+export async function removeEnrollment(enrollmentId: string, classId: string) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
+
+  const { error } = await supabase.from('enrollments').delete().eq('id', enrollmentId)
+  if (error) return { error: error.message }
+
+  revalidatePath(`/admin/horarios/${classId}`)
+}
   const auth = await assertAdmin()
   if (!auth.ok) return { error: auth.error }
   const { supabase } = auth

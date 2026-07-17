@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Plus, Settings2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
 import { DeleteClassButton } from './delete-class-button'
@@ -43,15 +44,17 @@ export default async function HorariosPage() {
         <div className="flex gap-3">
           <Link
             href="/admin/tipos-de-clase"
-            className="rounded-full border border-sand px-5 py-2.5 text-sm font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+            className="flex items-center gap-1.5 rounded-full border border-sand px-5 py-2.5 text-sm font-medium text-ink/70 transition hover:border-moss hover:text-moss"
           >
+            <Settings2 size={15} strokeWidth={2} />
             Tipos de clase
           </Link>
           <Link
             href="/admin/horarios/nuevo"
-            className="rounded-full bg-moss px-5 py-2.5 text-sm font-medium text-white transition hover:bg-moss-dark"
+            className="flex items-center gap-1.5 rounded-full bg-moss px-5 py-2.5 text-sm font-medium text-white transition hover:bg-moss-dark"
           >
-            + Nueva clase
+            <Plus size={16} strokeWidth={2.5} />
+            Nueva clase
           </Link>
         </div>
       </div>
@@ -88,6 +91,12 @@ export default async function HorariosPage() {
                       <span className="rounded-full bg-blush px-2.5 py-1">{c.room}</span>
                       <span>{c.profiles?.full_name ?? 'Sin instructor'}</span>
                       <span>· {c.capacity} cupos</span>
+                      <Link
+                        href={`/admin/horarios/${c.id}`}
+                        className="font-medium text-moss hover:text-moss-dark"
+                      >
+                        Alumnos
+                      </Link>
                       <Link
                         href={`/admin/horarios/${c.id}/editar`}
                         className="font-medium text-moss hover:text-moss-dark"

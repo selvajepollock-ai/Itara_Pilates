@@ -3,11 +3,12 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { isEmailLike, usernameToInternalEmail } from '@/lib/auth-username'
 
 export default function LoginPage() {
   const router = useRouter()
   const supabase = createClient()
-  const [email, setEmail] = useState('')
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -17,12 +18,14 @@ export default function LoginPage() {
     setError(null)
     setLoading(true)
 
+    const email = isEmailLike(identifier) ? identifier : usernameToInternalEmail(identifier)
+
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     setLoading(false)
 
     if (error) {
-      setError('Email o contraseña incorrectos.')
+      setError('Email/usuario o contraseña incorrectos.')
       return
     }
 
@@ -44,13 +47,12 @@ export default function LoginPage() {
         >
           <div>
             <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
-              Email
+              Email o usuario
             </label>
             <input
-              type="email"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
             />
           </div>
