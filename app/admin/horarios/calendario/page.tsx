@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import { List } from 'lucide-react'
+import { List, ChevronLeft, ChevronRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
+import { DAY_ORDER, formatTime } from '@/lib/day-names'
 
 type ClassRow = {
   id: string
@@ -15,16 +15,9 @@ type ClassRow = {
 }
 
 const SLOT_MINUTES = 30
-const START_HOUR = 6
-const END_HOUR = 22
+const START_HOUR = 7
+const END_HOUR = 21
 const TOTAL_SLOTS = ((END_HOUR - START_HOUR) * 60) / SLOT_MINUTES
-
-const PALETTE = [
-  { bg: 'bg-moss/10', text: 'text-moss-dark', border: 'border-moss/25', dot: 'bg-moss' },
-  { bg: 'bg-clay/10', text: 'text-clay', border: 'border-clay/25', dot: 'bg-clay' },
-  { bg: 'bg-blush', text: 'text-ink', border: 'border-sand', dot: 'bg-ink/40' },
-  { bg: 'bg-sand/60', text: 'text-ink/70', border: 'border-ink/10', dot: 'bg-ink/30' },
-]
 
 function timeToMinutes(time: string) {
   const [h, m] = time.slice(0, 5).split(':').map(Number)
@@ -36,8 +29,41 @@ function minutesToSlot(minutes: number) {
   return (clamped - START_HOUR * 60) / SLOT_MINUTES
 }
 
-export default async function CalendarioPage() {
+function getMonday(date: Date) {
+  const d = new Date(date)
+  const day = d.getDay()
+  const diff = day === 0 ? -6 : 1 - day
+  d.setDate(d.getDate() + diff)
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
+function toISODate(date: Date) {
+  return date.toISOString().slice(0, 10)
+}
+
+export default async function CalendarioPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ week?: string }>
+}) {
+  const { week } = await searchParams
   const supabase = await createClient()
+
+  const today = new Date()
+  const baseMonday = week ? getMonday(new Date(week)) : getMonday(today)
+
+  const weekDates = DAY_ORDER.map((dow, i) => {
+    const offset = i // DAY_ORDER = [1,2,3,4,5,6,0] -> Mon..Sun, matches column order
+    const date = new Date(baseMonday)
+    date.setDate(baseMonday.getDate() + offset)
+    return { dow, date }
+  })
+
+  const prevWeek = new Date(baseMonday)
+  prevWeek.setDate(prevWeek.getDate() - 7)
+  const nextWeek = new Date(baseMonday)
+  nextWeek.setDate(nextWeek.getDate() + 7)
 
   const [{ data: classesData }, { data: enrollmentsData }] = await Promise.all([
     supabase
@@ -57,124 +83,174 @@ export default async function CalendarioPage() {
     countByClass.set(e.class_id, (countByClass.get(e.class_id) ?? 0) + 1)
   }
 
-  const typeIds = Array.from(new Set(classes.map((c) => c.class_types?.id).filter(Boolean)))
-  const colorByType = new Map<string, (typeof PALETTE)[number]>()
-  typeIds.forEach((id, i) => colorByType.set(id as string, PALETTE[i % PALETTE.length]))
-
   const hourMarks = Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => START_HOUR + i)
+  const todayISO = toISODate(today)
+
+  const monthLabel = baseMonday.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
 
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-[0.25em] text-moss">Estudio</p>
-          <h1 className="mt-2 font-display text-3xl italic text-ink">Calendario semanal</h1>
+          <h1 className="mt-2 font-display text-3xl italic capitalize text-ink">{monthLabel}</h1>
         </div>
-        <Link
-          href="/admin/horarios"
-          className="flex items-center gap-1.5 rounded-full border border-sand px-5 py-2.5 text-sm font-medium text-ink/70 transition hover:border-moss hover:text-moss"
-        >
-          <List size={15} strokeWidth={2} />
-          Ver como lista
-        </Link>
+
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/admin/horarios/calendario?week=${toISODate(prevWeek)}`}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-sand text-ink/60 transition hover:border-moss hover:text-moss"
+          >
+            <ChevronLeft size={16} />
+          </Link>
+          <Link
+            href="/admin/horarios/calendario"
+            className="rounded-full border border-sand px-4 py-2 text-sm font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+          >
+            Hoy
+          </Link>
+          <Link
+            href={`/admin/horarios/calendario?week=${toISODate(nextWeek)}`}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-sand text-ink/60 transition hover:border-moss hover:text-moss"
+          >
+            <ChevronRight size={16} />
+          </Link>
+          <Link
+            href="/admin/horarios"
+            className="ml-2 flex items-center gap-1.5 rounded-full border border-sand px-5 py-2.5 text-sm font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+          >
+            <List size={15} strokeWidth={2} />
+            Lista
+          </Link>
+        </div>
       </div>
 
-      {classes.length === 0 ? (
-        <div className="mt-10 rounded-2xl border border-dashed border-sand bg-white/50 px-6 py-16 text-center">
-          <p className="font-display text-xl italic text-ink">Todavía no hay clases cargadas</p>
-        </div>
-      ) : (
-        <div className="mt-8 overflow-x-auto rounded-2xl border border-sand bg-white p-4">
-          <div
-            className="grid min-w-[900px]"
-            style={{
-              gridTemplateColumns: `56px repeat(7, 1fr)`,
-              gridTemplateRows: `36px repeat(${TOTAL_SLOTS}, 22px)`,
-            }}
-          >
-            {/* Header row */}
-            <div />
-            {DAY_ORDER.map((day, i) => (
+      <div className="mt-8 overflow-x-auto rounded-2xl border border-sand bg-white p-4">
+        <div
+          className="grid min-w-[980px]"
+          style={{
+            gridTemplateColumns: `56px repeat(7, 1fr)`,
+            gridTemplateRows: `56px repeat(${TOTAL_SLOTS}, 20px)`,
+          }}
+        >
+          {/* Header row: real dates */}
+          <div />
+          {weekDates.map(({ dow, date }, i) => {
+            const iso = toISODate(date)
+            const isToday = iso === todayISO
+            const isWeekend = dow === 0 || dow === 6
+            return (
               <div
-                key={day}
-                className="flex items-center justify-center border-b border-sand pb-2 text-xs font-medium uppercase tracking-wide text-ink/50"
+                key={dow}
+                className={`flex flex-col items-center justify-center gap-0.5 border-b pb-2 ${
+                  isToday ? 'border-moss' : 'border-sand'
+                }`}
                 style={{ gridColumn: i + 2, gridRow: 1 }}
               >
-                {DAY_NAMES[day].slice(0, 3)}
-              </div>
-            ))}
-
-            {/* Hour gridlines + labels */}
-            {hourMarks.map((hour) => {
-              const slot = minutesToSlot(hour * 60)
-              return (
-                <div
-                  key={hour}
-                  className="border-t border-sand/60 pr-2 text-right text-[11px] leading-none text-ink/30"
-                  style={{ gridColumn: 1, gridRow: slot + 2 }}
-                >
-                  {hour}h
-                </div>
-              )
-            })}
-            {hourMarks.map((hour) => {
-              const slot = minutesToSlot(hour * 60)
-              return DAY_ORDER.map((_, i) => (
-                <div
-                  key={`${hour}-${i}`}
-                  className="border-t border-sand/40"
-                  style={{ gridColumn: i + 2, gridRow: slot + 2 }}
-                />
-              ))
-            })}
-
-            {/* Class blocks */}
-            {classes.map((c) => {
-              const dayIndex = DAY_ORDER.indexOf(c.day_of_week)
-              if (dayIndex === -1) return null
-              const startSlot = minutesToSlot(timeToMinutes(c.start_time))
-              const endSlot = minutesToSlot(timeToMinutes(c.end_time))
-              const color = colorByType.get(c.class_types?.id ?? '') ?? PALETTE[0]
-              const enrolled = countByClass.get(c.id) ?? 0
-              const isFull = enrolled >= c.capacity
-
-              return (
-                <Link
-                  key={c.id}
-                  href={`/admin/horarios/${c.id}`}
-                  className={`m-0.5 overflow-hidden rounded-lg border px-2 py-1 text-[11px] leading-tight transition hover:shadow-md ${color.bg} ${color.text} ${color.border}`}
-                  style={{
-                    gridColumn: dayIndex + 2,
-                    gridRow: `${startSlot + 2} / ${endSlot + 2}`,
-                  }}
-                >
-                  <p className="truncate font-display italic">{c.class_types?.name}</p>
-                  <p className="truncate opacity-70">{formatTime(c.start_time)}</p>
-                  <p className={`truncate font-medium ${isFull ? 'text-clay' : ''}`}>
-                    {enrolled}/{c.capacity}
-                  </p>
-                </Link>
-              )
-            })}
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-3 border-t border-sand pt-4">
-            {typeIds.map((id) => {
-              const type = classes.find((c) => c.class_types?.id === id)?.class_types
-              const color = colorByType.get(id as string) ?? PALETTE[0]
-              return (
-                <span
-                  key={id}
-                  className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs ${color.bg} ${color.text}`}
-                >
-                  <span className={`h-1.5 w-1.5 rounded-full ${color.dot}`} />
-                  {type?.name}
+                <span className="text-[10px] uppercase tracking-wide text-ink/40">
+                  {date.toLocaleDateString('es-AR', { weekday: 'short' })}
                 </span>
-              )
-            })}
-          </div>
+                <span
+                  className={`flex h-7 w-7 items-center justify-center rounded-full font-display text-sm italic ${
+                    isToday
+                      ? 'bg-moss text-white'
+                      : isWeekend
+                        ? 'text-ink/30'
+                        : 'text-ink'
+                  }`}
+                >
+                  {date.getDate()}
+                </span>
+              </div>
+            )
+          })}
+
+          {/* Hour labels + gridlines */}
+          {hourMarks.map((hour) => {
+            const slot = minutesToSlot(hour * 60)
+            return (
+              <div
+                key={`label-${hour}`}
+                className="border-t border-sand/60 pr-2 text-right text-[11px] leading-none text-ink/30"
+                style={{ gridColumn: 1, gridRow: slot + 2 }}
+              >
+                {hour}h
+              </div>
+            )
+          })}
+          {hourMarks.map((hour) =>
+            weekDates.map(({ dow }, i) => (
+              <div
+                key={`line-${hour}-${dow}`}
+                className="border-t border-sand/40"
+                style={{ gridColumn: i + 2, gridRow: minutesToSlot(hour * 60) + 2 }}
+              />
+            ))
+          )}
+
+          {/* Weekend "closed" watermark */}
+          {weekDates.map(({ dow }, i) => {
+            if (dow !== 0 && dow !== 6) return null
+            return (
+              <div
+                key={`closed-${dow}`}
+                className="flex items-center justify-center text-xs text-ink/20"
+                style={{ gridColumn: i + 2, gridRow: `2 / ${TOTAL_SLOTS + 2}` }}
+              >
+                Cerrado
+              </div>
+            )
+          })}
+
+          {/* Class blocks */}
+          {classes.map((c) => {
+            const colIndex = DAY_ORDER.indexOf(c.day_of_week)
+            if (colIndex === -1) return null
+            const startSlot = minutesToSlot(timeToMinutes(c.start_time))
+            const endSlot = minutesToSlot(timeToMinutes(c.end_time))
+            const enrolled = countByClass.get(c.id) ?? 0
+            const isFull = enrolled >= c.capacity
+            const isFuerza = c.class_types?.name?.toLowerCase().includes('fuerza')
+
+            return (
+              <Link
+                key={c.id}
+                href={`/admin/horarios/${c.id}`}
+                className={`m-0.5 overflow-hidden rounded-lg px-2 py-1 text-[11px] leading-tight transition hover:-translate-y-px hover:shadow-md ${
+                  isFuerza
+                    ? 'border border-dashed border-clay/40 bg-white text-clay/80'
+                    : 'border border-moss/20 bg-moss text-white shadow-sm'
+                }`}
+                style={{
+                  gridColumn: colIndex + 2,
+                  gridRow: `${startSlot + 2} / ${endSlot + 2}`,
+                }}
+              >
+                <p className={`truncate font-display italic ${isFuerza ? '' : 'text-white'}`}>
+                  {c.class_types?.name}
+                </p>
+                <p className={`truncate ${isFuerza ? 'opacity-70' : 'text-white/80'}`}>
+                  {formatTime(c.start_time)}
+                </p>
+                <p className={`truncate font-medium ${isFull ? 'text-clay' : isFuerza ? '' : 'text-white'}`}>
+                  {enrolled}/{c.capacity}
+                </p>
+              </Link>
+            )
+          })}
         </div>
-      )}
+
+        <div className="mt-4 flex flex-wrap gap-4 border-t border-sand pt-4 text-xs">
+          <span className="flex items-center gap-1.5 text-ink/60">
+            <span className="h-2.5 w-2.5 rounded bg-moss" />
+            Reformer
+          </span>
+          <span className="flex items-center gap-1.5 text-ink/60">
+            <span className="h-2.5 w-2.5 rounded border border-dashed border-clay/50 bg-white" />
+            Fuerza
+          </span>
+        </div>
+      </div>
     </div>
   )
 }
