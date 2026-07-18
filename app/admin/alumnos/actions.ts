@@ -10,6 +10,8 @@ export async function createStudent(formData: FormData) {
   const email = String(formData.get('email') ?? '').trim().toLowerCase()
   const phone = String(formData.get('phone') ?? '').trim()
   const birthDate = String(formData.get('birth_date') ?? '').trim()
+  const planId = String(formData.get('plan_id') ?? '').trim()
+  const endDate = String(formData.get('end_date') ?? '').trim()
 
   if (!fullName || !email) {
     return { error: 'Nombre y email son obligatorios.' }
@@ -54,6 +56,15 @@ export async function createStudent(formData: FormData) {
         ...(birthDate ? { birth_date: birthDate } : {}),
       })
       .eq('id', invited.user.id)
+  }
+
+  if (invited.user?.id && planId && endDate) {
+    await admin.from('subscriptions').insert({
+      student_id: invited.user.id,
+      plan_id: planId,
+      end_date: endDate,
+      status: 'active',
+    })
   }
 
   revalidatePath('/admin/alumnos')
