@@ -1,6 +1,8 @@
-import { CalendarX, RefreshCw } from 'lucide-react'
+import { CalendarX, RefreshCw, Repeat } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, formatTime } from '@/lib/day-names'
+import { formatARS } from '@/lib/currency'
+import { ResolvePlanRequestButton } from './resolve-plan-request-button'
 
 type CancellationRow = {
   id: string
@@ -40,6 +42,12 @@ export default async function AvisosPage() {
       .limit(20),
   ])
 
+  const { data: planRequests } = await supabase
+    .from('plan_change_requests')
+    .select('id, note, created_at, profiles(full_name), plans(name, price)')
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false })
+
   const cancellations = (cancellationsData ?? []) as unknown as CancellationRow[]
   const recoveries = (recoveriesData ?? []) as unknown as RecoveryRow[]
 
@@ -60,7 +68,39 @@ export default async function AvisosPage() {
         Quién avisó que no venía y quién se anotó a recuperar.
       </p>
 
-      <ul className="mt-8 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
+      {planRequests && planRequests.length > 0 && (
+        <div className="mt-8">
+          <p className="text-xs uppercase tracking-wide text-clay">Solicitudes de cambio de plan</p>
+          <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-clay/30 bg-clay/5">
+            {planRequests.map((r) => (
+              <li key={r.id} className="flex items-center justify-between gap-3 px-5 py-4">
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-clay/10 text-clay">
+                    <Repeat size={15} />
+                  </div>
+                  <div>
+                    <p className="text-sm text-ink">
+                      <span className="font-medium">
+                        {(r.profiles as unknown as { full_name: string } | null)?.full_name}
+                      </span>{' '}
+                      quiere pasarse a{' '}
+                      <span className="font-medium">
+                        {(r.plans as unknown as { name: string } | null)?.name}
+                      </span>{' '}
+                      ({formatARS((r.plans as unknown as { price: number } | null)?.price ?? 0)})
+                    </p>
+                    {r.note && <p className="mt-0.5 text-xs text-ink/50">"{r.note}"</p>}
+                  </div>
+                </div>
+                <ResolvePlanRequestButton requestId={r.id} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <p className="mt-8 text-xs uppercase tracking-wide text-ink/40">Actividad</p>
+      <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
         {feed.map((item) => {
           const typeName = item.row.classes?.class_types?.name
           const dayLabel = item.row.classes ? DAY_NAMES[item.row.classes.day_of_week] : ''

@@ -1,11 +1,12 @@
 import Link from 'next/link'
-import { CalendarX, RefreshCw } from 'lucide-react'
+import { CalendarX, RefreshCw, Flower2, CalendarDays } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
 import { getPaymentStatus, STATUS_LABEL, STATUS_CLASSES } from '@/lib/billing'
 import { getMonday, dateForDayOfWeek, toISODate, isInPast } from '@/lib/sessions'
 import { getDailyQuote } from '@/lib/quotes'
 import { CancelSessionButton } from './cancel-session-button'
+import { RequestPlanChangeForm } from './request-plan-change-form'
 
 type MyClassRow = {
   id: string
@@ -39,6 +40,7 @@ export default async function AlumnoDashboard() {
     { data: credits },
     { data: recentCancellations },
     { data: recentRecoveries },
+    { data: activePlans },
   ] = await Promise.all([
     supabase
       .from('enrollments')
@@ -78,6 +80,7 @@ export default async function AlumnoDashboard() {
       .not('recovery_credit_id', 'is', null)
       .order('created_at', { ascending: false })
       .limit(3),
+    supabase.from('plans').select('id, name, price').eq('active', true).order('price'),
   ])
 
   const firstName = profile?.full_name?.split(' ')[0]
@@ -131,31 +134,50 @@ export default async function AlumnoDashboard() {
   return (
     <div>
       <p className="text-xs uppercase tracking-[0.25em] text-moss">Mi semana</p>
-      <h1 className="mt-2 font-display text-3xl italic text-ink sm:text-4xl">
-        {firstName ? `Hola, ${firstName}` : 'Tu horario'}
-      </h1>
+      <div className="mt-2 flex items-center gap-2">
+        <Flower2 size={22} strokeWidth={1.5} className="text-moss" />
+        <h1 className="font-display text-3xl italic text-ink sm:text-4xl">
+          {firstName ? `Hola, ${firstName}` : 'Tu horario'}
+        </h1>
+      </div>
       <p className="mt-1.5 text-sm italic text-ink/50">{quote}</p>
 
-      <div className="mt-6 flex items-center justify-between rounded-2xl border border-sand bg-white px-5 py-4">
-        <div>
-          <p className="text-xs uppercase tracking-wide text-ink/40">Tu cuota</p>
-          <p className="mt-0.5 font-display italic text-ink">
-            {planInfo?.name ?? 'Sin plan asignado'}
-          </p>
-          {subscription?.end_date && (
-            <p className="text-xs text-ink/40">
-              Pagado hasta{' '}
-              {new Date(`${subscription.end_date}T00:00:00`).toLocaleDateString('es-AR', {
-                day: 'numeric',
-                month: 'long',
-              })}
+      <div className="mt-6 rounded-2xl border border-sand bg-white px-5 py-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-wide text-ink/40">Tu cuota</p>
+            <p className="mt-0.5 font-display italic text-ink">
+              {planInfo?.name ?? 'Sin plan asignado'}
             </p>
-          )}
+            {subscription?.end_date && (
+              <p className="text-xs text-ink/40">
+                Pagado hasta{' '}
+                {new Date(`${subscription.end_date}T00:00:00`).toLocaleDateString('es-AR', {
+                  day: 'numeric',
+                  month: 'long',
+                })}
+              </p>
+            )}
+          </div>
+          <span className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_CLASSES[status]}`}>
+            {STATUS_LABEL[status]}
+          </span>
         </div>
-        <span className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_CLASSES[status]}`}>
-          {STATUS_LABEL[status]}
-        </span>
+        <div className="mt-3 border-t border-sand pt-3">
+          <RequestPlanChangeForm plans={activePlans ?? []} />
+        </div>
       </div>
+
+      <Link
+        href="/alumno/calendario"
+        className="mt-4 flex items-center justify-between rounded-2xl border border-sand bg-white px-5 py-4 transition hover:border-moss"
+      >
+        <div className="flex items-center gap-2.5">
+          <CalendarDays size={18} className="text-moss" />
+          <span className="text-sm font-medium text-ink">Ver calendario completo del estudio</span>
+        </div>
+        <span className="text-xs text-ink/40">Todas las semanas →</span>
+      </Link>
 
       {credits && credits.length > 0 && (
         <div className="mt-4 rounded-2xl border border-clay/30 bg-clay/5 px-5 py-4">
