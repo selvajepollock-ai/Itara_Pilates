@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { LogoutButton } from '@/lib/supabase/logout-button'
@@ -28,7 +29,15 @@ export default async function AlumnoLayout({
             <p className="text-xs uppercase tracking-[0.25em] text-moss">Mi estudio</p>
             <p className="mt-0.5 font-display text-xl italic text-ink">{profile?.full_name}</p>
           </div>
-          <LogoutButton />
+          <div className="flex items-center gap-2">
+            <Link
+              href="/alumno"
+              className="rounded-full border border-sand px-4 py-1.5 text-xs font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+            >
+              Inicio
+            </Link>
+            <LogoutButton />
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-6 py-10 sm:px-10">{children}</main>

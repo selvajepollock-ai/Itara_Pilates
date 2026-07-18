@@ -5,7 +5,7 @@ import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
 import { getPaymentStatus, STATUS_LABEL, STATUS_CLASSES } from '@/lib/billing'
 import { getMonday, dateForDayOfWeek, toISODate, isInPast } from '@/lib/sessions'
 import { getDailyQuote } from '@/lib/quotes'
-import { CancelSessionButton } from './cancel-session-button'
+import { ReprogramarButton } from './reprogramar-button'
 import { RequestPlanChangeForm } from './request-plan-change-form'
 
 type MyClassRow = {
@@ -28,7 +28,11 @@ export default async function AlumnoDashboard() {
   } = await supabase.auth.getUser()
 
   const studentId = user?.id ?? ''
-  const monday = getMonday(new Date())
+  const thisMonday = getMonday(new Date())
+  const nextMonday = new Date(thisMonday)
+  nextMonday.setDate(nextMonday.getDate() + 7)
+  const nextSunday = new Date(nextMonday)
+  nextSunday.setDate(nextSunday.getDate() + 6)
   const todayISO = toISODate(new Date())
 
   const [
@@ -56,12 +60,13 @@ export default async function AlumnoDashboard() {
       .eq('student_id', studentId)
       .eq('status', 'active')
       .maybeSingle(),
-    supabase.from('studio_settings').select('payment_reminder_days_before').single(),
+    supabase.from('studio_settings').select('payment_reminder_days_before, cancellation_min_hours').single(),
     supabase
       .from('session_cancellations')
       .select('enrollment_id, session_date')
       .eq('student_id', studentId)
-      .gte('session_date', toISODate(monday)),
+      .gte('session_date', toISODate(thisMonday))
+      .lte('session_date', toISODate(nextSunday)),
     supabase
       .from('recovery_credits')
       .select('id, class_type_id, week_end, class_types(name)')
@@ -85,6 +90,7 @@ export default async function AlumnoDashboard() {
 
   const firstName = profile?.full_name?.split(' ')[0]
   const quote = getDailyQuote()
+  const minHours = settings?.cancellation_min_hours ?? 12
 
   const status = getPaymentStatus(
     subscription?.end_date ?? null,
@@ -97,17 +103,21 @@ export default async function AlumnoDashboard() {
     (cancellations ?? []).map((c) => `${c.enrollment_id}_${c.session_date}`)
   )
 
-  const byDay = new Map<number, MyClassRow[]>()
-  for (const day of DAY_ORDER) byDay.set(day, [])
-  for (const e of enrollments) {
-    if (!e.classes) continue
-    byDay.get(e.classes.day_of_week)?.push(e)
-  }
-  for (const list of byDay.values()) {
-    list.sort((a, b) => (a.classes?.start_time ?? '').localeCompare(b.classes?.start_time ?? ''))
+  function buildWeek(monday: Date) {
+    const byDay = new Map<number, MyClassRow[]>()
+    for (const day of DAY_ORDER) byDay.set(day, [])
+    for (const e of enrollments) {
+      if (!e.classes) continue
+      byDay.get(e.classes.day_of_week)?.push(e)
+    }
+    for (const list of byDay.values()) {
+      list.sort((a, b) => (a.classes?.start_time ?? '').localeCompare(b.classes?.start_time ?? ''))
+    }
+    const days = DAY_ORDER.filter((day) => (byDay.get(day)?.length ?? 0) > 0)
+    return { monday, byDay, days }
   }
 
-  const activeDays = DAY_ORDER.filter((day) => (byDay.get(day)?.length ?? 0) > 0)
+  const weeks = [buildWeek(thisMonday), buildWeek(nextMonday)]
 
   type ActivityItem =
     | { kind: 'cancel'; at: string; typeName?: string; withinDeadline: boolean }
@@ -204,83 +214,88 @@ export default async function AlumnoDashboard() {
         </div>
       )}
 
-      <p className="mt-8 text-sm font-medium uppercase tracking-wide text-ink/50">
-        Semana actual
-      </p>
-
-      {activeDays.length === 0 ? (
-        <div className="mt-3 rounded-2xl border border-dashed border-sand bg-white/50 px-6 py-14 text-center">
-          <p className="font-display text-xl italic text-ink">Todavía no tenés clases asignadas</p>
-          <p className="mt-2 text-sm text-ink/60">
-            Hablá con el estudio para que te anoten a tu horario fijo.
+      {weeks.map((week, weekIndex) => (
+        <div key={weekIndex} className="mt-8">
+          <p className="text-sm font-medium uppercase tracking-wide text-ink/50">
+            {weekIndex === 0 ? 'Esta semana' : 'Semana que viene'}
           </p>
-        </div>
-      ) : (
-        <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {activeDays.map((day) => {
-            const dayDate = dateForDayOfWeek(monday, day)
-            return (
-            <section key={day} className="lg:min-w-0">
-              <h2 className="text-sm font-medium uppercase tracking-wide text-ink/50">
-                {DAY_NAMES[day]} <span className="text-ink/30">{dayDate.getDate()}</span>
-              </h2>
-              <div className="mt-2 space-y-3">
-                {byDay.get(day)?.map((e) => {
-                  const sessionDate = toISODate(dateForDayOfWeek(monday, day))
-                  const key = `${e.id}_${sessionDate}`
-                  const alreadyCancelled = cancelledKeys.has(key)
-                  const past = isInPast(sessionDate, e.classes?.start_time ?? '23:59:00')
-                  const isToday = sessionDate === todayISO
 
-                  return (
-                    <div
-                      key={e.id}
-                      className={`rounded-2xl border bg-white px-4 py-4 shadow-[0_2px_12px_rgba(46,43,38,0.04)] ${
-                        past ? 'border-sand/60 opacity-60' : 'border-sand'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="font-display text-lg italic leading-tight text-ink">
-                          {e.classes?.class_types?.name}
-                        </p>
-                        <span className="whitespace-nowrap rounded-full bg-blush px-2.5 py-1 text-xs tabular-nums text-ink">
-                          {formatTime(e.classes?.start_time ?? '')}
-                        </span>
-                      </div>
-                      <p className="mt-1.5 text-xs text-ink/50">
-                        {e.classes?.room} · {e.classes?.profiles?.full_name ?? 'Sin instructor'}
-                      </p>
+          {week.days.length === 0 ? (
+            <div className="mt-3 rounded-2xl border border-dashed border-sand bg-white/50 px-6 py-10 text-center">
+              <p className="text-sm text-ink/50">Sin clases asignadas.</p>
+            </div>
+          ) : (
+            <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+              {week.days.map((day) => {
+                const dayDate = dateForDayOfWeek(week.monday, day)
+                return (
+                  <section key={day} className="lg:min-w-0">
+                    <h2 className="text-sm font-medium uppercase tracking-wide text-ink/50">
+                      {DAY_NAMES[day]} <span className="text-ink/30">{dayDate.getDate()}</span>
+                    </h2>
+                    <div className="mt-2 space-y-3">
+                      {week.byDay.get(day)?.map((e) => {
+                        const sessionDate = toISODate(dateForDayOfWeek(week.monday, day))
+                        const key = `${e.id}_${sessionDate}`
+                        const alreadyCancelled = cancelledKeys.has(key)
+                        const past = isInPast(sessionDate, e.classes?.start_time ?? '23:59:00')
+                        const isToday = sessionDate === todayISO
 
-                      <div className="mt-2.5 border-t border-sand pt-2.5">
-                        {past ? (
-                          <p className="text-xs text-ink/35">
-                            {alreadyCancelled ? 'No fuiste (avisada)' : 'Ya pasó'}
-                          </p>
-                        ) : alreadyCancelled ? (
-                          <p className="text-xs text-ink/40">Ya avisaste que no vas</p>
-                        ) : (
-                          <div className="flex items-center justify-between">
-                            {isToday && (
-                              <span className="text-xs font-medium text-moss">Hoy</span>
-                            )}
-                            <CancelSessionButton
-                              studentId={studentId}
-                              enrollmentId={e.id}
-                              classId={e.class_id}
-                              sessionDate={sessionDate}
-                            />
+                        return (
+                          <div
+                            key={e.id}
+                            className={`rounded-2xl border bg-white px-4 py-4 shadow-[0_2px_12px_rgba(46,43,38,0.04)] ${
+                              past ? 'border-sand/60 opacity-60' : 'border-sand'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="font-display text-lg italic leading-tight text-ink">
+                                {e.classes?.class_types?.name}
+                              </p>
+                              <span className="whitespace-nowrap rounded-full bg-blush px-2.5 py-1 text-xs tabular-nums text-ink">
+                                {formatTime(e.classes?.start_time ?? '')}
+                              </span>
+                            </div>
+                            <p className="mt-1.5 text-xs text-ink/50">
+                              {e.classes?.room} · {e.classes?.profiles?.full_name ?? 'Sin instructor'}
+                            </p>
+
+                            <div className="mt-2.5 border-t border-sand pt-2.5">
+                              {past ? (
+                                <p className="text-xs text-ink/35">
+                                  {alreadyCancelled ? 'No fuiste (avisada)' : 'Ya pasó'}
+                                </p>
+                              ) : alreadyCancelled ? (
+                                <p className="text-xs text-ink/40">Ya avisaste que no vas</p>
+                              ) : (
+                                <div className="flex items-center justify-between">
+                                  {isToday && (
+                                    <span className="text-xs font-medium text-moss">Hoy</span>
+                                  )}
+                                  <ReprogramarButton
+                                    studentId={studentId}
+                                    enrollmentId={e.id}
+                                    classId={e.class_id}
+                                    sessionDate={sessionDate}
+                                  />
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        )}
-                      </div>
+                        )
+                      })}
                     </div>
-                  )
-                })}
-              </div>
-            </section>
-            )
-          })}
+                  </section>
+                )
+              })}
+            </div>
+          )}
         </div>
-      )}
+      ))}
+
+      <p className="mt-4 text-center text-xs text-ink/30">
+        Podés reprogramar hasta {minHours} hs antes de tu clase.
+      </p>
 
       {activity.length > 0 && (
         <div className="mt-8">
