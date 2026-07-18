@@ -1,8 +1,10 @@
 import Link from 'next/link'
+import { CalendarX, RefreshCw } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
 import { getPaymentStatus, STATUS_LABEL, STATUS_CLASSES } from '@/lib/billing'
 import { getMonday, dateForDayOfWeek, toISODate, isInPast } from '@/lib/sessions'
+import { getDailyQuote } from '@/lib/quotes'
 import { CancelSessionButton } from './cancel-session-button'
 
 type MyClassRow = {
@@ -26,34 +28,60 @@ export default async function AlumnoDashboard() {
 
   const studentId = user?.id ?? ''
   const monday = getMonday(new Date())
+  const todayISO = toISODate(new Date())
 
-  const [{ data }, { data: subscription }, { data: settings }, { data: cancellations }, { data: credits }] =
-    await Promise.all([
-      supabase
-        .from('enrollments')
-        .select(
-          'id, class_id, classes(room, day_of_week, start_time, end_time, class_types(name), profiles(full_name))'
-        )
-        .eq('student_id', studentId)
-        .eq('status', 'active'),
-      supabase
-        .from('subscriptions')
-        .select('end_date, plans(name)')
-        .eq('student_id', studentId)
-        .eq('status', 'active')
-        .maybeSingle(),
-      supabase.from('studio_settings').select('payment_reminder_days_before').single(),
-      supabase
-        .from('session_cancellations')
-        .select('enrollment_id, session_date')
-        .eq('student_id', studentId)
-        .gte('session_date', toISODate(monday)),
-      supabase
-        .from('recovery_credits')
-        .select('id, class_type_id, week_end, class_types(name)')
-        .eq('student_id', studentId)
-        .eq('status', 'available'),
-    ])
+  const [
+    { data },
+    { data: profile },
+    { data: subscription },
+    { data: settings },
+    { data: cancellations },
+    { data: credits },
+    { data: recentCancellations },
+    { data: recentRecoveries },
+  ] = await Promise.all([
+    supabase
+      .from('enrollments')
+      .select(
+        'id, class_id, classes(room, day_of_week, start_time, end_time, class_types(name), profiles(full_name))'
+      )
+      .eq('student_id', studentId)
+      .eq('status', 'active'),
+    supabase.from('profiles').select('full_name').eq('id', studentId).single(),
+    supabase
+      .from('subscriptions')
+      .select('end_date, plans(name)')
+      .eq('student_id', studentId)
+      .eq('status', 'active')
+      .maybeSingle(),
+    supabase.from('studio_settings').select('payment_reminder_days_before').single(),
+    supabase
+      .from('session_cancellations')
+      .select('enrollment_id, session_date')
+      .eq('student_id', studentId)
+      .gte('session_date', toISODate(monday)),
+    supabase
+      .from('recovery_credits')
+      .select('id, class_type_id, week_end, class_types(name)')
+      .eq('student_id', studentId)
+      .eq('status', 'available'),
+    supabase
+      .from('session_cancellations')
+      .select('id, session_date, within_deadline, classes(class_types(name))')
+      .eq('student_id', studentId)
+      .order('cancelled_at', { ascending: false })
+      .limit(3),
+    supabase
+      .from('attendance')
+      .select('id, session_date, classes(class_types(name))')
+      .eq('student_id', studentId)
+      .not('recovery_credit_id', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(3),
+  ])
+
+  const firstName = profile?.full_name?.split(' ')[0]
+  const quote = getDailyQuote()
 
   const status = getPaymentStatus(
     subscription?.end_date ?? null,
@@ -78,10 +106,35 @@ export default async function AlumnoDashboard() {
 
   const activeDays = DAY_ORDER.filter((day) => (byDay.get(day)?.length ?? 0) > 0)
 
+  type ActivityItem =
+    | { kind: 'cancel'; at: string; typeName?: string; withinDeadline: boolean }
+    | { kind: 'recover'; at: string; typeName?: string }
+
+  const activity: ActivityItem[] = [
+    ...(recentCancellations ?? []).map((c): ActivityItem => ({
+      kind: 'cancel',
+      at: c.session_date,
+      typeName: (c.classes as unknown as { class_types: { name: string } | null } | null)?.class_types
+        ?.name,
+      withinDeadline: c.within_deadline,
+    })),
+    ...(recentRecoveries ?? []).map((r): ActivityItem => ({
+      kind: 'recover',
+      at: r.session_date,
+      typeName: (r.classes as unknown as { class_types: { name: string } | null } | null)?.class_types
+        ?.name,
+    })),
+  ]
+    .sort((a, b) => b.at.localeCompare(a.at))
+    .slice(0, 4)
+
   return (
     <div>
       <p className="text-xs uppercase tracking-[0.25em] text-moss">Mi semana</p>
-      <h1 className="mt-2 font-display text-3xl italic text-ink sm:text-4xl">Tu horario</h1>
+      <h1 className="mt-2 font-display text-3xl italic text-ink sm:text-4xl">
+        {firstName ? `Hola, ${firstName}` : 'Tu horario'}
+      </h1>
+      <p className="mt-1.5 text-sm italic text-ink/50">{quote}</p>
 
       <div className="mt-6 flex items-center justify-between rounded-2xl border border-sand bg-white px-5 py-4">
         <div>
@@ -129,19 +182,25 @@ export default async function AlumnoDashboard() {
         </div>
       )}
 
+      <p className="mt-8 text-sm font-medium uppercase tracking-wide text-ink/50">
+        Semana actual
+      </p>
+
       {activeDays.length === 0 ? (
-        <div className="mt-8 rounded-2xl border border-dashed border-sand bg-white/50 px-6 py-14 text-center">
+        <div className="mt-3 rounded-2xl border border-dashed border-sand bg-white/50 px-6 py-14 text-center">
           <p className="font-display text-xl italic text-ink">Todavía no tenés clases asignadas</p>
           <p className="mt-2 text-sm text-ink/60">
             Hablá con el estudio para que te anoten a tu horario fijo.
           </p>
         </div>
       ) : (
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {activeDays.map((day) => (
+        <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {activeDays.map((day) => {
+            const dayDate = dateForDayOfWeek(monday, day)
+            return (
             <section key={day} className="lg:min-w-0">
               <h2 className="text-sm font-medium uppercase tracking-wide text-ink/50">
-                {DAY_NAMES[day]}
+                {DAY_NAMES[day]} <span className="text-ink/30">{dayDate.getDate()}</span>
               </h2>
               <div className="mt-2 space-y-3">
                 {byDay.get(day)?.map((e) => {
@@ -149,11 +208,14 @@ export default async function AlumnoDashboard() {
                   const key = `${e.id}_${sessionDate}`
                   const alreadyCancelled = cancelledKeys.has(key)
                   const past = isInPast(sessionDate, e.classes?.start_time ?? '23:59:00')
+                  const isToday = sessionDate === todayISO
 
                   return (
                     <div
                       key={e.id}
-                      className="rounded-2xl border border-sand bg-white px-4 py-4 shadow-[0_2px_12px_rgba(46,43,38,0.04)]"
+                      className={`rounded-2xl border bg-white px-4 py-4 shadow-[0_2px_12px_rgba(46,43,38,0.04)] ${
+                        past ? 'border-sand/60 opacity-60' : 'border-sand'
+                      }`}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <p className="font-display text-lg italic leading-tight text-ink">
@@ -167,26 +229,67 @@ export default async function AlumnoDashboard() {
                         {e.classes?.room} · {e.classes?.profiles?.full_name ?? 'Sin instructor'}
                       </p>
 
-                      {!past && (
-                        <div className="mt-2.5 border-t border-sand pt-2.5">
-                          {alreadyCancelled ? (
-                            <p className="text-xs text-ink/40">Ya avisaste que no vas</p>
-                          ) : (
+                      <div className="mt-2.5 border-t border-sand pt-2.5">
+                        {past ? (
+                          <p className="text-xs text-ink/35">
+                            {alreadyCancelled ? 'No fuiste (avisada)' : 'Ya pasó'}
+                          </p>
+                        ) : alreadyCancelled ? (
+                          <p className="text-xs text-ink/40">Ya avisaste que no vas</p>
+                        ) : (
+                          <div className="flex items-center justify-between">
+                            {isToday && (
+                              <span className="text-xs font-medium text-moss">Hoy</span>
+                            )}
                             <CancelSessionButton
                               studentId={studentId}
                               enrollmentId={e.id}
                               classId={e.class_id}
                               sessionDate={sessionDate}
                             />
-                          )}
-                        </div>
-                      )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )
                 })}
               </div>
             </section>
-          ))}
+            )
+          })}
+        </div>
+      )}
+
+      {activity.length > 0 && (
+        <div className="mt-8">
+          <p className="text-sm font-medium uppercase tracking-wide text-ink/50">
+            Actividad reciente
+          </p>
+          <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
+            {activity.map((item, i) => (
+              <li key={i} className="flex items-center gap-3 px-5 py-3.5">
+                <div
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
+                    item.kind === 'cancel' ? 'bg-clay/10 text-clay' : 'bg-moss/10 text-moss'
+                  }`}
+                >
+                  {item.kind === 'cancel' ? <CalendarX size={13} /> : <RefreshCw size={13} />}
+                </div>
+                <p className="text-sm text-ink/70">
+                  {item.kind === 'cancel'
+                    ? `Avisaste que no ibas a ${item.typeName ?? 'una clase'}`
+                    : `Te anotaste a recuperar ${item.typeName ?? 'una clase'}`}{' '}
+                  <span className="text-ink/40">
+                    ·{' '}
+                    {new Date(`${item.at}T00:00:00`).toLocaleDateString('es-AR', {
+                      day: 'numeric',
+                      month: 'short',
+                    })}
+                  </span>
+                </p>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
