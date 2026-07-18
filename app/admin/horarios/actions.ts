@@ -122,6 +122,7 @@ export async function enrollStudent(classId: string, formData: FormData) {
   if (error) return { error: error.message }
 
   revalidatePath(`/admin/horarios/${classId}`)
+  revalidatePath('/admin/horarios')
   return { success: true }
 }
 
@@ -134,6 +135,7 @@ export async function removeEnrollment(enrollmentId: string, classId: string) {
   if (error) return { error: error.message }
 
   revalidatePath(`/admin/horarios/${classId}`)
+  revalidatePath('/admin/horarios')
 }
 
 export async function createClassType(formData: FormData) {
@@ -185,5 +187,40 @@ export async function setClassTypeActive(classTypeId: string, active: boolean) {
   if (error) return { error: error.message }
 
   revalidatePath('/admin/tipos-de-clase')
+  revalidatePath('/admin/horarios')
+}
+
+export async function createHoliday(formData: FormData) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
+
+  const date = String(formData.get('date') ?? '')
+  const label = String(formData.get('label') ?? '').trim()
+
+  if (!date) return { error: 'Elegí una fecha.' }
+
+  const { error } = await supabase.from('holidays').insert({ date, label: label || null })
+  if (error) {
+    if (error.message.toLowerCase().includes('duplicate')) {
+      return { error: 'Ya hay un feriado cargado en esa fecha.' }
+    }
+    return { error: error.message }
+  }
+
+  revalidatePath('/admin/horarios/feriados')
+  revalidatePath('/admin/horarios')
+  return { success: true }
+}
+
+export async function deleteHoliday(holidayId: string) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
+
+  const { error } = await supabase.from('holidays').delete().eq('id', holidayId)
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/horarios/feriados')
   revalidatePath('/admin/horarios')
 }
