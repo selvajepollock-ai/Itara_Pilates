@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { List, ChevronLeft, ChevronRight, Plus, Settings2, Dumbbell } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { DAY_ORDER, formatTime } from '@/lib/day-names'
+import { WeekJumpInput } from './week-jump-input'
 
 type ClassRow = {
   id: string
@@ -115,6 +116,7 @@ export default async function HorariosPage({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <WeekJumpInput defaultValue={toISODate(baseMonday)} showFuerza={showFuerza} />
           <Link
             href={`/admin/horarios?week=${toISODate(prevWeek)}${showFuerza ? '&fuerza=1' : ''}`}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-sand text-ink/60 transition hover:border-moss hover:text-moss"

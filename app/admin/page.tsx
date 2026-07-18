@@ -2,6 +2,9 @@ import Link from 'next/link'
 import { Users, UserCog, CalendarDays, ArrowUpRight, Cake, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { daysUntilNextBirthday, formatBirthday } from '@/lib/birthdays'
+import { suggestNextDueDate } from '@/lib/billing'
+import { DAY_NAMES } from '@/lib/day-names'
+import { QuickPayment } from './quick-payment'
 
 export default async function AdminDashboard() {
   const supabase = await createClient()
@@ -11,16 +14,18 @@ export default async function AdminDashboard() {
   } = await supabase.auth.getUser()
 
   const [
-    { count: studentsCount },
+    { data: studentsData },
     { count: instructorsCount },
-    { count: classesCount },
+    { data: classesData },
     { data: birthdayData },
     { data: myProfile },
-    { count: overdueCount },
+    { data: subscriptionsData },
+    { data: settings },
+    { data: enrollmentsData },
   ] = await Promise.all([
     supabase
       .from('profiles')
-      .select('id', { count: 'exact', head: true })
+      .select('id, full_name')
       .contains('roles', ['student']),
     supabase
       .from('profiles')
@@ -28,7 +33,7 @@ export default async function AdminDashboard() {
       .contains('roles', ['instructor']),
     supabase
       .from('classes')
-      .select('id', { count: 'exact', head: true })
+      .select('id, day_of_week, capacity, class_types(name)')
       .eq('active', true),
     supabase
       .from('profiles')
@@ -36,25 +41,28 @@ export default async function AdminDashboard() {
       .contains('roles', ['student'])
       .not('birth_date', 'is', null),
     supabase.from('profiles').select('full_name').eq('id', user?.id ?? '').single(),
-    supabase
-      .from('subscriptions')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'active')
-      .lt('end_date', new Date().toISOString().slice(0, 10)),
+    supabase.from('subscriptions').select('id, student_id, end_date, plans(name, price)').eq('status', 'active'),
+    supabase.from('studio_settings').select('payment_due_day').single(),
+    supabase.from('enrollments').select('class_id').eq('status', 'active'),
   ])
 
   const firstName = myProfile?.full_name?.split(' ')[0]
+  const studentsCount = studentsData?.length ?? 0
+  const classesCount = classesData?.length ?? 0
+
+  const today = new Date().toISOString().slice(0, 10)
+  const overdueCount = (subscriptionsData ?? []).filter((s) => s.end_date < today).length
 
   const stats = [
-    { label: 'Alumnos activos', value: studentsCount ?? 0, icon: Users, href: '/admin/alumnos' },
+    { label: 'Alumnos activos', value: studentsCount, icon: Users, href: '/admin/alumnos' },
     { label: 'Instructores', value: instructorsCount ?? 0, icon: UserCog, href: '/admin/instructores' },
-    { label: 'Clases por semana', value: classesCount ?? 0, icon: CalendarDays, href: '/admin/horarios' },
+    { label: 'Clases por semana', value: classesCount, icon: CalendarDays, href: '/admin/horarios' },
     {
       label: 'Cuotas vencidas',
-      value: overdueCount ?? 0,
+      value: overdueCount,
       icon: AlertCircle,
       href: '/admin/alumnos',
-      alert: (overdueCount ?? 0) > 0,
+      alert: overdueCount > 0,
     },
   ]
 
@@ -68,6 +76,41 @@ export default async function AdminDashboard() {
     .filter((s) => s.daysUntil <= 30)
     .sort((a, b) => a.daysUntil - b.daysUntil)
     .slice(0, 5)
+
+  // Ocupación semanal (Pilates Reformer, Lun-Vie)
+  const enrollCountByClass = new Map<string, number>()
+  for (const e of enrollmentsData ?? []) {
+    enrollCountByClass.set(e.class_id, (enrollCountByClass.get(e.class_id) ?? 0) + 1)
+  }
+  const reformerClasses = (classesData ?? []).filter(
+    (c) => !(c.class_types as unknown as { name: string } | null)?.name?.toLowerCase().includes('fuerza')
+  )
+  const occupancyByDay = [1, 2, 3, 4, 5].map((day) => {
+    const dayClasses = reformerClasses.filter((c) => c.day_of_week === day)
+    const capacity = dayClasses.reduce((sum, c) => sum + c.capacity, 0)
+    const enrolled = dayClasses.reduce((sum, c) => sum + (enrollCountByClass.get(c.id) ?? 0), 0)
+    return { day, capacity, enrolled, pct: capacity > 0 ? Math.round((enrolled / capacity) * 100) : 0 }
+  })
+
+  // Datos para el widget de pago rápido
+  const subByStudent = new Map((subscriptionsData ?? []).map((s) => [s.student_id, s]))
+  const dueDay = settings?.payment_due_day ?? 10
+  const quickPaymentStudents = (studentsData ?? []).map((s) => {
+    const sub = subByStudent.get(s.id)
+    const planInfo = sub?.plans as unknown as { name: string; price: number } | null
+    return {
+      id: s.id,
+      full_name: s.full_name,
+      subscriptionId: sub?.id ?? null,
+      planName: planInfo?.name ?? null,
+      planPrice: planInfo?.price ?? 0,
+      endDate: sub?.end_date ?? null,
+      suggestedNextDate: suggestNextDueDate(
+        sub?.end_date ? new Date(`${sub.end_date}T00:00:00`) : new Date(),
+        dueDay
+      ),
+    }
+  })
 
   return (
     <div>
@@ -109,7 +152,38 @@ export default async function AdminDashboard() {
         ))}
       </div>
 
-      <div className="mt-12 grid gap-5 sm:grid-cols-2">
+      <div className="mt-6 grid gap-5 lg:grid-cols-2">
+        <QuickPayment students={quickPaymentStudents} />
+
+        <div className="rounded-2xl border border-sand bg-white p-6">
+          <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Esta semana</p>
+          <p className="mt-1 font-display text-xl italic text-ink">Ocupación Pilates Reformer</p>
+
+          <div className="mt-4 space-y-3">
+            {occupancyByDay.map(({ day, capacity, enrolled, pct }) => (
+              <div key={day}>
+                <div className="flex items-center justify-between text-xs text-ink/50">
+                  <span>{DAY_NAMES[day]}</span>
+                  <span>
+                    {enrolled}/{capacity}
+                  </span>
+                </div>
+                <div className="mt-1 h-2 overflow-hidden rounded-full bg-linen">
+                  <div
+                    className={`h-full rounded-full ${pct >= 90 ? 'bg-clay' : 'bg-moss'}`}
+                    style={{ width: `${Math.min(pct, 100)}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+            {capacityIsZero(occupancyByDay) && (
+              <p className="text-sm text-ink/40">Todavía no hay alumnos anotados en el horario.</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-5 sm:grid-cols-2">
         <div className="rounded-2xl border border-sand bg-white p-6">
           <div className="flex items-center gap-2">
             <Cake size={16} strokeWidth={2} className="text-clay" />
@@ -134,12 +208,16 @@ export default async function AdminDashboard() {
 
         <div className="rounded-2xl border border-sand bg-white p-6">
           <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Próximo paso</p>
-          <p className="mt-2 font-display text-xl italic text-ink">Reportes</p>
+          <p className="mt-2 font-display text-xl italic text-ink">Cancelaciones y avisos</p>
           <p className="mt-1 text-sm text-ink/50">
-            Ocupación, ingresos y ausentismo — pendiente.
+            Que el alumno avise que falta y recupere clase — lo armamos como siguiente tarea.
           </p>
         </div>
       </div>
     </div>
   )
+}
+
+function capacityIsZero(rows: { capacity: number }[]) {
+  return rows.every((r) => r.capacity === 0)
 }
