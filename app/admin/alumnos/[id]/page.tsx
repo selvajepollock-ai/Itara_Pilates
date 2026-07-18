@@ -5,6 +5,7 @@ import { EditStudentForm } from './edit-student-form'
 import { SetPasswordForm } from './set-password-form'
 import { StudentScheduleForm } from './schedule-form'
 import { StudentBilling } from './student-billing'
+import { WeeklySessions } from './weekly-sessions'
 import { DAY_ORDER } from '@/lib/day-names'
 
 type ClassOption = {
@@ -90,6 +91,10 @@ export default async function EditarAlumnoPage({ params }: { params: Promise<{ i
             Tildá las clases fijas de este alumno (lo que paga mes a mes). Se repiten todas las semanas.
           </p>
           <StudentScheduleForm studentId={student.id} classOptions={classOptions} />
+
+          <div className="mt-6">
+            <WeeklySessions studentId={student.id} />
+          </div>
         </div>
       </div>
     </div>
