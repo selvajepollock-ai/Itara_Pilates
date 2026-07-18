@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Users, UserCog, CalendarDays, ArrowUpRight, Cake } from 'lucide-react'
+import { Users, UserCog, CalendarDays, ArrowUpRight, Cake, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { daysUntilNextBirthday, formatBirthday } from '@/lib/birthdays'
 
@@ -16,6 +16,7 @@ export default async function AdminDashboard() {
     { count: classesCount },
     { data: birthdayData },
     { data: myProfile },
+    { count: overdueCount },
   ] = await Promise.all([
     supabase
       .from('profiles')
@@ -35,6 +36,11 @@ export default async function AdminDashboard() {
       .contains('roles', ['student'])
       .not('birth_date', 'is', null),
     supabase.from('profiles').select('full_name').eq('id', user?.id ?? '').single(),
+    supabase
+      .from('subscriptions')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'active')
+      .lt('end_date', new Date().toISOString().slice(0, 10)),
   ])
 
   const firstName = myProfile?.full_name?.split(' ')[0]
@@ -43,6 +49,13 @@ export default async function AdminDashboard() {
     { label: 'Alumnos activos', value: studentsCount ?? 0, icon: Users, href: '/admin/alumnos' },
     { label: 'Instructores', value: instructorsCount ?? 0, icon: UserCog, href: '/admin/instructores' },
     { label: 'Clases por semana', value: classesCount ?? 0, icon: CalendarDays, href: '/admin/horarios' },
+    {
+      label: 'Cuotas vencidas',
+      value: overdueCount ?? 0,
+      icon: AlertCircle,
+      href: '/admin/alumnos',
+      alert: (overdueCount ?? 0) > 0,
+    },
   ]
 
   const upcomingBirthdays = (birthdayData ?? [])
@@ -66,23 +79,31 @@ export default async function AdminDashboard() {
         Un vistazo rápido a cómo está el estudio hoy.
       </p>
 
-      <div className="mt-10 grid gap-5 sm:grid-cols-3">
-        {stats.map(({ label, value, icon: Icon, href }) => (
+      <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {stats.map(({ label, value, icon: Icon, href, alert }) => (
           <Link
             key={label}
             href={href}
-            className="group rounded-2xl border border-sand bg-white p-6 transition hover:border-moss hover:shadow-[0_4px_24px_rgba(46,43,38,0.07)]"
+            className={`group rounded-2xl border bg-white p-6 transition hover:shadow-[0_4px_24px_rgba(46,43,38,0.07)] ${
+              alert ? 'border-clay/40 hover:border-clay' : 'border-sand hover:border-moss'
+            }`}
           >
             <div className="flex items-center justify-between">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-moss/10 text-moss">
+              <div
+                className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                  alert ? 'bg-clay/10 text-clay' : 'bg-moss/10 text-moss'
+                }`}
+              >
                 <Icon size={18} strokeWidth={2} />
               </div>
               <ArrowUpRight
                 size={16}
-                className="text-ink/20 transition group-hover:text-moss"
+                className={`text-ink/20 transition ${alert ? 'group-hover:text-clay' : 'group-hover:text-moss'}`}
               />
             </div>
-            <p className="mt-5 font-display text-4xl italic text-ink">{value}</p>
+            <p className={`mt-5 font-display text-4xl italic ${alert ? 'text-clay' : 'text-ink'}`}>
+              {value}
+            </p>
             <p className="mt-1 text-sm text-ink/50">{label}</p>
           </Link>
         ))}
@@ -113,9 +134,9 @@ export default async function AdminDashboard() {
 
         <div className="rounded-2xl border border-sand bg-white p-6">
           <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Próximo paso</p>
-          <p className="mt-2 font-display text-xl italic text-ink">Cuotas y bonos</p>
+          <p className="mt-2 font-display text-xl italic text-ink">Reportes</p>
           <p className="mt-1 text-sm text-ink/50">
-            Todavía no está armado — es lo próximo que vamos a construir.
+            Ocupación, ingresos y ausentismo — pendiente.
           </p>
         </div>
       </div>

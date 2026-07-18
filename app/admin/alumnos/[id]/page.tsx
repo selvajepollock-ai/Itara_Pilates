@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { EditStudentForm } from './edit-student-form'
 import { SetPasswordForm } from './set-password-form'
 import { StudentScheduleForm } from './schedule-form'
+import { StudentBilling } from './student-billing'
 import { DAY_ORDER } from '@/lib/day-names'
 
 type ClassOption = {
@@ -67,16 +68,20 @@ export default async function EditarAlumnoPage({ params }: { params: Promise<{ i
       <h1 className="mt-2 font-display text-3xl italic text-ink">{student.full_name}</h1>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[380px_1fr] lg:items-start">
-        <div className="max-w-md">
+        <div className="max-w-md space-y-6">
           <EditStudentForm student={student} />
 
-          <h2 className="mt-10 text-xs uppercase tracking-[0.25em] text-moss">
-            Restablecer contraseña
-          </h2>
-          <p className="mt-1 text-sm text-ink/50">
-            Por si el alumno perdió el acceso. Le vas a tener que avisar la contraseña nueva.
-          </p>
-          <SetPasswordForm studentId={student.id} />
+          <StudentBilling studentId={student.id} />
+
+          <div>
+            <h2 className="text-xs uppercase tracking-[0.25em] text-moss">
+              Restablecer contraseña
+            </h2>
+            <p className="mt-1 text-sm text-ink/50">
+              Por si el alumno perdió el acceso. Le vas a tener que avisar la contraseña nueva.
+            </p>
+            <SetPasswordForm studentId={student.id} />
+          </div>
         </div>
 
         <div>

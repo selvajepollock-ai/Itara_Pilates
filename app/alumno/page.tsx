@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
+import { getPaymentStatus, STATUS_LABEL, STATUS_CLASSES } from '@/lib/billing'
 
 type MyClassRow = {
   id: string
@@ -26,6 +27,24 @@ export default async function AlumnoDashboard() {
     .eq('student_id', user?.id ?? '')
     .eq('status', 'active')
 
+  const { data: subscription } = await supabase
+    .from('subscriptions')
+    .select('end_date, plans(name)')
+    .eq('student_id', user?.id ?? '')
+    .eq('status', 'active')
+    .maybeSingle()
+
+  const { data: settings } = await supabase
+    .from('studio_settings')
+    .select('payment_reminder_days_before')
+    .single()
+
+  const status = getPaymentStatus(
+    subscription?.end_date ?? null,
+    settings?.payment_reminder_days_before ?? 3
+  )
+  const planInfo = subscription?.plans as unknown as { name: string } | null
+
   const enrollments = (data ?? []) as unknown as MyClassRow[]
 
   const byDay = new Map<number, MyClassRow[]>()
@@ -44,6 +63,27 @@ export default async function AlumnoDashboard() {
     <div>
       <p className="text-xs uppercase tracking-[0.25em] text-moss">Mi semana</p>
       <h1 className="mt-2 font-display text-3xl italic text-ink sm:text-4xl">Tu horario</h1>
+
+      <div className="mt-6 flex items-center justify-between rounded-2xl border border-sand bg-white px-5 py-4">
+        <div>
+          <p className="text-xs uppercase tracking-wide text-ink/40">Tu cuota</p>
+          <p className="mt-0.5 font-display italic text-ink">
+            {planInfo?.name ?? 'Sin plan asignado'}
+          </p>
+          {subscription?.end_date && (
+            <p className="text-xs text-ink/40">
+              Pagado hasta{' '}
+              {new Date(`${subscription.end_date}T00:00:00`).toLocaleDateString('es-AR', {
+                day: 'numeric',
+                month: 'long',
+              })}
+            </p>
+          )}
+        </div>
+        <span className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_CLASSES[status]}`}>
+          {STATUS_LABEL[status]}
+        </span>
+      </div>
 
       {activeDays.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-dashed border-sand bg-white/50 px-6 py-14 text-center">
