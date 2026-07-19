@@ -124,7 +124,7 @@ export default async function AvisosPage() {
                   <span className="font-medium">{name}</span>{' '}
                   {item.kind === 'cancel'
                     ? (item.row as CancellationRow).within_deadline
-                      ? 'avisó que no va y le queda crédito para recuperar'
+                      ? 'avisó que no va y le queda una clase a recuperar'
                       : 'avisó que no va (fuera de horario, sin recuperación)'
                     : 'se anotó a recuperar'}
                 </p>

@@ -45,6 +45,7 @@ export default async function AlumnoDashboard() {
     { data: recentCancellations },
     { data: recentRecoveries },
     { data: activePlans },
+    { data: upcomingRecoveries },
   ] = await Promise.all([
     supabase
       .from('enrollments')
@@ -86,6 +87,13 @@ export default async function AlumnoDashboard() {
       .order('created_at', { ascending: false })
       .limit(3),
     supabase.from('plans').select('id, name, price').eq('active', true).order('price'),
+    supabase
+      .from('attendance')
+      .select('id, class_id, session_date, classes(room, start_time, class_types(name), profiles(full_name))')
+      .eq('student_id', studentId)
+      .not('recovery_credit_id', 'is', null)
+      .gte('session_date', todayISO)
+      .order('session_date', { ascending: true }),
   ])
 
   const firstName = profile?.full_name?.split(' ')[0]
@@ -189,14 +197,44 @@ export default async function AlumnoDashboard() {
         <span className="text-xs text-ink/40">Todas las semanas →</span>
       </Link>
 
+      {upcomingRecoveries && upcomingRecoveries.length > 0 && (
+        <div className="mt-4 rounded-2xl border border-moss/30 bg-moss/5 px-5 py-4">
+          <p className="text-xs uppercase tracking-wide text-moss">Recuperación agendada</p>
+          <ul className="mt-2 space-y-2">
+            {upcomingRecoveries.map((r) => {
+              const cls = r.classes as unknown as {
+                room: string
+                start_time: string
+                class_types: { name: string } | null
+                profiles: { full_name: string } | null
+              } | null
+              return (
+                <li key={r.id} className="text-sm text-ink">
+                  <span className="font-medium">{cls?.class_types?.name}</span> —{' '}
+                  {new Date(`${r.session_date}T00:00:00`).toLocaleDateString('es-AR', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'short',
+                  })}
+                  , {formatTime(cls?.start_time ?? '')} · {cls?.room}
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
+
       {credits && credits.length > 0 && (
         <div className="mt-4 rounded-2xl border border-clay/30 bg-clay/5 px-5 py-4">
-          <p className="text-xs uppercase tracking-wide text-clay">Créditos para recuperar</p>
+          <p className="text-xs uppercase tracking-wide text-clay">
+            Clases pendientes de recuperar ({credits.length})
+          </p>
           <ul className="mt-2 space-y-2">
-            {credits.map((c) => (
+            {credits.map((c, i) => (
               <li key={c.id} className="flex items-center justify-between text-sm">
                 <span className="text-ink">
-                  {(c.class_types as unknown as { name: string } | null)?.name} — vence{' '}
+                  {(c.class_types as unknown as { name: string } | null)?.name}
+                  {credits.length > 1 ? ` #${i + 1}` : ''} — hasta el{' '}
                   {new Date(`${c.week_end}T00:00:00`).toLocaleDateString('es-AR', {
                     day: 'numeric',
                     month: 'short',
@@ -204,7 +242,7 @@ export default async function AlumnoDashboard() {
                 </span>
                 <Link
                   href={`/alumno/recuperar/${c.id}`}
-                  className="rounded-full bg-clay px-3 py-1 text-xs font-medium text-white hover:opacity-90"
+                  className="whitespace-nowrap rounded-full bg-clay px-3 py-1 text-xs font-medium text-white hover:opacity-90"
                 >
                   Elegir clase
                 </Link>

@@ -83,7 +83,7 @@ export async function WeeklySessions({ studentId }: { studentId: string }) {
 
       {credits && credits.length > 0 && (
         <div className="mt-4 border-t border-sand pt-4">
-          <p className="text-xs uppercase tracking-wide text-clay">Créditos disponibles</p>
+          <p className="text-xs uppercase tracking-wide text-clay">Clases pendientes de recuperar</p>
           <ul className="mt-2 space-y-1.5">
             {credits.map((c) => (
               <li key={c.id} className="flex items-center justify-between text-sm">

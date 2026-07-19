@@ -53,7 +53,7 @@ export default async function AdminRecuperarPage({
         <Link href={`/admin/alumnos/${studentId}`} className="text-sm text-moss hover:text-moss-dark">
           ← Volver
         </Link>
-        <p className="mt-6 text-sm text-ink/60">Este crédito ya fue usado o venció.</p>
+        <p className="mt-6 text-sm text-ink/60">Esta clase a recuperar ya fue usada o venció.</p>
       </div>
     )
   }
@@ -117,7 +117,12 @@ export default async function AdminRecuperarPage({
           >
             <div className="flex items-center justify-between">
               <p className="font-display italic text-ink">
-                {DAY_NAMES[c.day_of_week]} {formatTime(c.start_time)}
+                {DAY_NAMES[c.day_of_week]}{' '}
+                {new Date(`${c.sessionDate}T00:00:00`).toLocaleDateString('es-AR', {
+                  day: 'numeric',
+                  month: 'short',
+                })}
+                , {formatTime(c.start_time)}
               </p>
               <span className="text-xs text-ink/40">
                 {c.occupied}/{c.capacity}

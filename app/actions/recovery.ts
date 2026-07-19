@@ -181,12 +181,16 @@ export async function bookRecovery({
     return { error: attendanceError.message }
   }
 
-  const { error: creditUpdateError } = await supabase
+  const { data: updatedCredit, error: creditUpdateError } = await supabase
     .from('recovery_credits')
     .update({ status: 'used', used_class_id: classId, used_session_date: sessionDate })
     .eq('id', creditId)
+    .select('id')
+    .single()
 
-  if (creditUpdateError) return { error: creditUpdateError.message }
+  if (creditUpdateError || !updatedCredit) {
+    return { error: creditUpdateError?.message ?? 'No se pudo confirmar la reserva. Probá de nuevo.' }
+  }
 
   revalidatePath('/alumno')
   revalidatePath(`/admin/alumnos/${studentId}`)

@@ -38,7 +38,7 @@ export function CancelSessionButton({
     return (
       <p className={`text-xs ${result.withinDeadline ? 'text-moss-dark' : 'text-clay'}`}>
         {result.withinDeadline
-          ? 'Avisado — te queda un crédito para recuperar esta semana ✓'
+          ? 'Avisado — tenés una clase para recuperar esta semana ✓'
           : 'Avisado (fuera de horario, sin recuperación)'}
       </p>
     )
