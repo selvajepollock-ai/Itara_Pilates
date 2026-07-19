@@ -99,38 +99,49 @@ export default async function AvisosPage() {
         </div>
       )}
 
-      <p className="mt-8 text-xs uppercase tracking-wide text-ink/40">Actividad</p>
+      <p className="mt-8 flex items-center gap-2 text-xs uppercase tracking-wide text-ink/40">
+        Actividad
+        {feed.length > 0 && (
+          <span className="rounded-full bg-sand px-2 py-0.5 text-[10px] font-medium text-ink/50">
+            {feed.length}
+          </span>
+        )}
+      </p>
       <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
         {feed.map((item) => {
           const typeName = item.row.classes?.class_types?.name
           const dayLabel = item.row.classes ? DAY_NAMES[item.row.classes.day_of_week] : ''
           const timeLabel = item.row.classes ? formatTime(item.row.classes.start_time) : ''
+          const name = item.row.profiles?.full_name ?? 'Alumno'
 
           return (
-            <li key={`${item.kind}-${item.row.id}`} className="flex items-start gap-3 px-5 py-4">
-              <div
-                className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                  item.kind === 'cancel' ? 'bg-clay/10 text-clay' : 'bg-moss/10 text-moss'
-                }`}
-              >
-                {item.kind === 'cancel' ? <CalendarX size={15} /> : <RefreshCw size={15} />}
+            <li key={`${item.kind}-${item.row.id}`} className="flex items-center gap-3 px-5 py-4">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blush text-xs font-medium text-ink">
+                {name.slice(0, 1).toUpperCase()}
               </div>
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="text-sm text-ink">
-                  <span className="font-medium">{item.row.profiles?.full_name}</span>{' '}
+                  <span className="font-medium">{name}</span>{' '}
                   {item.kind === 'cancel'
                     ? (item.row as CancellationRow).within_deadline
                       ? 'avisó que no va y le queda crédito para recuperar'
                       : 'avisó que no va (fuera de horario, sin recuperación)'
                     : 'se anotó a recuperar'}
                 </p>
-                <p className="mt-0.5 text-xs text-ink/40">
+                <p className="mt-0.5 truncate text-xs text-ink/40">
                   {typeName} · {dayLabel} {timeLabel} ·{' '}
                   {new Date(`${item.row.session_date}T00:00:00`).toLocaleDateString('es-AR', {
                     day: 'numeric',
                     month: 'short',
                   })}
                 </p>
+              </div>
+              <div
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
+                  item.kind === 'cancel' ? 'bg-clay/10 text-clay' : 'bg-moss/10 text-moss'
+                }`}
+              >
+                {item.kind === 'cancel' ? <CalendarX size={14} /> : <RefreshCw size={14} />}
               </div>
             </li>
           )

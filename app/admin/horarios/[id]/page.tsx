@@ -70,6 +70,13 @@ export default async function ClaseDetailPage({ params }: { params: Promise<{ id
         {enrollments.length}/{classItem.capacity}
       </p>
 
+      <Link
+        href={`/instructor/clases/${classItem.id}`}
+        className="mt-4 inline-block text-sm text-moss hover:text-moss-dark"
+      >
+        Ver agenda y asistencia →
+      </Link>
+
       <h2 className="mt-8 text-xs uppercase tracking-[0.25em] text-moss">Alumnos anotados</h2>
       <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
         {enrollments.map((e) => (
