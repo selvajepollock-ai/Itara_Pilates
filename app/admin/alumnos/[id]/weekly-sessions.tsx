@@ -33,7 +33,8 @@ export async function WeeklySessions({ studentId }: { studentId: string }) {
       .from('recovery_credits')
       .select('id, week_end, class_types(name)')
       .eq('student_id', studentId)
-      .eq('status', 'available'),
+      .eq('status', 'available')
+      .gte('week_end', toISODate(new Date())),
   ])
 
   const enrollments = (data ?? []) as unknown as MyClassRow[]

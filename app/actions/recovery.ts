@@ -44,6 +44,16 @@ export async function cancelSession({
 
   if (!classInfo) return { error: 'La clase no existe.' }
 
+  const { data: enrollmentInfo } = await supabase
+    .from('enrollments')
+    .select('id, student_id, class_id')
+    .eq('id', enrollmentId)
+    .maybeSingle()
+
+  if (!enrollmentInfo || enrollmentInfo.student_id !== studentId || enrollmentInfo.class_id !== classId) {
+    return { error: 'Esa clase no corresponde al horario de este alumno.' }
+  }
+
   const { data: settings } = await supabase
     .from('studio_settings')
     .select('cancellation_min_hours')

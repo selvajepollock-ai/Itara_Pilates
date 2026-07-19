@@ -72,7 +72,8 @@ export default async function AlumnoDashboard() {
       .from('recovery_credits')
       .select('id, class_type_id, week_end, class_types(name)')
       .eq('student_id', studentId)
-      .eq('status', 'available'),
+      .eq('status', 'available')
+      .gte('week_end', todayISO),
     supabase
       .from('session_cancellations')
       .select('id, session_date, within_deadline, classes(class_types(name))')
