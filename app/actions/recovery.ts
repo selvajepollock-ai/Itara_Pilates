@@ -14,7 +14,7 @@ async function assertSelfOrAdmin(targetStudentId: string) {
 
   if (user.id === targetStudentId) return { ok: true as const, supabase, actingAdmin: false }
 
-  const { data: profile } = await supabase.from('profiles').select('roles').eq('id', user.id).single()
+  const { data: profile } = await supabase.from('profiles').select('roles').eq('id', user.id).maybeSingle()
   if (!profile?.roles?.includes('admin')) {
     return { ok: false as const, error: 'No tenés permisos para esta acción.' }
   }
@@ -40,14 +40,14 @@ export async function cancelSession({
     .from('classes')
     .select('start_time, class_type_id')
     .eq('id', classId)
-    .single()
+    .maybeSingle()
 
   if (!classInfo) return { error: 'La clase no existe.' }
 
   const { data: settings } = await supabase
     .from('studio_settings')
     .select('cancellation_min_hours')
-    .single()
+    .maybeSingle()
 
   const minHours = settings?.cancellation_min_hours ?? 12
   const hoursLeft = hoursUntil(sessionDate, classInfo.start_time)
@@ -63,7 +63,7 @@ export async function cancelSession({
       within_deadline: withinDeadline,
     })
     .select('id')
-    .single()
+    .maybeSingle()
 
   if (error) {
     if (error.message.toLowerCase().includes('duplicate')) {
@@ -71,6 +71,8 @@ export async function cancelSession({
     }
     return { error: error.message }
   }
+
+  if (!cancellation) return { error: 'No se pudo registrar el aviso. Probá de nuevo.' }
 
   let recoveryCreditId: string | null = null
 
@@ -90,7 +92,7 @@ export async function cancelSession({
         status: 'available',
       })
       .select('id')
-      .single()
+      .maybeSingle()
 
     if (!creditError && credit) {
       recoveryCreditId = credit.id
@@ -127,21 +129,24 @@ export async function bookRecovery({
     .from('recovery_credits')
     .select('id, status, class_type_id, week_end, student_id')
     .eq('id', creditId)
-    .single()
+    .maybeSingle()
 
-  if (!credit || credit.student_id !== studentId) return { error: 'Crédito inválido.' }
-  if (credit.status !== 'available') return { error: 'Ese crédito ya fue usado o venció.' }
-  if (sessionDate > credit.week_end) return { error: 'Esa fecha ya está fuera de la semana del crédito.' }
+  if (!credit) return { error: 'Esa clase a recuperar ya no existe. Volvé a tu horario e intentá de nuevo.' }
+  if (credit.student_id !== studentId) return { error: 'Esa clase a recuperar no te pertenece.' }
+  if (credit.status !== 'available') {
+    return { error: 'Esa clase a recuperar ya fue usada o venció. Volvé a tu horario para ver el estado actual.' }
+  }
+  if (sessionDate > credit.week_end) return { error: 'Esa fecha ya está fuera de la semana disponible.' }
 
   const { data: targetClass } = await supabase
     .from('classes')
     .select('id, class_type_id, capacity')
     .eq('id', classId)
-    .single()
+    .maybeSingle()
 
   if (!targetClass) return { error: 'La clase no existe.' }
   if (targetClass.class_type_id !== credit.class_type_id) {
-    return { error: 'Ese crédito es para otro tipo de clase.' }
+    return { error: 'Esa clase es de otro tipo, no coincide con lo que tenés para recuperar.' }
   }
 
   const [{ count: enrolledCount }, { count: cancelledCount }, { count: recoveringCount }] = await Promise.all([
@@ -185,11 +190,13 @@ export async function bookRecovery({
     .from('recovery_credits')
     .update({ status: 'used', used_class_id: classId, used_session_date: sessionDate })
     .eq('id', creditId)
+    .eq('status', 'available')
     .select('id')
-    .single()
+    .maybeSingle()
 
   if (creditUpdateError || !updatedCredit) {
-    return { error: creditUpdateError?.message ?? 'No se pudo confirmar la reserva. Probá de nuevo.' }
+    // La reserva (attendance) ya quedó registrada; avisamos igual si el estado no se pudo confirmar.
+    return { error: creditUpdateError?.message ?? 'La clase quedó anotada, pero no se pudo actualizar el estado. Refrescá la página.' }
   }
 
   revalidatePath('/alumno')

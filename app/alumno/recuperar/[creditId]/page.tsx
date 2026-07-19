@@ -1,9 +1,8 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { formatTime } from '@/lib/day-names'
-import { dateForDayOfWeek, toISODate, isInPast } from '@/lib/sessions'
-import { BookRecoveryButton } from './book-recovery-button'
+import { toISODate, isInPast } from '@/lib/sessions'
+import { DayAccordion } from './day-accordion'
 
 type ClassOption = {
   id: string
@@ -31,7 +30,7 @@ export default async function RecuperarPage({
     .from('recovery_credits')
     .select('id, student_id, status, class_type_id, week_start, week_end, class_types(name)')
     .eq('id', creditId)
-    .single()
+    .maybeSingle()
 
   if (!credit || credit.student_id !== studentId) notFound()
 
@@ -53,44 +52,58 @@ export default async function RecuperarPage({
     .eq('active', true)
 
   const classes = (classesData ?? []) as unknown as ClassOption[]
-  const monday = new Date(`${credit.week_start}T00:00:00`)
 
-  const options = classes
-    .map((c) => {
-      const sessionDate = toISODate(dateForDayOfWeek(monday, c.day_of_week))
-      return { ...c, sessionDate }
-    })
-    .filter((c) => c.sessionDate <= credit.week_end && !isInPast(c.sessionDate, c.start_time))
-    .sort((a, b) => a.sessionDate.localeCompare(b.sessionDate) || a.start_time.localeCompare(b.start_time))
+  // Armar TODOS los días desde hoy hasta el vencimiento del crédito (incluso sin clases ese día)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const weekEnd = new Date(`${credit.week_end}T00:00:00`)
 
-  // Calcular ocupación real de cada opción
-  const optionsWithOccupancy = await Promise.all(
-    options.map(async (c) => {
-      const [{ count: enrolledCount }, { count: cancelledCount }, { count: recoveringCount }] =
-        await Promise.all([
-          supabase
-            .from('enrollments')
-            .select('id', { count: 'exact', head: true })
-            .eq('class_id', c.id)
-            .eq('status', 'active'),
-          supabase
-            .from('session_cancellations')
-            .select('id', { count: 'exact', head: true })
-            .eq('class_id', c.id)
-            .eq('session_date', c.sessionDate),
-          supabase
-            .from('attendance')
-            .select('id', { count: 'exact', head: true })
-            .eq('class_id', c.id)
-            .eq('session_date', c.sessionDate)
-            .not('recovery_credit_id', 'is', null),
-        ])
-      const occupied = (enrolledCount ?? 0) - (cancelledCount ?? 0) + (recoveringCount ?? 0)
-      return { ...c, occupied, hasRoom: occupied < c.capacity }
+  const days: string[] = []
+  const cursor = new Date(today)
+  while (cursor <= weekEnd) {
+    days.push(toISODate(cursor))
+    cursor.setDate(cursor.getDate() + 1)
+  }
+
+  const dayOfWeekFromISO = (iso: string) => new Date(`${iso}T00:00:00`).getDay()
+
+  const optionsByDay = await Promise.all(
+    days.map(async (date) => {
+      const dow = dayOfWeekFromISO(date)
+      const matches = classes.filter((c) => c.day_of_week === dow && !isInPast(date, c.start_time))
+
+      const withOccupancy = await Promise.all(
+        matches.map(async (c) => {
+          const [{ count: enrolledCount }, { count: cancelledCount }, { count: recoveringCount }] =
+            await Promise.all([
+              supabase
+                .from('enrollments')
+                .select('id', { count: 'exact', head: true })
+                .eq('class_id', c.id)
+                .eq('status', 'active'),
+              supabase
+                .from('session_cancellations')
+                .select('id', { count: 'exact', head: true })
+                .eq('class_id', c.id)
+                .eq('session_date', date),
+              supabase
+                .from('attendance')
+                .select('id', { count: 'exact', head: true })
+                .eq('class_id', c.id)
+                .eq('session_date', date)
+                .not('recovery_credit_id', 'is', null),
+            ])
+          const occupied = (enrolledCount ?? 0) - (cancelledCount ?? 0) + (recoveringCount ?? 0)
+          return { ...c, sessionDate: date, occupied, hasRoom: occupied < c.capacity }
+        })
+      )
+
+      return { date, options: withOccupancy.sort((a, b) => a.start_time.localeCompare(b.start_time)) }
     })
   )
 
   const typeName = (credit.class_types as unknown as { name: string } | null)?.name
+  const firstDayWithRoom = optionsByDay.findIndex((d) => d.options.some((o) => o.hasRoom))
 
   return (
     <div className="max-w-md">
@@ -101,7 +114,7 @@ export default async function RecuperarPage({
       <p className="mt-4 text-xs uppercase tracking-[0.25em] text-moss">Recuperar clase</p>
       <h1 className="mt-2 font-display text-3xl italic text-ink">{typeName}</h1>
       <p className="mt-2 text-sm text-ink/60">
-        Elegí una clase con lugar, antes del{' '}
+        Elegí un día para ver los horarios, antes del{' '}
         {new Date(`${credit.week_end}T00:00:00`).toLocaleDateString('es-AR', {
           day: 'numeric',
           month: 'long',
@@ -109,57 +122,17 @@ export default async function RecuperarPage({
         .
       </p>
 
-      <div className="mt-6 space-y-6">
-        {Object.entries(
-          optionsWithOccupancy.reduce<Record<string, typeof optionsWithOccupancy>>((acc, c) => {
-            acc[c.sessionDate] = acc[c.sessionDate] ?? []
-            acc[c.sessionDate].push(c)
-            return acc
-          }, {})
-        ).map(([date, dayOptions]) => (
-          <div key={date}>
-            <p className="text-sm font-medium capitalize text-ink">
-              {new Date(`${date}T00:00:00`).toLocaleDateString('es-AR', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-              })}
-            </p>
-            <div className="mt-2 space-y-2">
-              {dayOptions.map((c) => (
-                <div
-                  key={`${c.id}-${c.sessionDate}`}
-                  className={`flex items-center justify-between rounded-xl border bg-white px-4 py-3 ${
-                    c.hasRoom ? 'border-sand' : 'border-sand opacity-50'
-                  }`}
-                >
-                  <div>
-                    <p className="font-display italic text-ink">{formatTime(c.start_time)}</p>
-                    <p className="text-xs text-ink/50">
-                      {c.room} · {c.profiles?.full_name ?? 'Sin instructor'} · {c.occupied}/{c.capacity}
-                    </p>
-                  </div>
-                  {c.hasRoom ? (
-                    <BookRecoveryButton
-                      studentId={studentId}
-                      creditId={credit.id}
-                      classId={c.id}
-                      sessionDate={c.sessionDate}
-                    />
-                  ) : (
-                    <p className="text-xs text-clay">Completo</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+      <div className="mt-6 space-y-3">
+        {optionsByDay.map((d, i) => (
+          <DayAccordion
+            key={d.date}
+            date={d.date}
+            options={d.options}
+            studentId={studentId}
+            creditId={credit.id}
+            defaultOpen={i === (firstDayWithRoom === -1 ? 0 : firstDayWithRoom)}
+          />
         ))}
-
-        {optionsWithOccupancy.length === 0 && (
-          <p className="rounded-2xl border border-dashed border-sand bg-white/50 px-5 py-8 text-center text-sm text-ink/40">
-            No hay clases de este tipo disponibles esta semana.
-          </p>
-        )}
       </div>
     </div>
   )

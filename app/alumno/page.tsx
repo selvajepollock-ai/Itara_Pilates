@@ -199,7 +199,9 @@ export default async function AlumnoDashboard() {
 
       {upcomingRecoveries && upcomingRecoveries.length > 0 && (
         <div className="mt-4 rounded-2xl border border-moss/30 bg-moss/5 px-5 py-4">
-          <p className="text-xs uppercase tracking-wide text-moss">Recuperación agendada</p>
+          <p className="text-xs uppercase tracking-wide text-moss">
+            ✓ Recuperación confirmada, en vez de la clase que cancelaste
+          </p>
           <ul className="mt-2 space-y-2">
             {upcomingRecoveries.map((r) => {
               const cls = r.classes as unknown as {
