@@ -1,72 +1,66 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export async function createStudent(formData: FormData) {
-  const fullName = String(formData.get('full_name') ?? '').trim()
-  const email = String(formData.get('email') ?? '').trim().toLowerCase()
-  const phone = String(formData.get('phone') ?? '').trim()
-  const birthDate = String(formData.get('birth_date') ?? '').trim()
-  const planId = String(formData.get('plan_id') ?? '').trim()
-  const endDate = String(formData.get('end_date') ?? '').trim()
-
-  if (!fullName || !email) {
-    return { error: 'Nombre y email son obligatorios.' }
-  }
-
+async function assertAdmin() {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
+  if (!user) return { ok: false as const, error: 'No autenticado.' }
 
-  if (!user) return { error: 'No autenticado.' }
-
-  const { data: callerProfile } = await supabase
-    .from('profiles')
-    .select('roles')
-    .eq('id', user.id)
-    .single()
-
-  if (!callerProfile?.roles?.includes('admin')) {
-    return { error: 'No tenés permisos para esta acción.' }
+  const { data: profile } = await supabase.from('profiles').select('roles').eq('id', user.id).single()
+  if (!profile?.roles?.includes('admin')) {
+    return { ok: false as const, error: 'No tenés permisos para esta acción.' }
   }
+  return { ok: true as const }
+}
 
-  const headersList = await headers()
-  const host = headersList.get('host')
-  const protocol = host?.startsWith('localhost') ? 'http' : 'https'
-  const siteUrl = `${protocol}://${host}`
+export async function updateStudent(studentId: string, formData: FormData) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+
+  const fullName = String(formData.get('full_name') ?? '').trim()
+  const email = String(formData.get('email') ?? '').trim().toLowerCase()
+  const phone = String(formData.get('phone') ?? '').trim()
+  const birthDate = String(formData.get('birth_date') ?? '').trim()
+
+  if (!fullName || !email) return { error: 'Nombre y email son obligatorios.' }
 
   const admin = createAdminClient()
 
-  const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
-    data: { full_name: fullName, roles: ['student'] },
-    redirectTo: `${siteUrl}/auth/confirm?next=/auth/set-password`,
-  })
+  const { error: authError } = await admin.auth.admin.updateUserById(studentId, { email })
+  if (authError) return { error: authError.message }
 
-  if (inviteError) return { error: inviteError.message }
-
-  if (invited.user?.id && (phone || birthDate)) {
-    await admin
-      .from('profiles')
-      .update({
-        ...(phone ? { phone } : {}),
-        ...(birthDate ? { birth_date: birthDate } : {}),
-      })
-      .eq('id', invited.user.id)
-  }
-
-  if (invited.user?.id && planId && endDate) {
-    await admin.from('subscriptions').insert({
-      student_id: invited.user.id,
-      plan_id: planId,
-      end_date: endDate,
-      status: 'active',
+  const { error } = await admin
+    .from('profiles')
+    .update({
+      full_name: fullName,
+      email,
+      phone: phone || null,
+      birth_date: birthDate || null,
     })
-  }
+    .eq('id', studentId)
+
+  if (error) return { error: error.message }
 
   revalidatePath('/admin/alumnos')
+  revalidatePath(`/admin/alumnos/${studentId}`)
+  return { success: true }
+}
+
+export async function setStudentPassword(studentId: string, formData: FormData) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+
+  const password = String(formData.get('password') ?? '')
+  if (password.length < 6) return { error: 'La contraseña debe tener al menos 6 caracteres.' }
+
+  const admin = createAdminClient()
+  const { error } = await admin.auth.admin.updateUserById(studentId, { password })
+  if (error) return { error: error.message }
+
   return { success: true }
 }

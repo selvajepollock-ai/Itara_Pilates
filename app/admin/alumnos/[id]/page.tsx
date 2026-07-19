@@ -1,12 +1,8 @@
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { EditStudentForm } from './edit-student-form'
-import { SetPasswordForm } from './set-password-form'
-import { StudentScheduleForm } from './schedule-form'
-import { StudentBilling } from './student-billing'
-import { WeeklySessions } from './weekly-sessions'
-import { DAY_ORDER } from '@/lib/day-names'
+import { toISODate, isInPast } from '@/lib/sessions'
+import { DayAccordion } from '@/app/alumno/recuperar/[creditId]/day-accordion'
 
 type ClassOption = {
   id: string
@@ -15,87 +11,132 @@ type ClassOption = {
   end_time: string
   capacity: number
   room: string
-  class_types: { name: string } | null
+  profiles: { full_name: string } | null
 }
 
-export default async function EditarAlumnoPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+export default async function AdminRecuperarPage({
+  params,
+}: {
+  params: Promise<{ id: string; creditId: string }>
+}) {
+  const { id: studentId, creditId } = await params
   const supabase = await createClient()
 
-  const [{ data: student }, { data: classesData }, { data: myEnrollments }, { data: allEnrollments }] =
-    await Promise.all([
-      supabase.from('profiles').select('id, full_name, email, phone, birth_date').eq('id', id).single(),
-      supabase
-        .from('classes')
-        .select('id, day_of_week, start_time, end_time, capacity, room, class_types(name)')
-        .eq('active', true)
-        .order('start_time'),
-      supabase.from('enrollments').select('id, class_id').eq('student_id', id).eq('status', 'active'),
-      supabase.from('enrollments').select('class_id').eq('status', 'active'),
-    ])
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  const { data: callerProfile } = await supabase
+    .from('profiles')
+    .select('roles')
+    .eq('id', user?.id ?? '')
+    .maybeSingle()
+  if (!callerProfile?.roles?.includes('admin')) redirect('/')
 
-  if (!student) notFound()
+  const { data: credit } = await supabase
+    .from('recovery_credits')
+    .select('id, student_id, status, class_type_id, week_start, week_end, class_types(name)')
+    .eq('id', creditId)
+    .maybeSingle()
 
-  const classes = (classesData ?? []) as unknown as ClassOption[]
-  const enrollmentIdByClass = new Map((myEnrollments ?? []).map((e) => [e.class_id, e.id]))
-  const countByClass = new Map<string, number>()
-  for (const e of allEnrollments ?? []) {
-    countByClass.set(e.class_id, (countByClass.get(e.class_id) ?? 0) + 1)
+  if (!credit || credit.student_id !== studentId) notFound()
+
+  const { data: student } = await supabase
+    .from('profiles')
+    .select('full_name')
+    .eq('id', studentId)
+    .maybeSingle()
+
+  if (credit.status !== 'available') {
+    return (
+      <div className="max-w-md">
+        <Link href={`/admin/alumnos/${studentId}`} className="text-sm text-moss hover:text-moss-dark">
+          ← Volver
+        </Link>
+        <p className="mt-6 text-sm text-ink/60">Esta clase a recuperar ya fue usada o venció.</p>
+      </div>
+    )
   }
 
-  const classOptions = DAY_ORDER.flatMap((day) =>
-    classes
-      .filter((c) => c.day_of_week === day)
-      .map((c) => ({
-        id: c.id,
-        dayOfWeek: c.day_of_week,
-        startTime: c.start_time,
-        endTime: c.end_time,
-        capacity: c.capacity,
-        room: c.room,
-        typeName: c.class_types?.name ?? 'Clase',
-        enrolled: countByClass.get(c.id) ?? 0,
-        enrollmentId: enrollmentIdByClass.get(c.id) ?? null,
-      }))
+  const { data: classesData } = await supabase
+    .from('classes')
+    .select('id, day_of_week, start_time, end_time, capacity, room, profiles(full_name)')
+    .eq('class_type_id', credit.class_type_id)
+    .eq('active', true)
+
+  const classes = (classesData ?? []) as unknown as ClassOption[]
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const weekEnd = new Date(`${credit.week_end}T00:00:00`)
+
+  const days: string[] = []
+  const cursor = new Date(today)
+  while (cursor <= weekEnd) {
+    days.push(toISODate(cursor))
+    cursor.setDate(cursor.getDate() + 1)
+  }
+
+  const dayOfWeekFromISO = (iso: string) => new Date(`${iso}T00:00:00`).getDay()
+
+  const optionsByDay = await Promise.all(
+    days.map(async (date) => {
+      const dow = dayOfWeekFromISO(date)
+      const matches = classes.filter((c) => c.day_of_week === dow && !isInPast(date, c.start_time))
+
+      const withOccupancy = await Promise.all(
+        matches.map(async (c) => {
+          const [{ count: enrolledCount }, { count: cancelledCount }, { count: recoveringCount }] =
+            await Promise.all([
+              supabase
+                .from('enrollments')
+                .select('id', { count: 'exact', head: true })
+                .eq('class_id', c.id)
+                .eq('status', 'active'),
+              supabase
+                .from('session_cancellations')
+                .select('id', { count: 'exact', head: true })
+                .eq('class_id', c.id)
+                .eq('session_date', date),
+              supabase
+                .from('attendance')
+                .select('id', { count: 'exact', head: true })
+                .eq('class_id', c.id)
+                .eq('session_date', date)
+                .not('recovery_credit_id', 'is', null),
+            ])
+          const occupied = (enrolledCount ?? 0) - (cancelledCount ?? 0) + (recoveringCount ?? 0)
+          return { ...c, sessionDate: date, occupied, hasRoom: occupied < c.capacity }
+        })
+      )
+
+      return { date, options: withOccupancy.sort((a, b) => a.start_time.localeCompare(b.start_time)) }
+    })
   )
 
+  const typeName = (credit.class_types as unknown as { name: string } | null)?.name
+  const firstDayWithRoom = optionsByDay.findIndex((d) => d.options.some((o) => o.hasRoom))
+
   return (
-    <div>
-      <Link href="/admin/alumnos" className="text-sm text-moss hover:text-moss-dark">
-        ← Volver a alumnos
+    <div className="max-w-md">
+      <Link href={`/admin/alumnos/${studentId}`} className="text-sm text-moss hover:text-moss-dark">
+        ← Volver a {student?.full_name}
       </Link>
 
-      <p className="mt-4 text-xs uppercase tracking-[0.25em] text-moss">Alumnos</p>
-      <h1 className="mt-2 font-display text-3xl italic text-ink">{student.full_name}</h1>
+      <p className="mt-4 text-xs uppercase tracking-[0.25em] text-moss">Recuperar clase</p>
+      <h1 className="mt-2 font-display text-3xl italic text-ink">{typeName}</h1>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[380px_1fr] lg:items-start">
-        <div className="max-w-md space-y-6">
-          <EditStudentForm student={student} />
-
-          <StudentBilling studentId={student.id} />
-
-          <div>
-            <h2 className="text-xs uppercase tracking-[0.25em] text-moss">
-              Restablecer contraseña
-            </h2>
-            <p className="mt-1 text-sm text-ink/50">
-              Por si el alumno perdió el acceso. Le vas a tener que avisar la contraseña nueva.
-            </p>
-            <SetPasswordForm studentId={student.id} />
-          </div>
-        </div>
-
-        <div>
-          <h2 className="text-xs uppercase tracking-[0.25em] text-moss">Horario asignado</h2>
-          <p className="mt-1 text-sm text-ink/50">
-            Tildá las clases fijas de este alumno (lo que paga mes a mes). Se repiten todas las semanas.
-          </p>
-          <StudentScheduleForm studentId={student.id} classOptions={classOptions} />
-
-          <div className="mt-6">
-            <WeeklySessions studentId={student.id} />
-          </div>
-        </div>
+      <div className="mt-6 space-y-3">
+        {optionsByDay.map((d, i) => (
+          <DayAccordion
+            key={d.date}
+            date={d.date}
+            options={d.options}
+            studentId={studentId}
+            creditId={credit.id}
+            redirectTo={`/admin/alumnos/${studentId}`}
+            defaultOpen={i === (firstDayWithRoom === -1 ? 0 : firstDayWithRoom)}
+          />
+        ))}
       </div>
     </div>
   )
