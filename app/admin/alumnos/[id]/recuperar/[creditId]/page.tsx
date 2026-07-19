@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { DAY_NAMES, formatTime } from '@/lib/day-names'
+import { formatTime } from '@/lib/day-names'
 import { dateForDayOfWeek, toISODate, isInPast } from '@/lib/sessions'
 import { BookRecoveryButton } from '@/app/alumno/recuperar/[creditId]/book-recovery-button'
 
@@ -109,40 +109,49 @@ export default async function AdminRecuperarPage({
       <p className="mt-4 text-xs uppercase tracking-[0.25em] text-moss">Recuperar clase</p>
       <h1 className="mt-2 font-display text-3xl italic text-ink">{typeName}</h1>
 
-      <div className="mt-6 space-y-3">
-        {optionsWithOccupancy.map((c) => (
-          <div
-            key={`${c.id}-${c.sessionDate}`}
-            className={`rounded-2xl border bg-white px-4 py-4 ${c.hasRoom ? 'border-sand' : 'border-sand opacity-50'}`}
-          >
-            <div className="flex items-center justify-between">
-              <p className="font-display italic text-ink">
-                {DAY_NAMES[c.day_of_week]}{' '}
-                {new Date(`${c.sessionDate}T00:00:00`).toLocaleDateString('es-AR', {
-                  day: 'numeric',
-                  month: 'short',
-                })}
-                , {formatTime(c.start_time)}
-              </p>
-              <span className="text-xs text-ink/40">
-                {c.occupied}/{c.capacity}
-              </span>
-            </div>
-            <p className="mt-0.5 text-xs text-ink/50">
-              {c.room} · {c.profiles?.full_name ?? 'Sin instructor'}
+      <div className="mt-6 space-y-6">
+        {Object.entries(
+          optionsWithOccupancy.reduce<Record<string, typeof optionsWithOccupancy>>((acc, c) => {
+            acc[c.sessionDate] = acc[c.sessionDate] ?? []
+            acc[c.sessionDate].push(c)
+            return acc
+          }, {})
+        ).map(([date, dayOptions]) => (
+          <div key={date}>
+            <p className="text-sm font-medium capitalize text-ink">
+              {new Date(`${date}T00:00:00`).toLocaleDateString('es-AR', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+              })}
             </p>
-            <div className="mt-2.5">
-              {c.hasRoom ? (
-                <BookRecoveryButton
-                  studentId={studentId}
-                  creditId={credit.id}
-                  classId={c.id}
-                  sessionDate={c.sessionDate}
-                  redirectTo={`/admin/alumnos/${studentId}`}
-                />
-              ) : (
-                <p className="text-xs text-clay">Completo</p>
-              )}
+            <div className="mt-2 space-y-2">
+              {dayOptions.map((c) => (
+                <div
+                  key={`${c.id}-${c.sessionDate}`}
+                  className={`flex items-center justify-between rounded-xl border bg-white px-4 py-3 ${
+                    c.hasRoom ? 'border-sand' : 'border-sand opacity-50'
+                  }`}
+                >
+                  <div>
+                    <p className="font-display italic text-ink">{formatTime(c.start_time)}</p>
+                    <p className="text-xs text-ink/50">
+                      {c.room} · {c.profiles?.full_name ?? 'Sin instructor'} · {c.occupied}/{c.capacity}
+                    </p>
+                  </div>
+                  {c.hasRoom ? (
+                    <BookRecoveryButton
+                      studentId={studentId}
+                      creditId={credit.id}
+                      classId={c.id}
+                      sessionDate={c.sessionDate}
+                      redirectTo={`/admin/alumnos/${studentId}`}
+                    />
+                  ) : (
+                    <p className="text-xs text-clay">Completo</p>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         ))}
