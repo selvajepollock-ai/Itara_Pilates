@@ -208,9 +208,9 @@ export default async function AdminDashboard() {
 
         <div className="rounded-2xl border border-sand bg-white p-6">
           <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Próximo paso</p>
-          <p className="mt-2 font-display text-xl italic text-ink">Cancelaciones y avisos</p>
+          <p className="mt-2 font-display text-xl italic text-ink">Notificaciones masivas</p>
           <p className="mt-1 text-sm text-ink/50">
-            Que el alumno avise que falta y recupere clase — lo armamos como siguiente tarea.
+            Avisos generales a todo el estudio — pendiente.
           </p>
         </div>
       </div>

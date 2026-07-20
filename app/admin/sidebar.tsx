@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, UserCog, CalendarDays, CreditCard, Bell, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, UserCog, CalendarDays, CreditCard, Bell, BarChart3, LogOut } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: '/admin/horarios', label: 'Horarios', icon: CalendarDays },
   { href: '/admin/planes', label: 'Planes', icon: CreditCard },
   { href: '/admin/avisos', label: 'Avisos', icon: Bell },
+  { href: '/admin/reportes', label: 'Reportes', icon: BarChart3 },
 ]
 
 export function Sidebar({ fullName }: { fullName: string }) {
