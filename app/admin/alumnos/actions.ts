@@ -4,35 +4,42 @@ import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { generateNoAccessEmail } from '@/lib/auth-username'
 
-export async function createStudent(formData: FormData) {
-  const fullName = String(formData.get('full_name') ?? '').trim()
-  const email = String(formData.get('email') ?? '').trim().toLowerCase()
-  const phone = String(formData.get('phone') ?? '').trim()
-  const birthDate = String(formData.get('birth_date') ?? '').trim()
-  const planId = String(formData.get('plan_id') ?? '').trim()
-  const endDate = String(formData.get('end_date') ?? '').trim()
-
-  if (!fullName || !email) {
-    return { error: 'Nombre y email son obligatorios.' }
-  }
-
+async function assertAdmin() {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-
-  if (!user) return { error: 'No autenticado.' }
-
-  const { data: callerProfile } = await supabase
-    .from('profiles')
-    .select('roles')
-    .eq('id', user.id)
-    .single()
-
-  if (!callerProfile?.roles?.includes('admin')) {
-    return { error: 'No tenés permisos para esta acción.' }
+  if (!user) return { ok: false as const, error: 'No autenticado.' }
+  const { data: profile } = await supabase.from('profiles').select('roles').eq('id', user.id).maybeSingle()
+  if (!profile?.roles?.includes('admin')) {
+    return { ok: false as const, error: 'No tenés permisos para esta acción.' }
   }
+  return { ok: true as const, supabase }
+}
+
+export async function createStudent(formData: FormData) {
+  const firstName = String(formData.get('first_name') ?? '').trim()
+  const lastName = String(formData.get('last_name') ?? '').trim()
+  const fullName = `${firstName} ${lastName}`.trim()
+  const emailInput = String(formData.get('email') ?? '').trim().toLowerCase()
+  const phone = String(formData.get('phone') ?? '').trim()
+  const birthDate = String(formData.get('birth_date') ?? '').trim()
+  const healthNotes = String(formData.get('health_notes') ?? '').trim()
+  const planId = String(formData.get('plan_id') ?? '').trim()
+  const endDate = String(formData.get('end_date') ?? '').trim()
+  const grantAccess = formData.get('grant_access') === 'on'
+
+  if (!firstName || !lastName) {
+    return { error: 'Nombre y apellido son obligatorios.' }
+  }
+  if (grantAccess && !emailInput) {
+    return { error: 'Si le das acceso ahora, el email es obligatorio.' }
+  }
+
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
 
   const headersList = await headers()
   const host = headersList.get('host')
@@ -40,27 +47,46 @@ export async function createStudent(formData: FormData) {
   const siteUrl = `${protocol}://${host}`
 
   const admin = createAdminClient()
+  let newUserId: string | undefined
 
-  const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
-    data: { full_name: fullName, roles: ['student'] },
-    redirectTo: `${siteUrl}/auth/confirm?next=/auth/set-password`,
-  })
+  if (grantAccess) {
+    const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(emailInput, {
+      data: { full_name: fullName, roles: ['student'] },
+      redirectTo: `${siteUrl}/auth/confirm?next=/auth/set-password`,
+    })
+    if (inviteError) return { error: inviteError.message }
+    newUserId = invited.user?.id
+  } else {
+    const authEmail = emailInput || generateNoAccessEmail(fullName)
+    const { data: created, error: createError } = await admin.auth.admin.createUser({
+      email: authEmail,
+      password: crypto.randomUUID(),
+      email_confirm: true,
+      user_metadata: { full_name: fullName, roles: ['student'] },
+    })
+    if (createError) return { error: createError.message }
+    newUserId = created.user?.id
 
-  if (inviteError) return { error: inviteError.message }
+    // Si el admin cargó un email real pero no dio acceso, lo guardamos como contacto igual
+    if (newUserId && emailInput) {
+      await admin.from('profiles').update({ contact_email: emailInput }).eq('id', newUserId)
+    }
+  }
 
-  if (invited.user?.id && (phone || birthDate)) {
+  if (newUserId && (phone || birthDate || healthNotes)) {
     await admin
       .from('profiles')
       .update({
         ...(phone ? { phone } : {}),
         ...(birthDate ? { birth_date: birthDate } : {}),
+        ...(healthNotes ? { health_notes: healthNotes } : {}),
       })
-      .eq('id', invited.user.id)
+      .eq('id', newUserId)
   }
 
-  if (invited.user?.id && planId && endDate) {
+  if (newUserId && planId && endDate) {
     await admin.from('subscriptions').insert({
-      student_id: invited.user.id,
+      student_id: newUserId,
       plan_id: planId,
       end_date: endDate,
       status: 'active',

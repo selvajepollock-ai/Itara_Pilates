@@ -6,6 +6,8 @@ import { SetPasswordForm } from './set-password-form'
 import { StudentScheduleForm } from './schedule-form'
 import { StudentBilling } from './student-billing'
 import { WeeklySessions } from './weekly-sessions'
+import { GrantAccessForm } from './grant-access-form'
+import { isNoAccessEmail } from '@/lib/auth-username'
 import { DAY_ORDER } from '@/lib/day-names'
 
 type ClassOption = {
@@ -24,7 +26,7 @@ export default async function EditarAlumnoPage({ params }: { params: Promise<{ i
 
   const [{ data: student }, { data: classesData }, { data: myEnrollments }, { data: allEnrollments }] =
     await Promise.all([
-      supabase.from('profiles').select('id, full_name, email, phone, birth_date').eq('id', id).single(),
+      supabase.from('profiles').select('id, full_name, email, phone, birth_date, health_notes, contact_email').eq('id', id).single(),
       supabase
         .from('classes')
         .select('id, day_of_week, start_time, end_time, capacity, room, class_types(name)')
@@ -71,6 +73,16 @@ export default async function EditarAlumnoPage({ params }: { params: Promise<{ i
       <div className="mt-6 grid gap-6 lg:grid-cols-[380px_1fr] lg:items-start">
         <div className="max-w-md space-y-6">
           <EditStudentForm student={student} />
+
+          {isNoAccessEmail(student.email) && (
+            <div className="rounded-2xl border border-clay/30 bg-clay/5 p-6">
+              <p className="text-sm font-medium text-ink">Sin acceso a la app todavía</p>
+              <p className="mt-0.5 text-xs text-ink/50">
+                Cargá su email real para darle acceso — le va a llegar un mail para crear su contraseña.
+              </p>
+              <GrantAccessForm studentId={student.id} defaultEmail={student.contact_email ?? ''} />
+            </div>
+          )}
 
           <StudentBilling studentId={student.id} />
 

@@ -9,6 +9,7 @@ type Student = {
   email: string
   phone: string | null
   birth_date: string | null
+  health_notes: string | null
 }
 
 export function EditStudentForm({ student }: { student: Student }) {
@@ -72,6 +73,19 @@ export function EditStudentForm({ student }: { student: Student }) {
           type="date"
           name="birth_date"
           defaultValue={student.birth_date ?? ''}
+          className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
+        />
+      </div>
+
+      <div>
+        <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
+          Salud / Patologías
+        </label>
+        <textarea
+          name="health_notes"
+          rows={2}
+          defaultValue={student.health_notes ?? ''}
+          placeholder="Ej: Lesión de rodilla derecha, evitar impacto"
           className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
         />
       </div>

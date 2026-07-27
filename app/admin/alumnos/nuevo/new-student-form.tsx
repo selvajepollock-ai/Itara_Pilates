@@ -18,6 +18,7 @@ export function NewStudentForm({
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [grantAccess, setGrantAccess] = useState(true)
 
   function handleSubmit(formData: FormData) {
     setError(null)
@@ -32,97 +33,109 @@ export function NewStudentForm({
     })
   }
 
+  const inputClass =
+    'mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white'
+  const labelClass = 'text-xs font-medium uppercase tracking-wide text-ink/60'
+
   return (
     <div className="max-w-md">
       <p className="text-xs uppercase tracking-[0.25em] text-moss">Alumnos</p>
       <h1 className="mt-2 font-display text-3xl italic text-ink">Nuevo alumno</h1>
-      <p className="mt-2 text-sm text-ink/60">
-        Se le va a enviar un email de invitación para que cree su propia contraseña.
-      </p>
 
-      <form action={handleSubmit} className="mt-8 space-y-5 rounded-2xl border border-sand bg-white p-6">
-        <div>
-          <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
-            Nombre completo
+      <form action={handleSubmit} className="mt-8 space-y-6">
+        {/* Acceso al portal */}
+        <div className="rounded-2xl border border-sand bg-white p-6">
+          <p className="text-sm font-medium text-ink">Acceso al portal</p>
+          <p className="mt-0.5 text-xs text-ink/50">
+            Si no le das acceso ahora, igual queda cargado — se lo podés activar después desde su ficha.
+          </p>
+          <label className="mt-3 flex items-center gap-2 text-sm text-ink/70">
+            <input
+              type="checkbox"
+              name="grant_access"
+              checked={grantAccess}
+              onChange={(e) => setGrantAccess(e.target.checked)}
+              className="h-4 w-4 rounded border-sand accent-moss"
+            />
+            Darle acceso a la app ahora (le llega un mail para crear su contraseña)
           </label>
-          <input
-            name="full_name"
-            required
-            className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
+        </div>
+
+        {/* Identidad */}
+        <div className="rounded-2xl border border-sand bg-white p-6">
+          <p className="text-sm font-medium text-ink">Identidad</p>
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass}>Nombre</label>
+              <input name="first_name" required className={inputClass} />
+            </div>
+            <div>
+              <label className={labelClass}>Apellido</label>
+              <input name="last_name" required className={inputClass} />
+            </div>
+          </div>
+          <div className="mt-3">
+            <label className={labelClass}>
+              Email {grantAccess ? '' : '(opcional)'}
+            </label>
+            <input type="email" name="email" required={grantAccess} className={inputClass} />
+          </div>
+        </div>
+
+        {/* Datos personales */}
+        <div className="rounded-2xl border border-sand bg-white p-6">
+          <p className="text-sm font-medium text-ink">Datos personales</p>
+          <div className="mt-3">
+            <label className={labelClass}>Teléfono</label>
+            <input name="phone" defaultValue="+54 9 " className={inputClass} />
+          </div>
+          <div className="mt-3">
+            <label className={labelClass}>Fecha de nacimiento</label>
+            <input type="date" name="birth_date" className={inputClass} />
+          </div>
+        </div>
+
+        {/* Salud */}
+        <div className="rounded-2xl border border-sand bg-white p-6">
+          <p className="text-sm font-medium text-ink">Salud</p>
+          <p className="mt-0.5 text-xs text-ink/50">Lesiones, condiciones a tener en cuenta.</p>
+          <textarea
+            name="health_notes"
+            rows={2}
+            placeholder="Ej: Lesión de rodilla derecha, evitar impacto"
+            className={`${inputClass} mt-3`}
           />
         </div>
 
-        <div>
-          <label className="text-xs font-medium uppercase tracking-wide text-ink/60">Email</label>
-          <input
-            type="email"
-            name="email"
-            required
-            className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
-          />
-        </div>
-
-        <div>
-          <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
-            Teléfono (opcional)
-          </label>
-          <input
-            name="phone"
-            className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
-          />
-        </div>
-
-        <div>
-          <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
-            Fecha de nacimiento (opcional)
-          </label>
-          <input
-            type="date"
-            name="birth_date"
-            className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
-          />
-        </div>
-
-        <div className="border-t border-sand pt-5">
-          <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
-            Plan contratado (opcional)
-          </label>
-          <select
-            name="plan_id"
-            defaultValue=""
-            className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
-          >
-            <option value="">Sin asignar todavía</option>
-            {plans.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} — {formatARS(p.price)}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
-            Pagado hasta
-          </label>
-          <input
-            type="date"
-            name="end_date"
-            defaultValue={defaultEndDate}
-            className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
-          />
-          <p className="mt-1 text-xs text-ink/40">Solo se usa si elegiste un plan arriba.</p>
+        {/* Plan */}
+        <div className="rounded-2xl border border-sand bg-white p-6">
+          <p className="text-sm font-medium text-ink">Plan contratado</p>
+          <div className="mt-3">
+            <label className={labelClass}>Plan (opcional)</label>
+            <select name="plan_id" defaultValue="" className={inputClass}>
+              <option value="">Sin asignar todavía</option>
+              {plans.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} — {formatARS(p.price)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="mt-3">
+            <label className={labelClass}>Pagado hasta</label>
+            <input type="date" name="end_date" defaultValue={defaultEndDate} className={inputClass} />
+          </div>
         </div>
 
         {error && <p className="text-sm text-clay">{error}</p>}
-        {success && <p className="text-sm text-moss-dark">Alumno invitado correctamente ✓</p>}
+        {success && <p className="text-sm text-moss-dark">Alumno creado correctamente ✓</p>}
 
         <button
           type="submit"
           disabled={isPending}
           className="w-full rounded-full bg-moss px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50"
         >
-          {isPending ? 'Enviando invitación...' : 'Invitar alumno'}
+          {isPending ? 'Creando...' : 'Crear alumno'}
         </button>
       </form>
     </div>

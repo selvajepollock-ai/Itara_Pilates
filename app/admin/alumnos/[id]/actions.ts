@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -11,7 +12,7 @@ async function assertAdmin() {
   } = await supabase.auth.getUser()
   if (!user) return { ok: false as const, error: 'No autenticado.' }
 
-  const { data: profile } = await supabase.from('profiles').select('roles').eq('id', user.id).single()
+  const { data: profile } = await supabase.from('profiles').select('roles').eq('id', user.id).maybeSingle()
   if (!profile?.roles?.includes('admin')) {
     return { ok: false as const, error: 'No tenés permisos para esta acción.' }
   }
@@ -26,6 +27,7 @@ export async function updateStudent(studentId: string, formData: FormData) {
   const email = String(formData.get('email') ?? '').trim().toLowerCase()
   const phone = String(formData.get('phone') ?? '').trim()
   const birthDate = String(formData.get('birth_date') ?? '').trim()
+  const healthNotes = String(formData.get('health_notes') ?? '').trim()
 
   if (!fullName || !email) return { error: 'Nombre y email son obligatorios.' }
 
@@ -41,6 +43,7 @@ export async function updateStudent(studentId: string, formData: FormData) {
       email,
       phone: phone || null,
       birth_date: birthDate || null,
+      health_notes: healthNotes || null,
     })
     .eq('id', studentId)
 
@@ -48,6 +51,38 @@ export async function updateStudent(studentId: string, formData: FormData) {
 
   revalidatePath('/admin/alumnos')
   revalidatePath(`/admin/alumnos/${studentId}`)
+  return { success: true }
+}
+
+export async function grantStudentAccess(studentId: string, formData: FormData) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+
+  const email = String(formData.get('email') ?? '').trim().toLowerCase()
+  if (!email) return { error: 'Ingresá un email.' }
+
+  const admin = createAdminClient()
+  const { error: authError } = await admin.auth.admin.updateUserById(studentId, {
+    email,
+    email_confirm: true,
+  })
+  if (authError) return { error: authError.message }
+
+  await admin.from('profiles').update({ email, contact_email: null }).eq('id', studentId)
+
+  const headersList = await headers()
+  const host = headersList.get('host')
+  const protocol = host?.startsWith('localhost') ? 'http' : 'https'
+  const siteUrl = `${protocol}://${host}`
+
+  const supabase = await createClient()
+  const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${siteUrl}/auth/confirm?next=/auth/set-password`,
+  })
+  if (resetError) return { error: resetError.message }
+
+  revalidatePath(`/admin/alumnos/${studentId}`)
+  revalidatePath('/admin/alumnos')
   return { success: true }
 }
 
