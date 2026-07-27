@@ -19,13 +19,22 @@ export default async function InstructoresPage() {
           <p className="mt-1 text-sm text-ink/50">{instructors?.length ?? 0} en el equipo</p>
           {error && <p className="mt-1 text-sm text-clay">Error: {error.message}</p>}
         </div>
-        <Link
-          href="/admin/instructores/nuevo"
-          className="flex items-center gap-1.5 rounded-full bg-moss px-5 py-2.5 text-sm font-medium text-white transition hover:bg-moss-dark"
-        >
-          <Plus size={16} strokeWidth={2.5} />
-          Nuevo instructor
-        </Link>
+        <div className="flex gap-3">
+          <Link
+            href="/admin/instructores/nuevo-admin"
+            className="flex items-center gap-1.5 rounded-full border border-sand px-5 py-2.5 text-sm font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+          >
+            <Plus size={16} strokeWidth={2.5} />
+            Nuevo admin
+          </Link>
+          <Link
+            href="/admin/instructores/nuevo"
+            className="flex items-center gap-1.5 rounded-full bg-moss px-5 py-2.5 text-sm font-medium text-white transition hover:bg-moss-dark"
+          >
+            <Plus size={16} strokeWidth={2.5} />
+            Nuevo instructor
+          </Link>
+        </div>
       </div>
 
       <div className="mt-8 overflow-hidden rounded-2xl border border-sand bg-white">
