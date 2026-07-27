@@ -37,7 +37,9 @@ export default function LoginPage() {
     <main className="flex min-h-screen items-center justify-center bg-linen px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <p className="text-xs uppercase tracking-[0.3em] text-moss">Bienvenida de vuelta</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-emblem.png" alt="Itara Pilates" className="mx-auto h-16 w-16 object-contain" />
+          <p className="mt-3 text-xs uppercase tracking-[0.3em] text-moss">Bienvenida de vuelta</p>
           <h1 className="mt-2 font-display text-3xl italic text-ink">Itara Pilates</h1>
         </div>
 

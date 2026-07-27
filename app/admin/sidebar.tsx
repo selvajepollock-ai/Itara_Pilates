@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, UserCog, CalendarDays, CreditCard, Bell, BarChart3, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, UserCog, CalendarDays, CreditCard, Bell, BarChart3, Megaphone, Instagram, LogOut } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { href: '/admin/planes', label: 'Planes', icon: CreditCard },
   { href: '/admin/avisos', label: 'Avisos', icon: Bell },
   { href: '/admin/reportes', label: 'Reportes', icon: BarChart3 },
+  { href: '/admin/notificaciones', label: 'Notificaciones', icon: Megaphone },
 ]
 
 export function Sidebar({ fullName }: { fullName: string }) {
@@ -30,9 +31,8 @@ export function Sidebar({ fullName }: { fullName: string }) {
   return (
     <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-sand bg-white">
       <div className="flex items-center gap-3 px-6 py-6">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-moss font-display text-sm italic text-white">
-          IP
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-emblem.png" alt="Itara Pilates" className="h-10 w-10 object-contain" />
         <div>
           <p className="font-display text-lg italic leading-tight text-ink">Itara</p>
           <p className="text-[11px] uppercase tracking-[0.2em] text-ink/40">Pilates</p>
@@ -76,6 +76,15 @@ export function Sidebar({ fullName }: { fullName: string }) {
           <LogOut size={17} strokeWidth={2} />
           Cerrar sesión
         </button>
+        <a
+          href="https://www.instagram.com/itara_estudio_de_pilates/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-ink/50 transition hover:bg-linen hover:text-moss"
+        >
+          <Instagram size={17} strokeWidth={2} />
+          Instagram
+        </a>
       </div>
     </aside>
   )
