@@ -149,6 +149,12 @@ export default async function HorariosPage({
           </Link>
 
           <Link
+            href="/instructor/pasar-lista"
+            className="flex items-center gap-1.5 rounded-full border border-sand px-4 py-2 text-sm font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+          >
+            Pasar lista
+          </Link>
+          <Link
             href="/admin/horarios/feriados"
             className="flex items-center gap-1.5 rounded-full border border-sand px-4 py-2 text-sm font-medium text-ink/70 transition hover:border-moss hover:text-moss"
           >

@@ -1,6 +1,8 @@
 import Link from 'next/link'
+import { ClipboardList } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
+import { AnnouncementsBanner } from '@/app/components/announcements-banner'
 
 type ClassRow = {
   id: string
@@ -45,11 +47,20 @@ export default async function InstructorDashboard() {
 
   return (
     <div>
+      <AnnouncementsBanner />
       <p className="text-xs uppercase tracking-[0.25em] text-moss">Hoy</p>
       <h1 className="mt-2 font-display text-4xl italic text-ink">Tu agenda</h1>
       <p className="mt-3 max-w-md text-sm text-ink/60">
         Tus clases de la semana. Entrá a cada una para ver quién va y, si querés, marcar asistencia.
       </p>
+
+      <Link
+        href="/instructor/pasar-lista"
+        className="mt-4 flex w-fit items-center gap-2 rounded-full bg-moss px-5 py-2.5 text-sm font-medium text-white transition hover:bg-moss-dark"
+      >
+        <ClipboardList size={16} />
+        Pasar lista
+      </Link>
 
       {activeDays.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-dashed border-sand bg-white/50 px-6 py-14 text-center">
