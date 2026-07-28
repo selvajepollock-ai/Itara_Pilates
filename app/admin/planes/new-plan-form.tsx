@@ -51,6 +51,20 @@ export function NewPlanForm() {
           />
         </div>
       </div>
+      <div>
+        <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
+          Categoría
+        </label>
+        <select
+          name="category"
+          defaultValue="reformer"
+          className="mt-1.5 rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-moss focus:bg-white"
+        >
+          <option value="reformer">Reformer</option>
+          <option value="fuerza">Fuerza</option>
+          <option value="ambos">Reformer + Fuerza</option>
+        </select>
+      </div>
       <button
         type="submit"
         disabled={isPending}

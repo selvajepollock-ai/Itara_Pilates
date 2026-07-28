@@ -10,7 +10,7 @@ async function assertAdmin() {
   } = await supabase.auth.getUser()
   if (!user) return { ok: false as const, error: 'No autenticado.' }
 
-  const { data: profile } = await supabase.from('profiles').select('roles').eq('id', user.id).single()
+  const { data: profile } = await supabase.from('profiles').select('roles').eq('id', user.id).maybeSingle()
   if (!profile?.roles?.includes('admin')) {
     return { ok: false as const, error: 'No tenés permisos para esta acción.' }
   }
@@ -23,12 +23,14 @@ export async function createPlan(formData: FormData) {
 
   const name = String(formData.get('name') ?? '').trim()
   const price = Number(formData.get('price') ?? 0)
+  const category = String(formData.get('category') ?? 'reformer')
 
   if (!name || !price) return { error: 'Nombre y precio son obligatorios.' }
 
   const { error } = await auth.supabase.from('plans').insert({
     name,
     price,
+    category,
     type: 'monthly',
     classes_included: null,
     duration_days: 30,
@@ -46,10 +48,11 @@ export async function updatePlan(planId: string, formData: FormData) {
 
   const name = String(formData.get('name') ?? '').trim()
   const price = Number(formData.get('price') ?? 0)
+  const category = String(formData.get('category') ?? 'reformer')
 
   if (!name || !price) return { error: 'Nombre y precio son obligatorios.' }
 
-  const { error } = await auth.supabase.from('plans').update({ name, price }).eq('id', planId)
+  const { error } = await auth.supabase.from('plans').update({ name, price, category }).eq('id', planId)
   if (error) return { error: error.message }
 
   revalidatePath('/admin/planes')
