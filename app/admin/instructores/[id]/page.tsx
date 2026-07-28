@@ -22,10 +22,10 @@ export default async function EditarInstructorPage({
   return (
     <div className="max-w-md">
       <Link href="/admin/instructores" className="text-sm text-moss hover:text-moss-dark">
-        ← Volver a instructores
+        ← Volver al equipo
       </Link>
 
-      <p className="mt-4 text-xs uppercase tracking-[0.25em] text-moss">Instructores</p>
+      <p className="mt-4 text-xs uppercase tracking-[0.25em] text-moss">Equipo</p>
       <h1 className="mt-2 font-display text-3xl italic text-ink">{instructor.full_name}</h1>
 
       <EditInstructorForm instructor={instructor} />

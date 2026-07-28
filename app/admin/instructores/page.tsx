@@ -1,23 +1,59 @@
 import Link from 'next/link'
-import { Plus, Pencil } from 'lucide-react'
+import { Plus, ShieldCheck, GraduationCap } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 
-export default async function InstructoresPage() {
+type Person = {
+  id: string
+  full_name: string
+  username: string | null
+  phone: string | null
+  roles: string[]
+}
+
+function PersonRow({ person }: { person: Person }) {
+  return (
+    <li key={person.id} className="flex items-center justify-between px-5 py-3.5">
+      <div className="flex items-center gap-3">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blush text-xs font-medium text-ink">
+          {person.full_name?.slice(0, 1).toUpperCase()}
+        </div>
+        <div>
+          <p className="text-sm text-ink">{person.full_name}</p>
+          <p className="text-xs text-ink/40">{person.username ?? '—'}</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-4">
+        {person.phone && <span className="text-xs text-ink/40">{person.phone}</span>}
+        <Link
+          href={`/admin/instructores/${person.id}`}
+          className="text-xs font-medium text-moss hover:text-moss-dark"
+        >
+          Editar
+        </Link>
+      </div>
+    </li>
+  )
+}
+
+export default async function EquipoPage() {
   const supabase = await createClient()
-  const { data: instructors, error } = await supabase
+  const { data: people } = await supabase
     .from('profiles')
-    .select('id, full_name, username, phone, roles, active, created_at')
-    .contains('roles', ['instructor'])
-    .order('created_at', { ascending: false })
+    .select('id, full_name, username, phone, roles')
+    .or('roles.cs.{admin},roles.cs.{instructor}')
+    .order('full_name')
+
+  const admins = (people ?? []).filter((p) => p.roles?.includes('admin')) as Person[]
+  const pureInstructors = (people ?? []).filter(
+    (p) => p.roles?.includes('instructor') && !p.roles?.includes('admin')
+  ) as Person[]
 
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs uppercase tracking-[0.25em] text-moss">Estudio</p>
-          <h1 className="mt-2 font-display text-3xl italic text-ink">Instructores</h1>
-          <p className="mt-1 text-sm text-ink/50">{instructors?.length ?? 0} en el equipo</p>
-          {error && <p className="mt-1 text-sm text-clay">Error: {error.message}</p>}
+          <h1 className="mt-2 font-display text-3xl italic text-ink">Equipo</h1>
         </div>
         <div className="flex gap-3">
           <Link
@@ -37,61 +73,47 @@ export default async function InstructoresPage() {
         </div>
       </div>
 
-      <div className="mt-8 overflow-hidden rounded-2xl border border-sand bg-white">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-sand text-left text-xs uppercase tracking-wide text-ink/40">
-              <th className="px-5 py-3.5 font-medium">Nombre</th>
-              <th className="px-5 py-3.5 font-medium">Usuario</th>
-              <th className="px-5 py-3.5 font-medium">Teléfono</th>
-              <th className="px-5 py-3.5 font-medium">Rol</th>
-              <th className="px-5 py-3.5 font-medium"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {instructors?.map((i) => (
-              <tr key={i.id} className="border-b border-sand/60 transition last:border-0 hover:bg-linen/50">
-                <td className="px-5 py-3.5">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-moss/10 text-xs font-medium text-moss-dark">
-                      {i.full_name?.slice(0, 1).toUpperCase()}
-                    </div>
-                    <span className="text-ink">{i.full_name}</span>
-                  </div>
-                </td>
-                <td className="px-5 py-3.5 text-ink/60">{i.username ?? '—'}</td>
-                <td className="px-5 py-3.5 text-ink/60">{i.phone ?? '—'}</td>
-                <td className="px-5 py-3.5">
-                  {i.roles?.includes('admin') ? (
-                    <span className="rounded-full bg-clay/10 px-2.5 py-1 text-xs font-medium text-clay">
-                      Instructor + Admin
-                    </span>
-                  ) : (
-                    <span className="rounded-full bg-moss/10 px-2.5 py-1 text-xs font-medium text-moss-dark">
-                      Instructor
-                    </span>
-                  )}
-                </td>
-                <td className="px-5 py-3.5 text-right">
-                  <Link
-                    href={`/admin/instructores/${i.id}`}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-moss hover:text-moss-dark"
-                  >
-                    <Pencil size={13} strokeWidth={2} />
-                    Editar
-                  </Link>
-                </td>
-              </tr>
-            ))}
-            {(!instructors || instructors.length === 0) && (
-              <tr>
-                <td colSpan={5} className="px-5 py-14 text-center text-sm text-ink/40">
-                  Todavía no hay instructores cargados.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      {/* Administradores */}
+      <div className="mt-8">
+        <div className="flex items-center gap-2">
+          <ShieldCheck size={16} className="text-moss" />
+          <p className="text-sm font-medium text-ink">Administradores</p>
+        </div>
+        <p className="mt-0.5 text-xs text-ink/50">
+          Acceso total: alumnos, pagos, reportes, horarios y configuración del estudio.
+          {admins.some((a) => a.roles.includes('instructor')) &&
+            ' Los que también dan clases tienen "+ Instructor" en su ficha.'}
+        </p>
+        <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
+          {admins.map((p) => (
+            <PersonRow key={p.id} person={p} />
+          ))}
+          {admins.length === 0 && (
+            <li className="px-5 py-8 text-center text-sm text-ink/40">Sin administradores.</li>
+          )}
+        </ul>
+      </div>
+
+      {/* Instructores */}
+      <div className="mt-8">
+        <div className="flex items-center gap-2">
+          <GraduationCap size={16} className="text-clay" />
+          <p className="text-sm font-medium text-ink">Instructores</p>
+        </div>
+        <p className="mt-0.5 text-xs text-ink/50">
+          Solo ven su agenda y pueden marcar asistencia — sin acceso a pagos, reportes ni datos de
+          otros alumnos.
+        </p>
+        <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
+          {pureInstructors.map((p) => (
+            <PersonRow key={p.id} person={p} />
+          ))}
+          {pureInstructors.length === 0 && (
+            <li className="px-5 py-8 text-center text-sm text-ink/40">
+              Todavía no hay instructores cargados.
+            </li>
+          )}
+        </ul>
       </div>
     </div>
   )

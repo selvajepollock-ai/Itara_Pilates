@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/client'
 const NAV_ITEMS = [
   { href: '/admin', label: 'Inicio', icon: LayoutDashboard, exact: true },
   { href: '/admin/alumnos', label: 'Alumnos', icon: Users },
-  { href: '/admin/instructores', label: 'Instructores', icon: UserCog },
+  { href: '/admin/instructores', label: 'Equipo', icon: UserCog },
   { href: '/admin/horarios', label: 'Horarios', icon: CalendarDays },
   { href: '/admin/planes', label: 'Planes', icon: CreditCard },
   { href: '/admin/avisos', label: 'Avisos', icon: Bell },
