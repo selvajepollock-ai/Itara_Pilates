@@ -99,3 +99,37 @@ export async function setStudentPassword(studentId: string, formData: FormData) 
 
   return { success: true }
 }
+
+export async function deleteStudent(studentId: string) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado.' }
+
+  const { data: callerProfile } = await supabase.from('profiles').select('roles').eq('id', user.id).maybeSingle()
+  if (!callerProfile?.roles?.includes('admin')) {
+    return { error: 'No tenés permisos para esta acción.' }
+  }
+
+  const admin = createAdminClient()
+
+  // Borrar en orden por las relaciones (de lo más dependiente a lo menos)
+  const { data: subs } = await admin.from('subscriptions').select('id').eq('student_id', studentId)
+  const subIds = (subs ?? []).map((s) => s.id)
+  if (subIds.length > 0) {
+    await admin.from('payments').delete().in('subscription_id', subIds)
+  }
+  await admin.from('recovery_credits').delete().eq('student_id', studentId)
+  await admin.from('attendance').delete().eq('student_id', studentId)
+  await admin.from('session_cancellations').delete().eq('student_id', studentId)
+  await admin.from('subscriptions').delete().eq('student_id', studentId)
+  await admin.from('enrollments').delete().eq('student_id', studentId)
+  await admin.from('plan_change_requests').delete().eq('student_id', studentId)
+
+  const { error } = await admin.auth.admin.deleteUser(studentId)
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/alumnos')
+  return { success: true }
+}

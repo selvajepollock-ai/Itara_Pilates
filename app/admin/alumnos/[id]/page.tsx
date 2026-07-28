@@ -7,6 +7,7 @@ import { StudentScheduleForm } from './schedule-form'
 import { StudentBilling } from './student-billing'
 import { WeeklySessions } from './weekly-sessions'
 import { GrantAccessForm } from './grant-access-form'
+import { DeleteStudentButton } from './delete-student-button'
 import { isNoAccessEmail } from '@/lib/auth-username'
 import { DAY_ORDER } from '@/lib/day-names'
 
@@ -67,8 +68,13 @@ export default async function EditarAlumnoPage({ params }: { params: Promise<{ i
         ← Volver a alumnos
       </Link>
 
-      <p className="mt-4 text-xs uppercase tracking-[0.25em] text-moss">Alumnos</p>
-      <h1 className="mt-2 font-display text-3xl italic text-ink">{student.full_name}</h1>
+      <div className="mt-4 flex items-center justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-[0.25em] text-moss">Alumnos</p>
+          <h1 className="mt-2 font-display text-3xl italic text-ink">{student.full_name}</h1>
+        </div>
+        <DeleteStudentButton studentId={student.id} fullName={student.full_name} />
+      </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[380px_1fr] lg:items-start">
         <div className="max-w-md space-y-6">
