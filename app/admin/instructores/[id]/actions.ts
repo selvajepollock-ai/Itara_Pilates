@@ -33,7 +33,10 @@ export async function updateInstructor(instructorId: string, formData: FormData)
 
   const admin = createAdminClient()
 
-  const { error: authError } = await admin.auth.admin.updateUserById(instructorId, { email })
+  const { error: authError } = await admin.auth.admin.updateUserById(instructorId, {
+    email,
+    email_confirm: true,
+  })
   if (authError) return { error: authError.message }
 
   const roles = alsoAdmin ? ['instructor', 'admin'] : ['instructor']
