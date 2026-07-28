@@ -274,34 +274,45 @@ export default async function HorariosPage({
             const span = showFuerza ? 2 : 1
             const col = showFuerza ? dayIndex * 2 + (isFuerza ? 3 : 2) : dayIndex + 2
 
-            const fuerzaClasses = isFull
-              ? 'border-clay bg-clay/10 text-clay'
-              : 'border-dashed border-clay/40 bg-white text-clay/80'
             const reformerClasses = isFull
               ? 'border-clay/40 bg-clay text-white shadow-sm'
               : isEmpty
                 ? 'border-moss/30 bg-moss/50 text-white shadow-sm'
                 : 'border-moss/20 bg-moss text-white shadow-sm'
 
+            if (isFuerza) {
+              const fuerzaClasses = isFull
+                ? 'border-clay/40 bg-clay text-white'
+                : 'border-moss/30 bg-moss/70 text-white'
+              return (
+                <Link
+                  key={c.id}
+                  href={`/admin/horarios/${c.id}`}
+                  className={`relative m-0.5 flex flex-col items-center justify-center overflow-hidden rounded-md border px-1 py-0.5 text-[9px] leading-tight transition hover:-translate-y-px hover:shadow-md ${fuerzaClasses}`}
+                  style={{
+                    gridColumn: col,
+                    gridRow: `${startSlot + 2} / ${endSlot + 2}`,
+                  }}
+                >
+                  <span className="truncate font-medium">{formatTime(c.start_time)}</span>
+                  <span className="truncate">{isFull ? 'Completo' : 'Libre'}</span>
+                </Link>
+              )
+            }
+
             return (
               <Link
                 key={c.id}
                 href={`/admin/horarios/${c.id}`}
-                className={`relative m-0.5 overflow-hidden rounded-lg border px-1.5 py-1 text-[10px] leading-tight transition hover:-translate-y-px hover:shadow-md ${
-                  isFuerza ? fuerzaClasses : reformerClasses
-                }`}
+                className={`relative m-0.5 overflow-hidden rounded-lg border px-1.5 py-1 text-[10px] leading-tight transition hover:-translate-y-px hover:shadow-md ${reformerClasses}`}
                 style={{
                   gridColumn: col,
                   gridRow: `${startSlot + 2} / ${endSlot + 2}`,
                 }}
               >
-                <p className={`truncate font-display italic ${isFuerza ? '' : 'text-white'}`}>
-                  {c.class_types?.name}
-                </p>
-                <p className={`truncate ${isFuerza ? 'opacity-70' : 'text-white/80'}`}>
-                  {formatTime(c.start_time)}
-                </p>
-                <p className={`truncate font-semibold ${isFuerza && !isFull ? '' : 'text-white'}`}>
+                <p className="truncate font-display italic text-white">{c.class_types?.name}</p>
+                <p className="truncate text-white/80">{formatTime(c.start_time)}</p>
+                <p className="truncate font-semibold text-white">
                   {isFull ? 'COMPLETO' : `${c.capacity - enrolled} libre${c.capacity - enrolled === 1 ? '' : 's'}`}
                 </p>
               </Link>
@@ -320,8 +331,7 @@ export default async function HorariosPage({
           </span>
           {showFuerza && (
             <span className="flex items-center gap-1.5 text-ink/60">
-              <span className="h-2.5 w-2.5 rounded border border-dashed border-clay/50 bg-white" />
-              Fuerza
+              Fuerza usa los mismos colores, en bloque más chico
             </span>
           )}
         </div>
