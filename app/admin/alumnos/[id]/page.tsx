@@ -8,6 +8,7 @@ import { StudentBilling } from './student-billing'
 import { WeeklySessions } from './weekly-sessions'
 import { GrantAccessForm } from './grant-access-form'
 import { DeleteStudentButton } from './delete-student-button'
+import { ToggleStudentActiveButton } from './toggle-active-button'
 import { isNoAccessEmail } from '@/lib/auth-username'
 import { DAY_ORDER } from '@/lib/day-names'
 
@@ -27,7 +28,7 @@ export default async function EditarAlumnoPage({ params }: { params: Promise<{ i
 
   const [{ data: student }, { data: classesData }, { data: myEnrollments }, { data: allEnrollments }] =
     await Promise.all([
-      supabase.from('profiles').select('id, full_name, email, phone, birth_date, health_notes, contact_email').eq('id', id).single(),
+      supabase.from('profiles').select('id, full_name, email, phone, birth_date, health_notes, contact_email, active').eq('id', id).single(),
       supabase
         .from('classes')
         .select('id, day_of_week, start_time, end_time, capacity, room, class_types(name)')
@@ -73,7 +74,10 @@ export default async function EditarAlumnoPage({ params }: { params: Promise<{ i
           <p className="text-xs uppercase tracking-[0.25em] text-moss">Alumnos</p>
           <h1 className="mt-2 font-display text-3xl italic text-ink">{student.full_name}</h1>
         </div>
-        <DeleteStudentButton studentId={student.id} fullName={student.full_name} />
+        <div className="flex items-center gap-4">
+          <ToggleStudentActiveButton studentId={student.id} active={student.active} />
+          <DeleteStudentButton studentId={student.id} fullName={student.full_name} />
+        </div>
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[380px_1fr] lg:items-start">

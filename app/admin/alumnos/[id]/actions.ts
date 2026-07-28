@@ -133,3 +133,23 @@ export async function deleteStudent(studentId: string) {
   revalidatePath('/admin/alumnos')
   return { success: true }
 }
+
+export async function setStudentActive(studentId: string, active: boolean) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado.' }
+
+  const { data: callerProfile } = await supabase.from('profiles').select('roles').eq('id', user.id).maybeSingle()
+  if (!callerProfile?.roles?.includes('admin')) {
+    return { error: 'No tenés permisos para esta acción.' }
+  }
+
+  const { error } = await supabase.from('profiles').update({ active }).eq('id', studentId)
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/alumnos')
+  revalidatePath(`/admin/alumnos/${studentId}`)
+  return { success: true }
+}
