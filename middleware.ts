@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
-const PUBLIC_PATHS = ['/login', '/auth']
+const PUBLIC_PATHS = ['/login', '/auth', '/forgot-password']
 
 export async function middleware(request: NextRequest) {
   const { supabaseResponse, user, supabase } = await updateSession(request)
@@ -38,5 +38,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|icons/).*)'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|icons/|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico)$).*)',
+  ],
 }
