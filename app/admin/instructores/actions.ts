@@ -5,6 +5,45 @@ import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+export async function deleteTeamMember(personId: string) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado.' }
+
+  if (user.id === personId) {
+    return { error: 'No podés eliminar tu propia cuenta.' }
+  }
+
+  const { data: callerProfile } = await supabase
+    .from('profiles')
+    .select('roles')
+    .eq('id', user.id)
+    .single()
+  if (!callerProfile?.roles?.includes('admin')) {
+    return { error: 'No tenés permisos para esta acción.' }
+  }
+
+  const { count: classesCount } = await supabase
+    .from('classes')
+    .select('id', { count: 'exact', head: true })
+    .eq('instructor_id', personId)
+
+  if ((classesCount ?? 0) > 0) {
+    return {
+      error: `Tiene ${classesCount} clase(s) asignada(s). Reasignalas a otro instructor antes de eliminarlo.`,
+    }
+  }
+
+  const admin = createAdminClient()
+  const { error } = await admin.auth.admin.deleteUser(personId)
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/instructores')
+  return { success: true }
+}
+
 export async function createOwner(formData: FormData) {
   const fullName = String(formData.get('full_name') ?? '').trim()
   const username = String(formData.get('username') ?? '').trim().toLowerCase()
