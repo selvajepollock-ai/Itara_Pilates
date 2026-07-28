@@ -3,7 +3,6 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { usernameToInternalEmail } from '@/lib/auth-username'
 
 async function assertAdmin() {
   const supabase = await createClient()
@@ -25,24 +24,23 @@ export async function updateInstructor(instructorId: string, formData: FormData)
 
   const fullName = String(formData.get('full_name') ?? '').trim()
   const username = String(formData.get('username') ?? '').trim().toLowerCase()
+  const email = String(formData.get('email') ?? '').trim().toLowerCase()
   const phone = String(formData.get('phone') ?? '').trim()
   const alsoAdmin = formData.get('also_admin') === 'on'
 
-  if (!fullName || !username) return { error: 'Nombre y usuario son obligatorios.' }
+  if (!fullName || !username || !email) return { error: 'Nombre, usuario y email son obligatorios.' }
   if (/\s/.test(username)) return { error: 'El usuario no puede tener espacios.' }
 
   const admin = createAdminClient()
 
-  const { error: authError } = await admin.auth.admin.updateUserById(instructorId, {
-    email: usernameToInternalEmail(username),
-  })
+  const { error: authError } = await admin.auth.admin.updateUserById(instructorId, { email })
   if (authError) return { error: authError.message }
 
   const roles = alsoAdmin ? ['instructor', 'admin'] : ['instructor']
 
   const { error } = await admin
     .from('profiles')
-    .update({ full_name: fullName, username, phone: phone || null, roles })
+    .update({ full_name: fullName, username, email, phone: phone || null, roles })
     .eq('id', instructorId)
 
   if (error) return { error: error.message }

@@ -2,10 +2,12 @@
 
 import { useState, useTransition } from 'react'
 import { updateInstructor } from './actions'
+import { isNoAccessEmail } from '@/lib/auth-username'
 
 type Instructor = {
   id: string
   full_name: string
+  email: string
   username: string | null
   phone: string | null
   roles: string[]
@@ -28,6 +30,8 @@ export function EditInstructorForm({ instructor }: { instructor: Instructor }) {
       setSaved(true)
     })
   }
+
+  const currentEmail = isNoAccessEmail(instructor.email) ? '' : instructor.email
 
   return (
     <form action={handleSubmit} className="mt-6 space-y-5 rounded-2xl border border-sand bg-white p-6">
@@ -54,6 +58,23 @@ export function EditInstructorForm({ instructor }: { instructor: Instructor }) {
           className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
         />
         <p className="mt-1 text-xs text-ink/40">Si lo cambiás, va a tener que usar el usuario nuevo para entrar.</p>
+      </div>
+
+      <div>
+        <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
+          Email real
+        </label>
+        <input
+          type="email"
+          name="email"
+          required
+          defaultValue={currentEmail}
+          placeholder="para poder recuperar la contraseña"
+          className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
+        />
+        <p className="mt-1 text-xs text-ink/40">
+          Si estaba vacío o mal cargado, corregilo acá — es lo que usa para "olvidé mi contraseña".
+        </p>
       </div>
 
       <div>
