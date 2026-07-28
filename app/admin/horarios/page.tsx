@@ -283,19 +283,24 @@ export default async function HorariosPage({
             if (isFuerza) {
               const fuerzaClasses = isFull
                 ? 'border-clay/40 bg-clay text-white'
-                : 'border-moss/30 bg-moss/70 text-white'
+                : isEmpty
+                  ? 'border-moss/30 bg-moss/50 text-white'
+                  : 'border-moss/20 bg-moss text-white'
               return (
                 <Link
                   key={c.id}
                   href={`/admin/horarios/${c.id}`}
-                  className={`relative m-0.5 flex flex-col items-center justify-center overflow-hidden rounded-md border px-1 py-0.5 text-[9px] leading-tight transition hover:-translate-y-px hover:shadow-md ${fuerzaClasses}`}
+                  className={`relative m-0.5 overflow-hidden rounded-lg border-2 border-t-4 border-t-clay/60 px-1.5 py-1 text-[10px] leading-tight transition hover:-translate-y-px hover:shadow-md ${fuerzaClasses}`}
                   style={{
                     gridColumn: col,
                     gridRow: `${startSlot + 2} / ${endSlot + 2}`,
                   }}
                 >
-                  <span className="truncate font-medium">{formatTime(c.start_time)}</span>
-                  <span className="truncate">{isFull ? 'Completo' : 'Libre'}</span>
+                  <p className="truncate font-display italic text-white">Fuerza</p>
+                  <p className="truncate text-white/80">{formatTime(c.start_time)}</p>
+                  <p className="truncate font-semibold text-white">
+                    {isFull ? 'COMPLETO' : `${c.capacity - enrolled} libre${c.capacity - enrolled === 1 ? '' : 's'}`}
+                  </p>
                 </Link>
               )
             }
@@ -331,7 +336,8 @@ export default async function HorariosPage({
           </span>
           {showFuerza && (
             <span className="flex items-center gap-1.5 text-ink/60">
-              Fuerza usa los mismos colores, en bloque más chico
+              <span className="h-2.5 w-2.5 rounded border-t-2 border-t-clay/60 bg-sand" />
+              Fuerza (misma lógica de color, con franja superior)
             </span>
           )}
         </div>
