@@ -116,7 +116,7 @@ export default async function AdminDashboard() {
     <div>
       <p className="text-xs uppercase tracking-[0.25em] text-moss">Panel general</p>
       <h1 className="mt-2 font-display text-4xl italic text-ink">
-        {firstName && firstName !== 'Sin' ? `Bienvenida, ${firstName}` : 'Bienvenida al estudio'}
+        {firstName && firstName !== 'Sin' ? `Hola, ${firstName}` : 'Bienvenido/a al estudio'}
       </h1>
       <p className="mt-3 max-w-md text-sm text-ink/60">
         Un vistazo rápido a cómo está el estudio hoy.
@@ -207,11 +207,14 @@ export default async function AdminDashboard() {
         </div>
 
         <div className="rounded-2xl border border-sand bg-white p-6">
-          <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Próximo paso</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Estudio</p>
           <p className="mt-2 font-display text-xl italic text-ink">Notificaciones masivas</p>
           <p className="mt-1 text-sm text-ink/50">
-            Avisos generales a todo el estudio — pendiente.
+            Mandale un aviso a todo el estudio (feriados, promos, cambios).
           </p>
+          <Link href="/admin/notificaciones" className="mt-2 inline-block text-sm text-moss hover:text-moss-dark">
+            Redactar aviso →
+          </Link>
         </div>
       </div>
     </div>
