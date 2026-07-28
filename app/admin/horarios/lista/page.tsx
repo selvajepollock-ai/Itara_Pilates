@@ -3,6 +3,7 @@ import { Plus, Settings2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
 import { DeleteClassButton } from '../delete-class-button'
+import { ScheduleExportButtons } from './schedule-export-buttons'
 
 type ClassRow = {
   id: string
@@ -42,6 +43,7 @@ export default async function HorariosPage() {
           <h1 className="mt-2 font-display text-3xl italic text-ink">Horarios</h1>
         </div>
         <div className="flex gap-3">
+          <ScheduleExportButtons classes={classes} />
           <Link
             href="/admin/horarios"
             className="flex items-center gap-1.5 rounded-full border border-sand px-5 py-2.5 text-sm font-medium text-ink/70 transition hover:border-moss hover:text-moss"

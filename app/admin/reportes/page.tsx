@@ -2,6 +2,7 @@ import { TrendingUp, Users, AlertTriangle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, formatTime } from '@/lib/day-names'
 import { formatARS } from '@/lib/currency'
+import { ReportExportButtons } from './report-export-buttons'
 
 function getMonthRange(monthParam?: string) {
   const now = new Date()
@@ -104,14 +105,23 @@ export default async function ReportesPage({
           <p className="text-xs uppercase tracking-[0.25em] text-moss">Estudio</p>
           <h1 className="mt-2 font-display text-3xl italic text-ink">Reportes</h1>
         </div>
-        <form action="/admin/reportes" method="GET">
-          <input
-            type="month"
-            name="month"
-            defaultValue={label}
-            className="rounded-full border border-sand px-4 py-2 text-sm text-ink/70 outline-none focus:border-moss"
+        <div className="flex items-center gap-3">
+          <ReportExportButtons
+            month={label}
+            totalIncome={totalIncome}
+            incomeByPlan={Array.from(incomeByPlan.entries())}
+            classRows={classRows}
+            absenceRanking={absenceRanking}
           />
-        </form>
+          <form action="/admin/reportes" method="GET">
+            <input
+              type="month"
+              name="month"
+              defaultValue={label}
+              className="rounded-full border border-sand px-4 py-2 text-sm text-ink/70 outline-none focus:border-moss"
+            />
+          </form>
+        </div>
       </div>
 
       <div className="mt-8 rounded-2xl border border-sand bg-white p-6">

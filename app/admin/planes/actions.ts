@@ -40,6 +40,23 @@ export async function createPlan(formData: FormData) {
   return { success: true }
 }
 
+export async function updatePlan(planId: string, formData: FormData) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+
+  const name = String(formData.get('name') ?? '').trim()
+  const price = Number(formData.get('price') ?? 0)
+
+  if (!name || !price) return { error: 'Nombre y precio son obligatorios.' }
+
+  const { error } = await auth.supabase.from('plans').update({ name, price }).eq('id', planId)
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/planes')
+  revalidatePath('/admin/alumnos')
+  return { success: true }
+}
+
 export async function setPlanActive(planId: string, active: boolean) {
   const auth = await assertAdmin()
   if (!auth.ok) return { error: auth.error }

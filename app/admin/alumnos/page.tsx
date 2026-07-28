@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { getPaymentStatus } from '@/lib/billing'
-import { isNoAccessEmail } from '@/lib/auth-username'
 import { StudentsList } from './students-list'
 
 export default async function AlumnosPage() {
@@ -11,7 +10,7 @@ export default async function AlumnosPage() {
   const [{ data: students }, { data: subscriptions }, { data: settings }] = await Promise.all([
     supabase
       .from('profiles')
-      .select('id, full_name, email, contact_email, phone, active, created_at')
+      .select('id, full_name, email, phone, active, created_at')
       .contains('roles', ['student'])
       .order('created_at', { ascending: false }),
     supabase.from('subscriptions').select('student_id, end_date').eq('status', 'active'),
@@ -23,8 +22,6 @@ export default async function AlumnosPage() {
 
   const studentsWithStatus = (students ?? []).map((s) => ({
     ...s,
-    hasAccess: !isNoAccessEmail(s.email),
-    displayEmail: isNoAccessEmail(s.email) ? s.contact_email ?? null : s.email,
     status: getPaymentStatus(endDateByStudent.get(s.id) ?? null, reminderDays),
   }))
 

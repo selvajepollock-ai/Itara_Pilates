@@ -36,15 +36,16 @@ export function NewStudentForm({
   const inputClass =
     'mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white'
   const labelClass = 'text-xs font-medium uppercase tracking-wide text-ink/60'
+  const cardClass = 'rounded-2xl border border-sand bg-white p-6'
 
   return (
-    <div className="max-w-md">
+    <div className="max-w-4xl">
       <p className="text-xs uppercase tracking-[0.25em] text-moss">Alumnos</p>
       <h1 className="mt-2 font-display text-3xl italic text-ink">Nuevo alumno</h1>
 
-      <form action={handleSubmit} className="mt-8 space-y-6">
-        {/* Acceso al portal */}
-        <div className="rounded-2xl border border-sand bg-white p-6">
+      <form action={handleSubmit} className="mt-8 grid gap-6 lg:grid-cols-2">
+        {/* Acceso al portal — ocupa las 2 columnas */}
+        <div className={`${cardClass} lg:col-span-2`}>
           <p className="text-sm font-medium text-ink">Acceso al portal</p>
           <p className="mt-0.5 text-xs text-ink/50">
             Si no le das acceso ahora, igual queda cargado — se lo podés activar después desde su ficha.
@@ -62,7 +63,7 @@ export function NewStudentForm({
         </div>
 
         {/* Identidad */}
-        <div className="rounded-2xl border border-sand bg-white p-6">
+        <div className={cardClass}>
           <p className="text-sm font-medium text-ink">Identidad</p>
           <div className="mt-3 grid grid-cols-2 gap-3">
             <div>
@@ -83,7 +84,7 @@ export function NewStudentForm({
         </div>
 
         {/* Datos personales */}
-        <div className="rounded-2xl border border-sand bg-white p-6">
+        <div className={cardClass}>
           <p className="text-sm font-medium text-ink">Datos personales</p>
           <div className="mt-3">
             <label className={labelClass}>Teléfono</label>
@@ -96,19 +97,19 @@ export function NewStudentForm({
         </div>
 
         {/* Salud */}
-        <div className="rounded-2xl border border-sand bg-white p-6">
+        <div className={cardClass}>
           <p className="text-sm font-medium text-ink">Salud</p>
           <p className="mt-0.5 text-xs text-ink/50">Lesiones, condiciones a tener en cuenta.</p>
           <textarea
             name="health_notes"
-            rows={2}
+            rows={3}
             placeholder="Ej: Lesión de rodilla derecha, evitar impacto"
             className={`${inputClass} mt-3`}
           />
         </div>
 
         {/* Plan */}
-        <div className="rounded-2xl border border-sand bg-white p-6">
+        <div className={cardClass}>
           <p className="text-sm font-medium text-ink">Plan contratado</p>
           <div className="mt-3">
             <label className={labelClass}>Plan (opcional)</label>
@@ -127,16 +128,19 @@ export function NewStudentForm({
           </div>
         </div>
 
-        {error && <p className="text-sm text-clay">{error}</p>}
-        {success && <p className="text-sm text-moss-dark">Alumno creado correctamente ✓</p>}
+        {/* Acciones — ocupa las 2 columnas */}
+        <div className="lg:col-span-2">
+          {error && <p className="text-sm text-clay">{error}</p>}
+          {success && <p className="text-sm text-moss-dark">Alumno creado correctamente ✓</p>}
 
-        <button
-          type="submit"
-          disabled={isPending}
-          className="w-full rounded-full bg-moss px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50"
-        >
-          {isPending ? 'Creando...' : 'Crear alumno'}
-        </button>
+          <button
+            type="submit"
+            disabled={isPending}
+            className="mt-3 w-full rounded-full bg-moss px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50 lg:w-auto lg:px-10"
+          >
+            {isPending ? 'Creando...' : 'Crear alumno'}
+          </button>
+        </div>
       </form>
     </div>
   )
