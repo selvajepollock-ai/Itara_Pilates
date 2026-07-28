@@ -1,0 +1,313 @@
+full_name,day_of_week,start_time,class_type
+Andrea Becker,1,07:00:00,Reformer
+Andrea Becker,3,07:00:00,Reformer
+Ingrid Riedenauer,1,07:00:00,Reformer
+Ingrid Riedenauer,3,07:00:00,Reformer
+Silvia Duarte,1,07:00:00,Reformer
+Silvia Duarte,3,07:00:00,Reformer
+Maura Giménez,1,07:00:00,Reformer
+Maura Giménez,3,07:00:00,Reformer
+Vale Giménez,1,07:00:00,Reformer
+Vale Giménez,3,07:00:00,Reformer
+Jaki jenzer,1,07:00:00,Reformer
+Jaki Jenzer,3,07:00:00,Reformer
+Mariela Pezuk,1,08:00:00,Reformer
+Cristina Firpo,1,08:00:00,Fuerza
+Tony San Martin,2,08:00:00,Reformer
+Mariela Pezuk,3,08:00:00,Reformer
+Cristina Firpo,3,08:00:00,Fuerza
+Tony San Martin,4,08:00:00,Reformer
+Mariela Pezuk,5,08:00:00,Reformer
+Selma Herman,5,08:00:00,Fuerza
+Lucía Marcos,1,08:00:00,Reformer
+Mari San Martín,2,08:00:00,Reformer
+Lucía Marcos,3,08:00:00,Reformer
+Mari San Martín,4,08:00:00,Reformer
+Lucía Marcos,5,08:00:00,Reformer
+Agustín Antúnez,1,08:00:00,Reformer
+Margarita Barrientos,2,08:00:00,Reformer
+Agustín Antúnez,3,08:00:00,Reformer
+Margarita Barrientos,4,08:00:00,Reformer
+Agustín Antúnez,5,08:00:00,Reformer
+Gabriela Miñarro,1,08:00:00,Reformer
+Nano Rodríguez,2,08:00:00,Reformer
+Gabriela Miñarro,3,08:00:00,Reformer
+Nano Rodríguez,4,08:00:00,Reformer
+Andrea Melgarejo,5,08:00:00,Reformer
+Andrea Melgarejo,1,08:00:00,Reformer
+Nidia Báez,2,08:00:00,Reformer
+Andrea Melgarejo,3,08:00:00,Reformer
+Nidia Báez,4,08:00:00,Reformer
+Gabriela Miñarro,5,08:00:00,Reformer
+Luz Ubiria,1,08:00:00,Reformer
+Lalo Rabosto,2,08:00:00,Reformer
+Lalo Rabosto,4,08:00:00,Reformer
+Luz Ubiria,5,08:00:00,Reformer
+María Ester Benítez,1,09:00:00,Reformer
+Nair Paiva,2,09:00:00,Reformer
+Sandra Caballero,2,09:00:00,Fuerza
+María Ester Benítez,3,09:00:00,Reformer
+Nair Paiva,4,09:00:00,Reformer
+Juanse,4,09:00:00,Fuerza
+María Ester Benítez,5,09:00:00,Reformer
+Sandra Caballero,5,09:00:00,Fuerza
+Ani Janzen,1,09:00:00,Reformer
+Norma Gonzalez,2,09:00:00,Reformer
+Ani Janzen,3,09:00:00,Reformer
+María Viviana Gonzales,4,09:00:00,Reformer
+María Viviana Gonzales,5,09:00:00,Reformer
+Gladys,1,09:00:00,Reformer
+Patri Goya,2,09:00:00,Reformer
+Gladys Maciel,3,09:00:00,Reformer
+Patri Goya,4,09:00:00,Reformer
+Gladys,5,09:00:00,Reformer
+Maru Ayala,1,09:00:00,Reformer
+Carla Pereyra,2,09:00:00,Reformer
+Maru Ayala,3,09:00:00,Reformer
+Carla Pereyra,4,09:00:00,Reformer
+Maru Ayala,5,09:00:00,Reformer
+Cameca,1,09:00:00,Reformer
+Karina Antúnez,2,09:00:00,Reformer
+Cameca,3,09:00:00,Reformer
+Karina Antúnez,4,09:00:00,Reformer
+Cameca,5,09:00:00,Reformer
+Mile Da Silva,1,09:00:00,Reformer
+Rosa Candia,2,09:00:00,Reformer
+Mile Da Silva,3,09:00:00,Reformer
+Ale Cáceres,4,09:00:00,Reformer
+Angelo,5,09:00:00,Reformer
+Peti,1,10:00:00,Reformer
+Kari Yaciv,1,10:00:00,Fuerza
+Magalí Báez,2,10:00:00,Reformer
+Peti,3,10:00:00,Reformer
+Magalí Báez,4,10:00:00,Reformer
+Fini,1,10:00:00,Reformer
+Nélida Romberg,2,10:00:00,Reformer
+Fini,3,10:00:00,Reformer
+Nélida Romberg,4,10:00:00,Reformer
+Vicki,1,10:00:00,Reformer
+Beatriz Garrido,2,10:00:00,Reformer
+Vicki Durán,3,10:00:00,Reformer
+Beatriz Garrido,4,10:00:00,Reformer
+Ingrid Hofmokel,1,10:00:00,Reformer
+Miguel Ángel Báez,2,10:00:00,Reformer
+Selma Herman,3,10:00:00,Reformer
+Miguel Ángel Báez,4,10:00:00,Reformer
+Selma Herman,1,10:00:00,Reformer
+Ale Cáceres,2,10:00:00,Reformer
+Noe Gonzales (cervicales),3,10:00:00,Reformer
+Ingrid Hofmokel,4,10:00:00,Reformer
+Martin/libre,1,10:00:00,Reformer
+Marisa Badaracco,2,10:00:00,Reformer
+Martin/libre,3,10:00:00,Reformer
+Marisa Badaracco,4,10:00:00,Reformer
+Juanita,1,14:00:00,Reformer
+Fran Becca,2,14:00:00,Reformer
+Maira Paniagua,3,14:00:00,Reformer
+Fran Becca,4,14:00:00,Reformer
+Maira Paniagua,5,14:00:00,Reformer
+Santino González Redes,1,14:00:00,Reformer
+Lázaro Urbieta,2,14:00:00,Reformer
+Dos Santos Fiorella,3,14:00:00,Reformer
+Lázaro Urbieta,4,14:00:00,Reformer
+Dos Santos Fiorella,5,14:00:00,Reformer
+Marisa Zaiser,1,14:00:00,Reformer
+Euge Frontera,2,14:00:00,Reformer
+Majo,3,14:00:00,Reformer
+Euge Frontera,4,14:00:00,Reformer
+Carmen Bareiro,5,14:00:00,Reformer
+Carmen Bareiro,1,14:00:00,Reformer
+Tama Domínguez,2,14:00:00,Reformer
+Carmen Bareiro,3,14:00:00,Reformer
+Tama Domínguez,4,14:00:00,Reformer
+Margarita Bareiro,5,14:00:00,Reformer
+Margarita Bareiro,1,14:00:00,Reformer
+Cami Romero,2,14:00:00,Reformer
+Margarita Bareiro,3,14:00:00,Reformer
+Cami Romero,4,14:00:00,Reformer
+Juanita,5,14:00:00,Reformer
+Euge Frontera,1,14:00:00,Reformer
+Caro Xander,2,14:00:00,Reformer
+Juanita,3,14:00:00,Reformer
+Caro Xander,4,14:00:00,Reformer
+Tama Domínguez,5,14:00:00,Reformer
+Laly Maciel,1,15:00:00,Reformer
+Agostina Giménez,2,15:00:00,Reformer
+Agostina Giménez,4,15:00:00,Reformer
+Aye,5,15:00:00,Reformer
+Yani Cervino,5,15:00:00,Fuerza
+Gabriela Florentin,1,15:00:00,Reformer
+Cari,2,15:00:00,Reformer
+Carina Datschke,4,15:00:00,Reformer
+Elías,5,15:00:00,Reformer
+Gabriela Florentin,2,15:00:00,Reformer
+Gabriela Florentin,4,15:00:00,Reformer
+Ale,5,15:00:00,Reformer
+Eli,1,15:00:00,Reformer
+Patri Polina,2,15:00:00,Reformer
+Patri Polina,4,15:00:00,Reformer
+Joha,5,15:00:00,Reformer
+Silvia Aquino,1,15:00:00,Reformer
+Nelly Simian,2,15:00:00,Reformer
+Nelly Simian,4,15:00:00,Reformer
+Patri Ocampo,5,15:00:00,Reformer
+Milagros Rolon,1,15:00:00,Reformer
+Laly Maciel,2,15:00:00,Reformer
+Laly Florentin,4,15:00:00,Reformer
+Manu Ramírez,5,15:00:00,Reformer
+Graciela Weber,1,16:00:00,Reformer
+Mica Portillo,1,16:00:00,Fuerza
+Grisel Chávez,2,16:00:00,Reformer
+Lorena Insfran,2,16:00:00,Fuerza
+Aldi,3,16:00:00,Reformer
+Mica Portillo,3,16:00:00,Fuerza
+Grisel Chávez,4,16:00:00,Reformer
+Lorena Insfran,4,16:00:00,Fuerza
+Nati Ayala,5,16:00:00,Reformer
+Mica Portillo,5,16:00:00,Fuerza
+Isita,1,16:00:00,Reformer
+Joaquín Imbach,2,16:00:00,Reformer
+Silvia Valenzuela,3,16:00:00,Reformer
+Joaquín Imbach,4,16:00:00,Reformer
+Moni Moschner,5,16:00:00,Reformer
+Silvia Valenzuela,1,16:00:00,Reformer
+Manu Ramírez,2,16:00:00,Reformer
+Patri Ocampo,3,16:00:00,Reformer
+Alicia Cabral,4,16:00:00,Reformer
+Margarita Benítez,5,16:00:00,Reformer
+Susana Gomez,2,16:00:00,Reformer
+Norma Gonzalez,3,16:00:00,Reformer
+Manu Ramírez,4,16:00:00,Reformer
+Analía,5,16:00:00,Reformer
+Ángela Borges,1,16:00:00,Reformer
+Margarita Benítez,2,16:00:00,Reformer
+Graciela Cardozo,3,16:00:00,Reformer
+Susi,4,16:00:00,Reformer
+Graciela Cardozo,5,16:00:00,Reformer
+Patri,1,16:00:00,Reformer
+Alicia Cabral,2,16:00:00,Reformer
+Analía Rojas,3,16:00:00,Reformer
+Margarita,4,16:00:00,Reformer
+Ángela Borges,5,16:00:00,Reformer
+Sandra Caballero,1,17:00:00,Reformer
+Olga Kholi,2,17:00:00,Reformer
+Analía Cardozo,2,17:00:00,Fuerza
+Sandra Caballero,3,17:00:00,Reformer
+Graciela Weber,3,17:00:00,Fuerza
+Isita,4,17:00:00,Reformer
+Delia Ustohal,5,17:00:00,Reformer
+Mami,5,17:00:00,Fuerza
+Lorena Insfran,1,17:00:00,Reformer
+Rodo Saldaña,2,17:00:00,Reformer
+Lorena Insfran,3,17:00:00,Reformer
+Rodo Saldaña,4,17:00:00,Reformer
+Cristian Mayerhofer,5,17:00:00,Reformer
+Delia Ustohal,1,17:00:00,Reformer
+Priscila Serrano,2,17:00:00,Reformer
+Delia Ustohal,3,17:00:00,Reformer
+Olga Kholi,4,17:00:00,Reformer
+Danna Mayerhofer,5,17:00:00,Reformer
+Cristian Mayerhofer,1,17:00:00,Reformer
+Katrin Kunzi,2,17:00:00,Reformer
+Cristian Mayerhofer,3,17:00:00,Reformer
+Priscila Serrano,4,17:00:00,Reformer
+Aldi,5,17:00:00,Reformer
+Danna Mayerhofer,1,17:00:00,Reformer
+Danna Mayerhofer,3,17:00:00,Reformer
+Deolinda Araujo,4,17:00:00,Reformer
+Katrin Kunzi,5,17:00:00,Reformer
+Yoli Ortega,1,17:00:00,Reformer
+Cele Bonella,2,17:00:00,Reformer
+Yoli Ortega,3,17:00:00,Reformer
+Cele Bonella,4,17:00:00,Reformer
+Flor Benítez,5,17:00:00,Reformer
+Sole Cardozo,1,18:00:00,Reformer
+Mónica Rodríguez,2,18:00:00,Reformer
+Ali Barua,2,18:00:00,Fuerza
+Sole Cardozo,3,18:00:00,Reformer
+Mónica Rodríguez,4,18:00:00,Reformer
+Vane Romero,4,18:00:00,Fuerza
+Lorena Aguilera,5,18:00:00,Reformer
+Miriam Zampedri,5,18:00:00,Fuerza
+Vane romero,1,18:00:00,Reformer
+Carina Sanabria,2,18:00:00,Reformer
+Vale Pollock,3,18:00:00,Reformer
+Carina Sanabria,4,18:00:00,Reformer
+Abi Ortigoza,5,18:00:00,Reformer
+Lorena Aguilera,1,18:00:00,Reformer
+Nati Ayala,2,18:00:00,Reformer
+Lorena Aguilera,3,18:00:00,Reformer
+Kari Yaciv,4,18:00:00,Reformer
+Natalia Leiva,1,18:00:00,Reformer
+Abi Ortigoza,3,18:00:00,Reformer
+Sole Cardozo,5,18:00:00,Reformer
+Victoria Pollock,1,18:00:00,Reformer
+Kari Yaciv,2,18:00:00,Reformer
+Natalia Leiva,3,18:00:00,Reformer
+Ali Barua,4,18:00:00,Reformer
+Pochi,5,18:00:00,Reformer
+Vale Pollock,1,18:00:00,Reformer
+Meli Stig,2,18:00:00,Reformer
+Victoria Pollock,3,18:00:00,Reformer
+Meli Stig,4,18:00:00,Reformer
+Adri,5,18:00:00,Reformer
+Kari Horianski,1,19:00:00,Reformer
+Rubén Pezuk,1,19:00:00,Fuerza
+Sofi Dovigo,2,19:00:00,Reformer
+Yani Cervino,2,19:00:00,Fuerza
+Patri Bravo,3,19:00:00,Reformer
+Sofi Dovigo,4,19:00:00,Reformer
+Yani Cervino,4,19:00:00,Fuerza
+Patri Bravo,5,19:00:00,Reformer
+Rubén Pezuk,5,19:00:00,Fuerza
+Vale Ganim,1,19:00:00,Reformer
+Vane Liendro,2,19:00:00,Reformer
+Magui Lacour,3,19:00:00,Reformer
+Vane Liendro,4,19:00:00,Reformer
+Vero Gomez,5,19:00:00,Reformer
+Mariana Chuda,1,19:00:00,Reformer
+Karen Angermeier,2,19:00:00,Reformer
+Mariana Chuda,3,19:00:00,Reformer
+Karen Angermeier,4,19:00:00,Reformer
+Mariana Chuda,5,19:00:00,Reformer
+Fernanda Senestrari,1,19:00:00,Reformer
+May Kurtz,2,19:00:00,Reformer
+Fernanda Senestrari,3,19:00:00,Reformer
+May Kurtz,4,19:00:00,Reformer
+Fernanda Senestrari,5,19:00:00,Reformer
+Mara,1,19:00:00,Reformer
+Guada Cuba,2,19:00:00,Reformer
+Mara,3,19:00:00,Reformer
+Guada Cuba,4,19:00:00,Reformer
+Kari Horianski,5,19:00:00,Reformer
+Magui Lacour,1,19:00:00,Reformer
+Harry,2,19:00:00,Reformer
+Vale Ganim,3,19:00:00,Reformer
+Harry,4,19:00:00,Reformer
+Vale Ganim,5,19:00:00,Reformer
+Ayelen Acosta,1,20:00:00,Reformer
+Miriam Zampedri,1,20:00:00,Fuerza
+Jorge Esterche,2,20:00:00,Reformer
+Vane,2,20:00:00,Fuerza
+Ayelen Acosta,3,20:00:00,Reformer
+Andre Küppers,4,20:00:00,Reformer
+Elías Kiebe,1,20:00:00,Reformer
+Ale Rendón,2,20:00:00,Reformer
+Elías Kiebe,3,20:00:00,Reformer
+Gina,4,20:00:00,Reformer
+Joha Haiber,1,20:00:00,Reformer
+Miriam Zampedri,2,20:00:00,Reformer
+Joha Haiber,3,20:00:00,Reformer
+Vane López,4,20:00:00,Reformer
+Andre Küppers,1,20:00:00,Reformer
+Vane López,2,20:00:00,Reformer
+Sergio Seewald,3,20:00:00,Reformer
+Silvia Valenzuela,4,20:00:00,Reformer
+Sergio Seewald,1,20:00:00,Reformer
+Caro Turski,2,20:00:00,Reformer
+Ale Rendón,3,20:00:00,Reformer
+Miriam Zampedri,4,20:00:00,Reformer
+Analía Cardozo,1,20:00:00,Reformer
+Gina,2,20:00:00,Reformer
+Vane Romero,3,20:00:00,Reformer
+Analía Cardozo,4,20:00:00,Reformer
