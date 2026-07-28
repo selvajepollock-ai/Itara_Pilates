@@ -72,7 +72,7 @@ export default function LoginPage() {
           <p className="hidden text-xs uppercase tracking-[0.3em] text-moss lg:block">
             Ingresá a tu cuenta
           </p>
-          <h2 className="mt-2 hidden font-display text-3xl italic text-ink lg:block">Bienvenido/a</h2>
+          <h2 className="mt-2 hidden font-display text-3xl italic text-ink lg:block">Itara Pilates</h2>
 
           <form
             onSubmit={handleSubmit}
