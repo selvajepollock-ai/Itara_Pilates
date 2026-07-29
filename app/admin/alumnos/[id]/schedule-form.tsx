@@ -41,8 +41,16 @@ function TimeGrid({
     return options.find((o) => o.dayOfWeek === day && o.startTime === hour) ?? null
   }
 
-  function handleToggle(option: ClassOption) {
+  function handleToggle(option: ClassOption, isFull: boolean) {
     const checked = !option.enrollmentId
+
+    if (checked && isFull) {
+      const ok = confirm(
+        `Esta clase ya está completa (${option.enrolled}/${option.capacity}). ¿Anotar igual, por encima del cupo?`
+      )
+      if (!ok) return
+    }
+
     setPendingId(option.id)
     startTransition(async () => {
       if (checked) {
@@ -93,18 +101,22 @@ function TimeGrid({
                 <button
                   key={opt.id}
                   type="button"
-                  disabled={isFull || isLoading}
-                  onClick={() => handleToggle(opt)}
-                  title={`${opt.enrolled}/${opt.capacity} ocupado`}
+                  disabled={isLoading}
+                  onClick={() => handleToggle(opt, isFull)}
+                  title={
+                    isFull
+                      ? `Completo (${opt.enrolled}/${opt.capacity}) — click para anotar igual`
+                      : `${opt.enrolled}/${opt.capacity} ocupado`
+                  }
                   className={`h-8 rounded-md border text-[11px] transition ${
                     isChecked
                       ? activeClasses
                       : isFull
-                        ? 'cursor-not-allowed border-sand bg-sand/40 text-ink/25'
+                        ? 'border-clay/40 bg-clay/10 text-clay hover:border-clay'
                         : 'border-sand bg-linen/40 text-ink/50 hover:border-moss hover:text-ink'
                   } ${isLoading ? 'opacity-50' : ''}`}
                 >
-                  {isChecked ? '✓' : ''}
+                  {isChecked ? '✓' : isFull ? '!' : ''}
                 </button>
               )
             })}
@@ -140,6 +152,9 @@ export function StudentScheduleForm({
     <div className="mt-3 space-y-5 rounded-2xl border border-sand bg-white p-5">
       <div>
         <p className="text-xs font-medium uppercase tracking-wide text-moss">Pilates Reformer</p>
+        <p className="mt-1 text-[11px] text-ink/40">
+          Las celdas naranjas (!) están al cupo — igual podés anotar ahí, te va a avisar antes.
+        </p>
         <div className="mt-2">
           <TimeGrid options={reformer} studentId={studentId} accent="moss" />
         </div>
