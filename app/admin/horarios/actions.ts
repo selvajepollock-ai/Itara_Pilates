@@ -131,11 +131,35 @@ export async function removeEnrollment(enrollmentId: string, classId: string) {
   if (!auth.ok) return { error: auth.error }
   const { supabase } = auth
 
+  // Si esta inscripción tiene cancelaciones/recuperaciones asociadas, hay que
+  // limpiarlas primero (si no, la base bloquea el borrado por la relación).
+  const { data: cancellations } = await supabase
+    .from('session_cancellations')
+    .select('id')
+    .eq('enrollment_id', enrollmentId)
+
+  const cancellationIds = (cancellations ?? []).map((c) => c.id)
+
+  if (cancellationIds.length > 0) {
+    const { data: credits } = await supabase
+      .from('recovery_credits')
+      .select('id')
+      .in('source_cancellation_id', cancellationIds)
+
+    const creditIds = (credits ?? []).map((c) => c.id)
+    if (creditIds.length > 0) {
+      await supabase.from('attendance').delete().in('recovery_credit_id', creditIds)
+      await supabase.from('recovery_credits').delete().in('id', creditIds)
+    }
+    await supabase.from('session_cancellations').delete().eq('enrollment_id', enrollmentId)
+  }
+
   const { error } = await supabase.from('enrollments').delete().eq('id', enrollmentId)
   if (error) return { error: error.message }
 
   revalidatePath(`/admin/horarios/${classId}`)
   revalidatePath('/admin/horarios')
+  return { success: true }
 }
 
 export async function createClassType(formData: FormData) {

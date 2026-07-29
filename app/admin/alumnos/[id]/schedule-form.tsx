@@ -30,6 +30,7 @@ function TimeGrid({
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [pendingId, setPendingId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const days = Array.from(new Set(options.map((o) => o.dayOfWeek))).sort((a, b) => {
     const order = [1, 2, 3, 4, 5, 6, 0]
@@ -52,14 +53,17 @@ function TimeGrid({
     }
 
     setPendingId(option.id)
+    setError(null)
     startTransition(async () => {
+      let result: { error?: string } | undefined
       if (checked) {
         const formData = new FormData()
         formData.set('student_id', studentId)
-        await enrollStudent(option.id, formData)
+        result = await enrollStudent(option.id, formData)
       } else if (option.enrollmentId) {
-        await removeEnrollment(option.enrollmentId, option.id)
+        result = await removeEnrollment(option.enrollmentId, option.id)
       }
+      if (result?.error) setError(result.error)
       router.refresh()
       setPendingId(null)
     })
@@ -123,6 +127,7 @@ function TimeGrid({
           </Fragment>
         ))}
       </div>
+      {error && <p className="mt-2 text-xs text-clay">{error}</p>}
     </div>
   )
 }
