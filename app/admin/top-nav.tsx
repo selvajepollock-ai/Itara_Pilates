@@ -15,21 +15,21 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
-const NAV_ITEMS = [
-  { href: '/admin', label: 'Inicio', icon: LayoutDashboard, exact: true },
-  { href: '/admin/alumnos', label: 'Alumnos', icon: Users },
-  { href: '/admin/instructores', label: 'Equipo', icon: UserCog },
-  { href: '/admin/horarios', label: 'Horarios', icon: CalendarDays },
-  { href: '/admin/planes', label: 'Planes', icon: CreditCard },
-  { href: '/admin/avisos', label: 'Avisos', icon: Bell },
-  { href: '/admin/reportes', label: 'Reportes', icon: BarChart3 },
-  { href: '/admin/notificaciones', label: 'Notif.', icon: Megaphone },
-]
-
-export function TopNav({ fullName }: { fullName: string }) {
+export function TopNav({ fullName, pendingCount = 0 }: { fullName: string; pendingCount?: number }) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
+
+  const NAV_ITEMS = [
+    { href: '/admin', label: 'Inicio', icon: LayoutDashboard, exact: true, badge: 0 },
+    { href: '/admin/alumnos', label: 'Alumnos', icon: Users, badge: 0 },
+    { href: '/admin/instructores', label: 'Equipo', icon: UserCog, badge: 0 },
+    { href: '/admin/horarios', label: 'Horarios', icon: CalendarDays, badge: 0 },
+    { href: '/admin/planes', label: 'Planes', icon: CreditCard, badge: 0 },
+    { href: '/admin/avisos', label: 'Avisos', icon: Bell, badge: pendingCount },
+    { href: '/admin/reportes', label: 'Reportes', icon: BarChart3, badge: 0 },
+    { href: '/admin/notificaciones', label: 'Notif.', icon: Megaphone, badge: 0 },
+  ]
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -57,18 +57,23 @@ export function TopNav({ fullName }: { fullName: string }) {
       </div>
 
       <nav className="flex gap-1 overflow-x-auto px-3 pb-3">
-        {NAV_ITEMS.map(({ href, label, icon: Icon, exact }) => {
+        {NAV_ITEMS.map(({ href, label, icon: Icon, exact, badge }) => {
           const isActive = exact ? pathname === href : pathname.startsWith(href)
           return (
             <Link
               key={href}
               href={href}
-              className={`flex shrink-0 flex-col items-center gap-1 rounded-xl px-3 py-1.5 text-[11px] transition ${
+              className={`relative flex shrink-0 flex-col items-center gap-1 rounded-xl px-3 py-1.5 text-[11px] transition ${
                 isActive ? 'bg-moss text-white' : 'text-ink/50 hover:bg-linen'
               }`}
             >
               <Icon size={16} strokeWidth={2} />
               {label}
+              {badge > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-clay px-1 text-[9px] font-medium text-white">
+                  {badge}
+                </span>
+              )}
             </Link>
           )
         })}

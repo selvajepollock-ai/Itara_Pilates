@@ -34,6 +34,24 @@ export default async function RecuperarPage({
 
   if (!credit || credit.student_id !== studentId) notFound()
 
+  if (credit.status === 'pending') {
+    return (
+      <div className="max-w-md">
+        <Link href="/alumno" className="text-sm text-moss hover:text-moss-dark">
+          ← Volver
+        </Link>
+        <div className="mt-6 rounded-2xl border border-clay/30 bg-clay/5 p-6">
+          <p className="text-sm text-ink">
+            Todavía estamos esperando el OK del estudio para esta recuperación.
+          </p>
+          <p className="mt-1 text-xs text-ink/50">
+            En cuanto la aprueben vas a poder elegir la clase acá mismo.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   if (credit.status !== 'available') {
     return (
       <div className="max-w-md">
@@ -53,7 +71,6 @@ export default async function RecuperarPage({
 
   const classes = (classesData ?? []) as unknown as ClassOption[]
 
-  // Armar TODOS los días desde hoy hasta el vencimiento del crédito (incluso sin clases ese día)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const weekEnd = new Date(`${credit.week_end}T00:00:00`)

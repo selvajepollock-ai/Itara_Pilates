@@ -6,21 +6,21 @@ import { LayoutDashboard, Users, UserCog, CalendarDays, CreditCard, Bell, BarCha
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-const NAV_ITEMS = [
-  { href: '/admin', label: 'Inicio', icon: LayoutDashboard, exact: true },
-  { href: '/admin/alumnos', label: 'Alumnos', icon: Users },
-  { href: '/admin/instructores', label: 'Equipo', icon: UserCog },
-  { href: '/admin/horarios', label: 'Horarios', icon: CalendarDays },
-  { href: '/admin/planes', label: 'Planes', icon: CreditCard },
-  { href: '/admin/avisos', label: 'Avisos', icon: Bell },
-  { href: '/admin/reportes', label: 'Reportes', icon: BarChart3 },
-  { href: '/admin/notificaciones', label: 'Notificaciones', icon: Megaphone },
-]
-
-export function Sidebar({ fullName }: { fullName: string }) {
+export function Sidebar({ fullName, pendingCount = 0 }: { fullName: string; pendingCount?: number }) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
+
+  const NAV_ITEMS = [
+    { href: '/admin', label: 'Inicio', icon: LayoutDashboard, exact: true, badge: 0 },
+    { href: '/admin/alumnos', label: 'Alumnos', icon: Users, badge: 0 },
+    { href: '/admin/instructores', label: 'Equipo', icon: UserCog, badge: 0 },
+    { href: '/admin/horarios', label: 'Horarios', icon: CalendarDays, badge: 0 },
+    { href: '/admin/planes', label: 'Planes', icon: CreditCard, badge: 0 },
+    { href: '/admin/avisos', label: 'Avisos', icon: Bell, badge: pendingCount },
+    { href: '/admin/reportes', label: 'Reportes', icon: BarChart3, badge: 0 },
+    { href: '/admin/notificaciones', label: 'Notificaciones', icon: Megaphone, badge: 0 },
+  ]
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -40,7 +40,7 @@ export function Sidebar({ fullName }: { fullName: string }) {
       </div>
 
       <nav className="flex-1 space-y-1 px-3">
-        {NAV_ITEMS.map(({ href, label, icon: Icon, exact }) => {
+        {NAV_ITEMS.map(({ href, label, icon: Icon, exact, badge }) => {
           const isActive = exact ? pathname === href : pathname.startsWith(href)
           return (
             <Link
@@ -53,7 +53,16 @@ export function Sidebar({ fullName }: { fullName: string }) {
               }`}
             >
               <Icon size={17} strokeWidth={2} />
-              {label}
+              <span className="flex-1">{label}</span>
+              {badge > 0 && (
+                <span
+                  className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[11px] font-medium ${
+                    isActive ? 'bg-white text-moss' : 'bg-clay text-white'
+                  }`}
+                >
+                  {badge}
+                </span>
+              )}
             </Link>
           )
         })}
