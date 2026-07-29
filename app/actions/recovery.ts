@@ -99,7 +99,7 @@ export async function cancelSession({
         class_type_id: classInfo.class_type_id,
         week_start: toISODate(monday),
         week_end: toISODate(sunday),
-        status: 'available',
+        status: 'pending',
       })
       .select('id')
       .maybeSingle()
@@ -143,6 +143,9 @@ export async function bookRecovery({
 
   if (!credit) return { error: 'Esa clase a recuperar ya no existe. Volvé a tu horario e intentá de nuevo.' }
   if (credit.student_id !== studentId) return { error: 'Esa clase a recuperar no te pertenece.' }
+  if (credit.status === 'pending') {
+    return { error: 'Esta recuperación todavía está pendiente de aprobación del estudio.' }
+  }
   if (credit.status !== 'available') {
     return { error: 'Esa clase a recuperar ya fue usada o venció. Volvé a tu horario para ver el estado actual.' }
   }
@@ -213,5 +216,30 @@ export async function bookRecovery({
   revalidatePath(`/admin/alumnos/${studentId}`)
   revalidatePath('/admin/avisos')
 
+  return { success: true }
+}
+
+export async function approveRecoveryCredit(creditId: string) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado.' }
+
+  const { data: profile } = await supabase.from('profiles').select('roles').eq('id', user.id).maybeSingle()
+  if (!profile?.roles?.includes('admin')) {
+    return { error: 'No tenés permisos para esta acción.' }
+  }
+
+  const { error } = await supabase
+    .from('recovery_credits')
+    .update({ status: 'available' })
+    .eq('id', creditId)
+    .eq('status', 'pending')
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/avisos')
+  revalidatePath('/alumno')
   return { success: true }
 }

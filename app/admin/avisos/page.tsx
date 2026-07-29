@@ -1,8 +1,9 @@
-import { CalendarX, RefreshCw, Repeat } from 'lucide-react'
+import { CalendarX, RefreshCw, Repeat, Clock } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, formatTime } from '@/lib/day-names'
 import { formatARS } from '@/lib/currency'
 import { ResolvePlanRequestButton } from './resolve-plan-request-button'
+import { ApproveRecoveryButton } from './approve-recovery-button'
 
 type CancellationRow = {
   id: string
@@ -24,23 +25,29 @@ type RecoveryRow = {
 export default async function AvisosPage() {
   const supabase = await createClient()
 
-  const [{ data: cancellationsData }, { data: recoveriesData }] = await Promise.all([
-    supabase
-      .from('session_cancellations')
-      .select(
-        'id, session_date, within_deadline, cancelled_at, profiles(full_name), classes(day_of_week, start_time, class_types(name))'
-      )
-      .order('cancelled_at', { ascending: false })
-      .limit(20),
-    supabase
-      .from('attendance')
-      .select(
-        'id, session_date, created_at, profiles(full_name), classes(day_of_week, start_time, class_types(name))'
-      )
-      .not('recovery_credit_id', 'is', null)
-      .order('created_at', { ascending: false })
-      .limit(20),
-  ])
+  const [{ data: cancellationsData }, { data: recoveriesData }, { data: pendingCredits }] =
+    await Promise.all([
+      supabase
+        .from('session_cancellations')
+        .select(
+          'id, session_date, within_deadline, cancelled_at, profiles(full_name), classes(day_of_week, start_time, class_types(name))'
+        )
+        .order('cancelled_at', { ascending: false })
+        .limit(20),
+      supabase
+        .from('attendance')
+        .select(
+          'id, session_date, created_at, profiles(full_name), classes(day_of_week, start_time, class_types(name))'
+        )
+        .not('recovery_credit_id', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(20),
+      supabase
+        .from('recovery_credits')
+        .select('id, week_end, class_types(name), profiles(full_name)')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false }),
+    ])
 
   const { data: planRequests } = await supabase
     .from('plan_change_requests')
@@ -67,6 +74,37 @@ export default async function AvisosPage() {
       <p className="mt-2 text-sm text-ink/60">
         Quién avisó que no venía y quién se anotó a recuperar.
       </p>
+
+      {pendingCredits && pendingCredits.length > 0 && (
+        <div className="mt-8">
+          <p className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-clay">
+            <Clock size={13} />
+            Recuperaciones pendientes de aprobar ({pendingCredits.length})
+          </p>
+          <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-clay/30 bg-clay/5">
+            {pendingCredits.map((c) => (
+              <li key={c.id} className="flex items-center justify-between gap-3 px-5 py-4">
+                <div>
+                  <p className="text-sm text-ink">
+                    <span className="font-medium">
+                      {(c.profiles as unknown as { full_name: string } | null)?.full_name}
+                    </span>{' '}
+                    — {(c.class_types as unknown as { name: string } | null)?.name}
+                  </p>
+                  <p className="text-xs text-ink/40">
+                    vence{' '}
+                    {new Date(`${c.week_end}T00:00:00`).toLocaleDateString('es-AR', {
+                      day: 'numeric',
+                      month: 'short',
+                    })}
+                  </p>
+                </div>
+                <ApproveRecoveryButton creditId={c.id} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {planRequests && planRequests.length > 0 && (
         <div className="mt-8">
@@ -124,7 +162,7 @@ export default async function AvisosPage() {
                   <span className="font-medium">{name}</span>{' '}
                   {item.kind === 'cancel'
                     ? (item.row as CancellationRow).within_deadline
-                      ? 'avisó que no va y le queda una clase a recuperar'
+                      ? 'avisó que no va — recuperación pendiente de aprobar'
                       : 'avisó que no va (fuera de horario, sin recuperación)'
                     : 'se anotó a recuperar'}
                 </p>
