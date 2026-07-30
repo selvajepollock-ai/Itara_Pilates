@@ -15,13 +15,21 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
-export function TopNav({ fullName, pendingCount = 0 }: { fullName: string; pendingCount?: number }) {
+export function TopNav({
+  fullName,
+  pendingCount = 0,
+  birthdaysToday = 0,
+}: {
+  fullName: string
+  pendingCount?: number
+  birthdaysToday?: number
+}) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
 
   const NAV_ITEMS = [
-    { href: '/admin', label: 'Inicio', icon: LayoutDashboard, exact: true, badge: 0 },
+    { href: '/admin', label: 'Inicio', icon: LayoutDashboard, exact: true, badge: birthdaysToday },
     { href: '/admin/alumnos', label: 'Alumnos', icon: Users, badge: 0 },
     { href: '/admin/instructores', label: 'Equipo', icon: UserCog, badge: 0 },
     { href: '/admin/horarios', label: 'Horarios', icon: CalendarDays, badge: 0 },
@@ -71,7 +79,7 @@ export function TopNav({ fullName, pendingCount = 0 }: { fullName: string; pendi
               {label}
               {badge > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-clay px-1 text-[9px] font-medium text-white">
-                  {badge}
+                  {href === '/admin' ? '🎂' : badge}
                 </span>
               )}
             </Link>

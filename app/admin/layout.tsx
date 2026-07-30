@@ -31,7 +31,7 @@ export default async function AdminLayout({
       supabase
         .from('recovery_credits')
         .select('id', { count: 'exact', head: true })
-        .eq('status', 'requested'),
+        .eq('status', 'pending'),
       supabase
         .from('plan_change_requests')
         .select('id', { count: 'exact', head: true })

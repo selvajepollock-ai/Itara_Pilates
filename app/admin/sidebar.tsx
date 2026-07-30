@@ -6,13 +6,21 @@ import { LayoutDashboard, Users, UserCog, CalendarDays, CreditCard, Bell, BarCha
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-export function Sidebar({ fullName, pendingCount = 0 }: { fullName: string; pendingCount?: number }) {
+export function Sidebar({
+  fullName,
+  pendingCount = 0,
+  birthdaysToday = 0,
+}: {
+  fullName: string
+  pendingCount?: number
+  birthdaysToday?: number
+}) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
 
   const NAV_ITEMS = [
-    { href: '/admin', label: 'Inicio', icon: LayoutDashboard, exact: true, badge: 0 },
+    { href: '/admin', label: 'Inicio', icon: LayoutDashboard, exact: true, badge: birthdaysToday },
     { href: '/admin/alumnos', label: 'Alumnos', icon: Users, badge: 0 },
     { href: '/admin/instructores', label: 'Equipo', icon: UserCog, badge: 0 },
     { href: '/admin/horarios', label: 'Horarios', icon: CalendarDays, badge: 0 },
@@ -60,7 +68,7 @@ export function Sidebar({ fullName, pendingCount = 0 }: { fullName: string; pend
                     isActive ? 'bg-white text-moss' : 'bg-clay text-white'
                   }`}
                 >
-                  {badge}
+                  {href === '/admin' ? '🎂' : badge}
                 </span>
               )}
             </Link>
