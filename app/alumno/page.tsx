@@ -3,7 +3,7 @@ import { CalendarX, RefreshCw, Flower2, CalendarDays, Clock } from 'lucide-react
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
 import { getPaymentStatus, STATUS_LABEL, STATUS_CLASSES } from '@/lib/billing'
-import { getMonday, dateForDayOfWeek, toISODate, isInPast } from '@/lib/sessions'
+import { getMonday, dateForDayOfWeek, toISODate, isInPast, hoursUntil } from '@/lib/sessions'
 import { getDailyQuote } from '@/lib/quotes'
 import { ReprogramarButton } from './reprogramar-button'
 import { RequestPlanChangeForm } from './request-plan-change-form'
@@ -383,6 +383,13 @@ export default async function AlumnoDashboard() {
                                     enrollmentId={e.id}
                                     classId={e.class_id}
                                     sessionDate={sessionDate}
+                                    classTypeName={e.classes?.class_types?.name ?? 'Clase'}
+                                    dayLabel={DAY_NAMES[day]}
+                                    startTime={formatTime(e.classes?.start_time ?? '')}
+                                    room={e.classes?.room ?? ''}
+                                    instructorName={e.classes?.profiles?.full_name ?? 'Sin instructor'}
+                                    hoursLeft={hoursUntil(sessionDate, e.classes?.start_time ?? '00:00:00')}
+                                    minHours={minHours}
                                   />
                                 </div>
                               )}
