@@ -5,7 +5,8 @@ import { EditStudentForm } from './edit-student-form'
 import { SetPasswordForm } from './set-password-form'
 import { StudentScheduleForm } from './schedule-form'
 import { StudentBilling } from './student-billing'
-import { WeeklySessions } from './weekly-sessions'
+import { MonthSessions } from './month-sessions'
+import { PlanEditorToggle } from './plan-editor-toggle'
 import { GrantAccessForm } from './grant-access-form'
 import { DeleteStudentButton } from './delete-student-button'
 import { ToggleStudentActiveButton } from './toggle-active-button'
@@ -27,11 +28,11 @@ export default async function EditarAlumnoPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ week?: string }>
+  searchParams: Promise<{ month?: string }>
 }) {
   const { id } = await params
-  const { week } = await searchParams
-  const weekOffset = week ? parseInt(week, 10) || 0 : 0
+  const { month } = await searchParams
+  const monthOffset = month ? parseInt(month, 10) || 0 : 0
   const supabase = await createClient()
 
   const [{ data: student }, { data: classesData }, { data: myEnrollments }, { data: allEnrollments }] =
@@ -116,15 +117,14 @@ export default async function EditarAlumnoPage({
         </div>
 
         <div>
-          <h2 className="text-xs uppercase tracking-[0.25em] text-moss">Horario asignado</h2>
-          <p className="mt-1 text-sm text-ink/50">
-            Tildá las clases fijas de este alumno (lo que paga mes a mes). Se repiten todas las semanas.
-          </p>
-          <StudentScheduleForm studentId={student.id} classOptions={classOptions} />
+          <MonthSessions studentId={student.id} monthOffset={monthOffset} />
 
-          <div className="mt-6">
-            <WeeklySessions studentId={student.id} weekOffset={weekOffset} />
-          </div>
+          <PlanEditorToggle>
+            <p className="mb-2 text-xs text-ink/50">
+              Esto cambia el plan de base — afecta todas las semanas futuras, no solo una fecha puntual.
+            </p>
+            <StudentScheduleForm studentId={student.id} classOptions={classOptions} />
+          </PlanEditorToggle>
         </div>
       </div>
     </div>
