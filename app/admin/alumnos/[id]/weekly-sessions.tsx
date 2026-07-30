@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
 import { getMonday, dateForDayOfWeek, toISODate, isInPast } from '@/lib/sessions'
@@ -14,9 +15,20 @@ type MyClassRow = {
   } | null
 }
 
-export async function WeeklySessions({ studentId }: { studentId: string }) {
+export async function WeeklySessions({
+  studentId,
+  weekOffset = 0,
+}: {
+  studentId: string
+  weekOffset?: number
+}) {
   const supabase = await createClient()
-  const monday = getMonday(new Date())
+  const baseMonday = getMonday(new Date())
+  const monday = new Date(baseMonday)
+  monday.setDate(monday.getDate() + weekOffset * 7)
+
+  const prevOffset = weekOffset - 1
+  const nextOffset = weekOffset + 1
 
   const [{ data }, { data: cancellations }, { data: credits }] = await Promise.all([
     supabase
@@ -40,22 +52,46 @@ export async function WeeklySessions({ studentId }: { studentId: string }) {
   const enrollments = (data ?? []) as unknown as MyClassRow[]
   const cancelledKeys = new Set((cancellations ?? []).map((c) => `${c.enrollment_id}_${c.session_date}`))
 
-  const thisWeek = DAY_ORDER.flatMap((day) =>
+  const weekSessions = DAY_ORDER.flatMap((day) =>
     enrollments
       .filter((e) => e.classes?.day_of_week === day)
       .map((e) => {
         const sessionDate = toISODate(dateForDayOfWeek(monday, day))
         return { ...e, day, sessionDate }
       })
-  ).filter((e) => !isInPast(e.sessionDate, e.classes?.start_time ?? '23:59:00'))
+  ).filter((e) => weekOffset > 0 || !isInPast(e.sessionDate, e.classes?.start_time ?? '23:59:00'))
+
+  const weekLabel = `${monday.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })} – ${new Date(
+    monday.getTime() + 6 * 86400000
+  ).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}`
 
   return (
     <div className="rounded-2xl border border-sand bg-white p-6">
-      <p className="text-xs uppercase tracking-[0.25em] text-moss">Esta semana</p>
-      <p className="mt-1 font-display text-lg italic text-ink">Cancelar en nombre del alumno</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-[0.25em] text-moss">
+            {weekOffset === 0 ? 'Esta semana' : weekLabel}
+          </p>
+          <p className="mt-1 font-display text-lg italic text-ink">Cancelar / mover en nombre del alumno</p>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Link
+            href={`?week=${prevOffset}`}
+            className="flex h-7 w-7 items-center justify-center rounded-full border border-sand text-ink/50 hover:border-moss hover:text-moss"
+          >
+            <ChevronLeft size={14} />
+          </Link>
+          <Link
+            href={`?week=${nextOffset}`}
+            className="flex h-7 w-7 items-center justify-center rounded-full border border-sand text-ink/50 hover:border-moss hover:text-moss"
+          >
+            <ChevronRight size={14} />
+          </Link>
+        </div>
+      </div>
 
       <div className="mt-3 space-y-2">
-        {thisWeek.map((e) => {
+        {weekSessions.map((e) => {
           const key = `${e.id}_${e.sessionDate}`
           const alreadyCancelled = cancelledKeys.has(key)
           return (
@@ -77,8 +113,8 @@ export async function WeeklySessions({ studentId }: { studentId: string }) {
             </div>
           )
         })}
-        {thisWeek.length === 0 && (
-          <p className="text-sm text-ink/40">No tiene clases pendientes esta semana.</p>
+        {weekSessions.length === 0 && (
+          <p className="text-sm text-ink/40">No tiene clases pendientes esa semana.</p>
         )}
       </div>
 
@@ -95,7 +131,7 @@ export async function WeeklySessions({ studentId }: { studentId: string }) {
                   href={`/admin/alumnos/${studentId}/recuperar/${c.id}`}
                   className="text-xs font-medium text-clay hover:text-clay/70"
                 >
-                  Anotar recuperación
+                  Mover a otro horario
                 </Link>
               </li>
             ))}

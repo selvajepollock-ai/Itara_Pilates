@@ -202,6 +202,41 @@ export async function bookRecovery({
   const occupancy = (enrolledCount ?? 0) - (cancelledCount ?? 0) + (recoveringCount ?? 0)
   if (occupancy >= targetClass.capacity) return { error: 'Esa clase ya está completa.' }
 
+  // Si lo hace la admin en nombre del alumno, se confirma directo (no necesita "auto-aprobarse").
+  if (auth.actingAdmin) {
+    const { error: attendanceError } = await supabase.from('attendance').insert({
+      class_id: classId,
+      session_date: sessionDate,
+      student_id: studentId,
+      status: 'recovering',
+      recovery_credit_id: creditId,
+    })
+
+    if (attendanceError) {
+      if (attendanceError.message.toLowerCase().includes('duplicate')) {
+        return { error: 'Ya tenés una recuperación anotada en esa clase.' }
+      }
+      return { error: attendanceError.message }
+    }
+
+    const { data: updatedDirect, error: directError } = await supabase
+      .from('recovery_credits')
+      .update({ status: 'used', used_class_id: classId, used_session_date: sessionDate })
+      .eq('id', creditId)
+      .eq('status', 'available')
+      .select('id')
+      .maybeSingle()
+
+    if (directError || !updatedDirect) {
+      return { error: directError?.message ?? 'La clase quedó anotada, pero no se pudo actualizar el estado.' }
+    }
+
+    revalidatePath('/alumno')
+    revalidatePath(`/admin/alumnos/${studentId}`)
+    revalidatePath('/admin/avisos')
+    return { success: true }
+  }
+
   const { data: updated, error: updateError } = await supabase
     .from('recovery_credits')
     .update({

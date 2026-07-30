@@ -22,8 +22,16 @@ type ClassOption = {
   class_types: { name: string } | null
 }
 
-export default async function EditarAlumnoPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EditarAlumnoPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ week?: string }>
+}) {
   const { id } = await params
+  const { week } = await searchParams
+  const weekOffset = week ? parseInt(week, 10) || 0 : 0
   const supabase = await createClient()
 
   const [{ data: student }, { data: classesData }, { data: myEnrollments }, { data: allEnrollments }] =
@@ -115,7 +123,7 @@ export default async function EditarAlumnoPage({ params }: { params: Promise<{ i
           <StudentScheduleForm studentId={student.id} classOptions={classOptions} />
 
           <div className="mt-6">
-            <WeeklySessions studentId={student.id} />
+            <WeeklySessions studentId={student.id} weekOffset={weekOffset} />
           </div>
         </div>
       </div>
