@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
 import { getMonday, dateForDayOfWeek, toISODate, isInPast } from '@/lib/sessions'
 
@@ -22,6 +23,7 @@ export default async function AlumnoCalendarioPage({
 }) {
   const { week } = await searchParams
   const supabase = await createClient()
+  const admin = createAdminClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -39,7 +41,9 @@ export default async function AlumnoCalendarioPage({
       .select('id, day_of_week, start_time, end_time, capacity, room, class_types(name), profiles(full_name)')
       .eq('active', true),
     supabase.from('enrollments').select('class_id').eq('student_id', studentId).eq('status', 'active'),
-    supabase.from('enrollments').select('class_id').eq('status', 'active'),
+    // Ocupación real de TODOS los alumnos: necesita el cliente admin, si no las políticas
+    // de privacidad esconden las inscripciones de otros alumnos y da 0 de ocupación.
+    admin.from('enrollments').select('class_id').eq('status', 'active'),
   ])
 
   const allClasses = (classesData ?? []) as unknown as ClassRow[]

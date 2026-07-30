@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { toISODate, isInPast } from '@/lib/sessions'
 import { DayAccordion } from './day-accordion'
 
@@ -91,19 +92,20 @@ export default async function RecuperarPage({
 
       const withOccupancy = await Promise.all(
         matches.map(async (c) => {
+          const admin = createAdminClient()
           const [{ count: enrolledCount }, { count: cancelledCount }, { count: recoveringCount }] =
             await Promise.all([
-              supabase
+              admin
                 .from('enrollments')
                 .select('id', { count: 'exact', head: true })
                 .eq('class_id', c.id)
                 .eq('status', 'active'),
-              supabase
+              admin
                 .from('session_cancellations')
                 .select('id', { count: 'exact', head: true })
                 .eq('class_id', c.id)
                 .eq('session_date', date),
-              supabase
+              admin
                 .from('attendance')
                 .select('id', { count: 'exact', head: true })
                 .eq('class_id', c.id)

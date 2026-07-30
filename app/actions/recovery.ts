@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { getMonday, getSunday, toISODate, hoursUntil } from '@/lib/sessions'
 
 async function assertSelfOrAdmin(targetStudentId: string) {
@@ -178,18 +179,19 @@ export async function bookRecovery({
     return { error: 'Esa clase es de otro tipo, no coincide con lo que tenés para recuperar.' }
   }
 
+  const admin = createAdminClient()
   const [{ count: enrolledCount }, { count: cancelledCount }, { count: recoveringCount }] = await Promise.all([
-    supabase
+    admin
       .from('enrollments')
       .select('id', { count: 'exact', head: true })
       .eq('class_id', classId)
       .eq('status', 'active'),
-    supabase
+    admin
       .from('session_cancellations')
       .select('id', { count: 'exact', head: true })
       .eq('class_id', classId)
       .eq('session_date', sessionDate),
-    supabase
+    admin
       .from('attendance')
       .select('id', { count: 'exact', head: true })
       .eq('class_id', classId)
