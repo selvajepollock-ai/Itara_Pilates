@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { cancelSession } from '@/app/actions/recovery'
+import { formatTime } from '@/lib/day-names'
 
 type FixedClass = {
   enrollmentId: string
@@ -25,7 +26,6 @@ export function MonthCell({
   past,
   fixedClass,
   recovered,
-  formatTime,
 }: {
   studentId: string
   date: number
@@ -34,7 +34,6 @@ export function MonthCell({
   past: boolean
   fixedClass?: FixedClass
   recovered?: Recovered
-  formatTime: (t: string) => string
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()

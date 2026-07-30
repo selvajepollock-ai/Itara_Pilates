@@ -164,7 +164,6 @@ export async function MonthSessions({
                   past={past}
                   fixedClass={fixedClass}
                   recovered={recovered}
-                  formatTime={formatTime}
                 />
               )
             })
