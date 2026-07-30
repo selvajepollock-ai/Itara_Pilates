@@ -16,12 +16,6 @@ export default async function AlumnoLayout({
 
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name')
-    .eq('id', user.id)
-    .single()
-
   return (
     <div className="min-h-screen bg-linen">
       <header className="border-b border-sand bg-white/70 px-6 py-5 backdrop-blur-sm sm:px-10">
@@ -30,8 +24,8 @@ export default async function AlumnoLayout({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-emblem.png" alt="Itara Pilates" className="h-9 w-9 object-contain" />
             <div>
-              <p className="text-xs uppercase tracking-[0.25em] text-moss">Mi estudio</p>
-              <p className="mt-0.5 font-display text-xl italic text-ink">{profile?.full_name}</p>
+              <p className="text-xs uppercase tracking-[0.25em] text-moss">Estudio</p>
+              <p className="mt-0.5 font-display text-xl italic text-ink">Itara Pilates</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

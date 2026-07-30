@@ -74,10 +74,11 @@ export default async function RecuperarPage({
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+  const weekStart = new Date(`${credit.week_start}T00:00:00`)
   const weekEnd = new Date(`${credit.week_end}T00:00:00`)
 
   const days: string[] = []
-  const cursor = new Date(today)
+  const cursor = new Date(today > weekStart ? today : weekStart)
   while (cursor <= weekEnd) {
     days.push(toISODate(cursor))
     cursor.setDate(cursor.getDate() + 1)
