@@ -9,11 +9,13 @@ export function CancelSessionButton({
   enrollmentId,
   classId,
   sessionDate,
+  label = 'No puedo ir',
 }: {
   studentId: string
   enrollmentId: string
   classId: string
   sessionDate: string
+  label?: string
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -21,7 +23,7 @@ export function CancelSessionButton({
   const [result, setResult] = useState<{ withinDeadline: boolean } | null>(null)
 
   function handleCancel() {
-    if (!confirm('¿Avisar que no vas a esta clase?')) return
+    if (!confirm('¿Confirmás avisar que no va a esta clase?')) return
     setError(null)
     startTransition(async () => {
       const res = await cancelSession({ studentId, enrollmentId, classId, sessionDate })
@@ -38,7 +40,7 @@ export function CancelSessionButton({
     return (
       <p className={`text-xs ${result.withinDeadline ? 'text-moss-dark' : 'text-clay'}`}>
         {result.withinDeadline
-          ? 'Avisado — tenés una clase para recuperar esta semana ✓'
+          ? 'Avisado — queda una clase para recuperar esta semana ✓'
           : 'Avisado (fuera de horario, sin recuperación)'}
       </p>
     )
@@ -51,7 +53,7 @@ export function CancelSessionButton({
         disabled={isPending}
         className="text-xs font-medium text-clay hover:text-clay/70 disabled:opacity-50"
       >
-        {isPending ? 'Avisando...' : 'No puedo ir'}
+        {isPending ? 'Avisando...' : label}
       </button>
       {error && <p className="mt-1 text-xs text-clay">{error}</p>}
     </div>

@@ -30,24 +30,35 @@ export async function WeeklySessions({
   const prevOffset = weekOffset - 1
   const nextOffset = weekOffset + 1
 
-  const [{ data }, { data: cancellations }, { data: credits }] = await Promise.all([
-    supabase
-      .from('enrollments')
-      .select('id, class_id, classes(day_of_week, start_time, class_types(name))')
-      .eq('student_id', studentId)
-      .eq('status', 'active'),
-    supabase
-      .from('session_cancellations')
-      .select('enrollment_id, session_date')
-      .eq('student_id', studentId)
-      .gte('session_date', toISODate(monday)),
-    supabase
-      .from('recovery_credits')
-      .select('id, week_end, class_types(name)')
-      .eq('student_id', studentId)
-      .eq('status', 'available')
-      .gte('week_end', toISODate(new Date())),
-  ])
+  const sunday = new Date(monday)
+  sunday.setDate(sunday.getDate() + 6)
+
+  const [{ data }, { data: cancellations }, { data: credits }, { data: confirmedThisWeek }] =
+    await Promise.all([
+      supabase
+        .from('enrollments')
+        .select('id, class_id, classes(day_of_week, start_time, class_types(name))')
+        .eq('student_id', studentId)
+        .eq('status', 'active'),
+      supabase
+        .from('session_cancellations')
+        .select('enrollment_id, session_date')
+        .eq('student_id', studentId)
+        .gte('session_date', toISODate(monday)),
+      supabase
+        .from('recovery_credits')
+        .select('id, week_end, class_types(name)')
+        .eq('student_id', studentId)
+        .eq('status', 'available')
+        .gte('week_end', toISODate(new Date())),
+      supabase
+        .from('attendance')
+        .select('id, session_date, classes(start_time, class_types(name))')
+        .eq('student_id', studentId)
+        .not('recovery_credit_id', 'is', null)
+        .gte('session_date', toISODate(monday))
+        .lte('session_date', toISODate(sunday)),
+    ])
 
   const enrollments = (data ?? []) as unknown as MyClassRow[]
   const cancelledKeys = new Set((cancellations ?? []).map((c) => `${c.enrollment_id}_${c.session_date}`))
@@ -108,6 +119,7 @@ export async function WeeklySessions({
                   enrollmentId={e.id}
                   classId={e.class_id}
                   sessionDate={e.sessionDate}
+                  label="Cancelar"
                 />
               )}
             </div>
@@ -117,6 +129,33 @@ export async function WeeklySessions({
           <p className="text-sm text-ink/40">No tiene clases pendientes esa semana.</p>
         )}
       </div>
+
+      {confirmedThisWeek && confirmedThisWeek.length > 0 && (
+        <div className="mt-4 border-t border-sand pt-4">
+          <p className="text-xs uppercase tracking-wide text-moss">Recuperación confirmada esta semana</p>
+          <ul className="mt-2 space-y-1.5">
+            {confirmedThisWeek.map((a) => {
+              const cls = a.classes as unknown as {
+                start_time: string
+                class_types: { name: string } | null
+              } | null
+              return (
+                <li key={a.id} className="flex items-center justify-between rounded-lg bg-moss/5 px-3 py-2 text-sm">
+                  <span className="text-ink">
+                    {cls?.class_types?.name} —{' '}
+                    {new Date(`${a.session_date}T00:00:00`).toLocaleDateString('es-AR', {
+                      weekday: 'short',
+                      day: 'numeric',
+                    })}
+                    , {formatTime(cls?.start_time ?? '')}
+                  </span>
+                  <span className="text-xs text-moss">✓</span>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
 
       {credits && credits.length > 0 && (
         <div className="mt-4 border-t border-sand pt-4">
