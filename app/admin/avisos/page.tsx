@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, formatTime } from '@/lib/day-names'
 import { formatARS } from '@/lib/currency'
 import { ResolvePlanRequestButton } from './resolve-plan-request-button'
-import { ApproveRecoveryButton } from './approve-recovery-button'
+import { RecoveryRequestActions } from './recovery-request-actions'
 
 type CancellationRow = {
   id: string
@@ -44,8 +44,10 @@ export default async function AvisosPage() {
         .limit(20),
       supabase
         .from('recovery_credits')
-        .select('id, week_end, class_types(name), profiles(full_name)')
-        .eq('status', 'pending')
+        .select(
+          'id, week_end, class_types(name), profiles(full_name), requested_class_id, requested_session_date, classes:requested_class_id(day_of_week, start_time, room)'
+        )
+        .eq('status', 'requested')
         .order('created_at', { ascending: false }),
     ])
 
@@ -79,29 +81,45 @@ export default async function AvisosPage() {
         <div className="mt-8">
           <p className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-clay">
             <Clock size={13} />
-            Recuperaciones pendientes de aprobar ({pendingCredits.length})
+            Recuperaciones solicitadas ({pendingCredits.length})
           </p>
           <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-clay/30 bg-clay/5">
-            {pendingCredits.map((c) => (
-              <li key={c.id} className="flex items-center justify-between gap-3 px-5 py-4">
-                <div>
-                  <p className="text-sm text-ink">
-                    <span className="font-medium">
-                      {(c.profiles as unknown as { full_name: string } | null)?.full_name}
-                    </span>{' '}
-                    — {(c.class_types as unknown as { name: string } | null)?.name}
-                  </p>
-                  <p className="text-xs text-ink/40">
-                    vence{' '}
-                    {new Date(`${c.week_end}T00:00:00`).toLocaleDateString('es-AR', {
-                      day: 'numeric',
-                      month: 'short',
-                    })}
-                  </p>
-                </div>
-                <ApproveRecoveryButton creditId={c.id} />
-              </li>
-            ))}
+            {pendingCredits.map((c) => {
+              const requestedClass = c.classes as unknown as {
+                day_of_week: number
+                start_time: string
+                room: string
+              } | null
+              return (
+                <li key={c.id} className="flex items-center justify-between gap-3 px-5 py-4">
+                  <div>
+                    <p className="text-sm text-ink">
+                      <span className="font-medium">
+                        {(c.profiles as unknown as { full_name: string } | null)?.full_name}
+                      </span>{' '}
+                      quiere pasar su clase de{' '}
+                      <span className="font-medium">
+                        {(c.class_types as unknown as { name: string } | null)?.name}
+                      </span>{' '}
+                      al{' '}
+                      {requestedClass ? (
+                        <span className="font-medium">
+                          {DAY_NAMES[requestedClass.day_of_week]} {formatTime(requestedClass.start_time)}
+                          {c.requested_session_date &&
+                            ` (${new Date(`${c.requested_session_date}T00:00:00`).toLocaleDateString('es-AR', {
+                              day: 'numeric',
+                              month: 'short',
+                            })})`}
+                        </span>
+                      ) : (
+                        'un horario'
+                      )}
+                    </p>
+                  </div>
+                  <RecoveryRequestActions creditId={c.id} />
+                </li>
+              )
+            })}
           </ul>
         </div>
       )}

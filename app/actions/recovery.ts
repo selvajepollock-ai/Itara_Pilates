@@ -21,6 +21,20 @@ async function assertSelfOrAdmin(targetStudentId: string) {
   return { ok: true as const, supabase, actingAdmin: true }
 }
 
+async function assertAdmin() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false as const, error: 'No autenticado.' }
+
+  const { data: profile } = await supabase.from('profiles').select('roles').eq('id', user.id).maybeSingle()
+  if (!profile?.roles?.includes('admin')) {
+    return { ok: false as const, error: 'No tenés permisos para esta acción.' }
+  }
+  return { ok: true as const, supabase }
+}
+
 export async function cancelSession({
   studentId,
   enrollmentId,
@@ -99,7 +113,7 @@ export async function cancelSession({
         class_type_id: classInfo.class_type_id,
         week_start: toISODate(monday),
         week_end: toISODate(sunday),
-        status: 'pending',
+        status: 'available',
       })
       .select('id')
       .maybeSingle()
@@ -120,6 +134,8 @@ export async function cancelSession({
   return { success: true, withinDeadline, recoveryCreditId }
 }
 
+// El alumno elige un horario candidato. Queda "solicitado", esperando el OK del estudio.
+// Todavía NO se anota de verdad (no se crea asistencia) hasta que el admin apruebe.
 export async function bookRecovery({
   studentId,
   creditId,
@@ -143,8 +159,8 @@ export async function bookRecovery({
 
   if (!credit) return { error: 'Esa clase a recuperar ya no existe. Volvé a tu horario e intentá de nuevo.' }
   if (credit.student_id !== studentId) return { error: 'Esa clase a recuperar no te pertenece.' }
-  if (credit.status === 'pending') {
-    return { error: 'Esta recuperación todavía está pendiente de aprobación del estudio.' }
+  if (credit.status === 'requested') {
+    return { error: 'Ya tenés un horario esperando aprobación. Esperá la respuesta antes de elegir otro.' }
   }
   if (credit.status !== 'available') {
     return { error: 'Esa clase a recuperar ya fue usada o venció. Volvé a tu horario para ver el estado actual.' }
@@ -184,33 +200,20 @@ export async function bookRecovery({
   const occupancy = (enrolledCount ?? 0) - (cancelledCount ?? 0) + (recoveringCount ?? 0)
   if (occupancy >= targetClass.capacity) return { error: 'Esa clase ya está completa.' }
 
-  const { error: attendanceError } = await supabase.from('attendance').insert({
-    class_id: classId,
-    session_date: sessionDate,
-    student_id: studentId,
-    status: 'recovering',
-    recovery_credit_id: creditId,
-  })
-
-  if (attendanceError) {
-    if (attendanceError.message.toLowerCase().includes('duplicate')) {
-      return { error: 'Ya tenés una recuperación anotada en esa clase.' }
-    }
-    return { error: attendanceError.message }
-  }
-
-  const { data: updatedCredit, error: creditUpdateError } = await supabase
+  const { data: updated, error: updateError } = await supabase
     .from('recovery_credits')
-    .update({ status: 'used', used_class_id: classId, used_session_date: sessionDate })
+    .update({
+      status: 'requested',
+      requested_class_id: classId,
+      requested_session_date: sessionDate,
+    })
     .eq('id', creditId)
     .eq('status', 'available')
     .select('id')
     .maybeSingle()
 
-  if (creditUpdateError || !updatedCredit) {
-    // La reserva (attendance) ya quedó registrada; avisamos igual si el estado no se pudo confirmar.
-    return { error: creditUpdateError?.message ?? 'La clase quedó anotada, pero no se pudo actualizar el estado. Refrescá la página.' }
-  }
+  if (updateError) return { error: updateError.message }
+  if (!updated) return { error: 'Alguien más ya modificó esta recuperación. Refrescá la página.' }
 
   revalidatePath('/alumno')
   revalidatePath(`/admin/alumnos/${studentId}`)
@@ -219,23 +222,62 @@ export async function bookRecovery({
   return { success: true }
 }
 
-export async function approveRecoveryCredit(creditId: string) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return { error: 'No autenticado.' }
+// Admin aprueba el horario solicitado: recién ahora se confirma la asistencia de verdad.
+export async function approveRecoveryRequest(creditId: string) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
 
-  const { data: profile } = await supabase.from('profiles').select('roles').eq('id', user.id).maybeSingle()
-  if (!profile?.roles?.includes('admin')) {
-    return { error: 'No tenés permisos para esta acción.' }
+  const { data: credit } = await supabase
+    .from('recovery_credits')
+    .select('id, student_id, status, requested_class_id, requested_session_date')
+    .eq('id', creditId)
+    .maybeSingle()
+
+  if (!credit) return { error: 'Esa solicitud ya no existe.' }
+  if (credit.status !== 'requested' || !credit.requested_class_id || !credit.requested_session_date) {
+    return { error: 'Esta solicitud ya fue resuelta.' }
+  }
+
+  const { error: attendanceError } = await supabase.from('attendance').insert({
+    class_id: credit.requested_class_id,
+    session_date: credit.requested_session_date,
+    student_id: credit.student_id,
+    status: 'recovering',
+    recovery_credit_id: creditId,
+  })
+
+  if (attendanceError) {
+    if (attendanceError.message.toLowerCase().includes('duplicate')) {
+      return { error: 'Esa clase ya tiene una recuperación anotada.' }
+    }
+    return { error: attendanceError.message }
   }
 
   const { error } = await supabase
     .from('recovery_credits')
-    .update({ status: 'available' })
+    .update({ status: 'used', used_class_id: credit.requested_class_id, used_session_date: credit.requested_session_date })
     .eq('id', creditId)
-    .eq('status', 'pending')
+    .eq('status', 'requested')
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/avisos')
+  revalidatePath('/alumno')
+  return { success: true }
+}
+
+// Admin rechaza el horario solicitado: vuelve a "available" para que el alumno elija otro.
+export async function rejectRecoveryRequest(creditId: string) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
+
+  const { error } = await supabase
+    .from('recovery_credits')
+    .update({ status: 'available', requested_class_id: null, requested_session_date: null })
+    .eq('id', creditId)
+    .eq('status', 'requested')
 
   if (error) return { error: error.message }
 

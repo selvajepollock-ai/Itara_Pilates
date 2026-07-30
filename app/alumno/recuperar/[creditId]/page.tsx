@@ -34,7 +34,7 @@ export default async function RecuperarPage({
 
   if (!credit || credit.student_id !== studentId) notFound()
 
-  if (credit.status === 'pending') {
+  if (credit.status === 'requested') {
     return (
       <div className="max-w-md">
         <Link href="/alumno" className="text-sm text-moss hover:text-moss-dark">
@@ -42,10 +42,10 @@ export default async function RecuperarPage({
         </Link>
         <div className="mt-6 rounded-2xl border border-clay/30 bg-clay/5 p-6">
           <p className="text-sm text-ink">
-            Todavía estamos esperando el OK del estudio para esta recuperación.
+            Ya elegiste un horario y está esperando el OK del estudio.
           </p>
           <p className="mt-1 text-xs text-ink/50">
-            En cuanto la aprueben vas a poder elegir la clase acá mismo.
+            En cuanto lo aprueben o si eligen otro, te vamos a avisar en tu panel.
           </p>
         </div>
       </div>

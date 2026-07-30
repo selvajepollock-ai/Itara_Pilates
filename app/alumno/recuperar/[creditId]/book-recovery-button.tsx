@@ -41,7 +41,7 @@ export function BookRecoveryButton({
         disabled={isPending}
         className="rounded-full bg-moss px-4 py-2 text-xs font-medium text-white hover:bg-moss-dark disabled:opacity-50"
       >
-        {isPending ? 'Anotando...' : 'Anotarme acá'}
+        {isPending ? 'Enviando...' : 'Solicitar este horario'}
       </button>
       {error && <p className="mt-1 text-xs text-clay">{error}</p>}
     </div>

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { CalendarX, RefreshCw, Flower2, CalendarDays } from 'lucide-react'
+import { CalendarX, RefreshCw, Flower2, CalendarDays, Clock } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
 import { getPaymentStatus, STATUS_LABEL, STATUS_CLASSES } from '@/lib/billing'
@@ -46,6 +46,7 @@ export default async function AlumnoDashboard() {
     { data: recentRecoveries },
     { data: activePlans },
     { data: upcomingRecoveries },
+    { data: requestedCredits },
   ] = await Promise.all([
     supabase
       .from('enrollments')
@@ -95,6 +96,13 @@ export default async function AlumnoDashboard() {
       .not('recovery_credit_id', 'is', null)
       .gte('session_date', todayISO)
       .order('session_date', { ascending: true }),
+    supabase
+      .from('recovery_credits')
+      .select(
+        'id, requested_session_date, class_types(name), classes:requested_class_id(start_time, day_of_week)'
+      )
+      .eq('student_id', studentId)
+      .eq('status', 'requested'),
   ])
 
   const firstName = profile?.full_name?.split(' ')[0]
@@ -198,7 +206,9 @@ export default async function AlumnoDashboard() {
         <span className="text-xs text-ink/40">Todas las semanas →</span>
       </Link>
 
-      {(upcomingRecoveries && upcomingRecoveries.length > 0) || (credits && credits.length > 0) ? (
+      {(upcomingRecoveries && upcomingRecoveries.length > 0) ||
+      (requestedCredits && requestedCredits.length > 0) ||
+      (credits && credits.length > 0) ? (
         <div className="mt-4 rounded-2xl border border-sand bg-white px-5 py-4">
           <p className="text-xs uppercase tracking-[0.25em] text-moss">Recuperaciones</p>
 
@@ -235,8 +245,50 @@ export default async function AlumnoDashboard() {
             </div>
           )}
 
+          {requestedCredits && requestedCredits.length > 0 && (
+            <div
+              className={
+                upcomingRecoveries && upcomingRecoveries.length > 0
+                  ? 'mt-4 border-t border-sand pt-4'
+                  : 'mt-3'
+              }
+            >
+              <p className="flex items-center gap-1.5 text-xs font-medium text-clay">
+                <Clock size={13} />
+                Esperando aprobación
+              </p>
+              <ul className="mt-1.5 space-y-2">
+                {requestedCredits.map((c) => {
+                  const cls = c.classes as unknown as { start_time: string; day_of_week: number } | null
+                  return (
+                    <li key={c.id} className="rounded-xl bg-clay/5 px-3 py-2 text-sm text-ink">
+                      <span className="font-medium">
+                        {(c.class_types as unknown as { name: string } | null)?.name}
+                      </span>{' '}
+                      — pediste pasarte al{' '}
+                      {cls && `${DAY_NAMES[cls.day_of_week]} ${formatTime(cls.start_time)}`}
+                      {c.requested_session_date &&
+                        ` (${new Date(`${c.requested_session_date}T00:00:00`).toLocaleDateString('es-AR', {
+                          day: 'numeric',
+                          month: 'short',
+                        })})`}
+                      <span className="ml-1 text-xs text-clay/70">— esperando el OK del estudio</span>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          )}
+
           {credits && credits.length > 0 && (
-            <div className={upcomingRecoveries && upcomingRecoveries.length > 0 ? 'mt-4 border-t border-sand pt-4' : 'mt-3'}>
+            <div
+              className={
+                (upcomingRecoveries && upcomingRecoveries.length > 0) ||
+                (requestedCredits && requestedCredits.length > 0)
+                  ? 'mt-4 border-t border-sand pt-4'
+                  : 'mt-3'
+              }
+            >
               <p className="text-xs font-medium text-clay">
                 Pendientes de elegir ({credits.length})
               </p>
