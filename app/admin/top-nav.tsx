@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
@@ -14,11 +15,12 @@ import {
   LogOut,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { getNotificationCounts } from './notification-counts'
 
 export function TopNav({
   fullName,
-  pendingCount = 0,
-  birthdaysToday = 0,
+  pendingCount: initialPendingCount = 0,
+  birthdaysToday: initialBirthdaysToday = 0,
 }: {
   fullName: string
   pendingCount?: number
@@ -27,6 +29,17 @@ export function TopNav({
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
+  const [pendingCount, setPendingCount] = useState(initialPendingCount)
+  const [birthdaysToday, setBirthdaysToday] = useState(initialBirthdaysToday)
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const counts = await getNotificationCounts()
+      setPendingCount(counts.pendingCount)
+      setBirthdaysToday(counts.birthdaysToday)
+    }, 5 * 60 * 1000) // cada 5 minutos
+    return () => clearInterval(interval)
+  }, [])
 
   const NAV_ITEMS = [
     { href: '/admin', label: 'Inicio', icon: LayoutDashboard, exact: true, badge: birthdaysToday },
