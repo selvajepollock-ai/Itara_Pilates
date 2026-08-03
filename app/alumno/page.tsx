@@ -5,6 +5,7 @@ import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
 import { getPaymentStatus, STATUS_LABEL, STATUS_CLASSES } from '@/lib/billing'
 import { getMonday, dateForDayOfWeek, toISODate, isInPast, hoursUntil } from '@/lib/sessions'
 import { getDailyQuote } from '@/lib/quotes'
+import { displayClassType } from '@/lib/class-type-display'
 import { ReprogramarButton } from './reprogramar-button'
 import { RequestPlanChangeForm } from './request-plan-change-form'
 
@@ -144,15 +145,17 @@ export default async function AlumnoDashboard() {
     ...(recentCancellations ?? []).map((c): ActivityItem => ({
       kind: 'cancel',
       at: c.session_date,
-      typeName: (c.classes as unknown as { class_types: { name: string } | null } | null)?.class_types
-        ?.name,
+      typeName: displayClassType(
+        (c.classes as unknown as { class_types: { name: string } | null } | null)?.class_types?.name
+      ),
       withinDeadline: c.within_deadline,
     })),
     ...(recentRecoveries ?? []).map((r): ActivityItem => ({
       kind: 'recover',
       at: r.session_date,
-      typeName: (r.classes as unknown as { class_types: { name: string } | null } | null)?.class_types
-        ?.name,
+      typeName: displayClassType(
+        (r.classes as unknown as { class_types: { name: string } | null } | null)?.class_types?.name
+      ),
     })),
   ]
     .sort((a, b) => b.at.localeCompare(a.at))
@@ -229,7 +232,7 @@ export default async function AlumnoDashboard() {
                       className="flex items-center justify-between rounded-xl bg-moss/5 px-3 py-2 text-sm"
                     >
                       <span className="text-ink">
-                        <span className="font-medium">{cls?.class_types?.name}</span> —{' '}
+                        <span className="font-medium">{displayClassType(cls?.class_types?.name)}</span> —{' '}
                         {new Date(`${r.session_date}T00:00:00`).toLocaleDateString('es-AR', {
                           weekday: 'short',
                           day: 'numeric',
@@ -263,7 +266,7 @@ export default async function AlumnoDashboard() {
                   return (
                     <li key={c.id} className="rounded-xl bg-clay/5 px-3 py-2 text-sm text-ink">
                       <span className="font-medium">
-                        {(c.class_types as unknown as { name: string } | null)?.name}
+                        {displayClassType((c.class_types as unknown as { name: string } | null)?.name)}
                       </span>{' '}
                       — pediste pasarte al{' '}
                       {cls && `${DAY_NAMES[cls.day_of_week]} ${formatTime(cls.start_time)}`}
@@ -299,7 +302,7 @@ export default async function AlumnoDashboard() {
                     className="flex items-center justify-between rounded-xl bg-clay/5 px-3 py-2 text-sm"
                   >
                     <span className="text-ink">
-                      {(c.class_types as unknown as { name: string } | null)?.name}
+                      {displayClassType((c.class_types as unknown as { name: string } | null)?.name)}
                       {credits.length > 1 ? ` #${i + 1}` : ''} — hasta el{' '}
                       {new Date(`${c.week_end}T00:00:00`).toLocaleDateString('es-AR', {
                         day: 'numeric',
@@ -356,7 +359,7 @@ export default async function AlumnoDashboard() {
                           >
                             <div className="flex items-start justify-between gap-2">
                               <p className="font-display text-lg italic leading-tight text-ink">
-                                {e.classes?.class_types?.name}
+                                {displayClassType(e.classes?.class_types?.name)}
                               </p>
                               <span className="whitespace-nowrap rounded-full bg-blush px-2.5 py-1 text-xs tabular-nums text-ink">
                                 {formatTime(e.classes?.start_time ?? '')}
@@ -383,7 +386,7 @@ export default async function AlumnoDashboard() {
                                     enrollmentId={e.id}
                                     classId={e.class_id}
                                     sessionDate={sessionDate}
-                                    classTypeName={e.classes?.class_types?.name ?? 'Clase'}
+                                    classTypeName={displayClassType(e.classes?.class_types?.name)}
                                     dayLabel={DAY_NAMES[day]}
                                     startTime={formatTime(e.classes?.start_time ?? '')}
                                     room={e.classes?.room ?? ''}

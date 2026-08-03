@@ -5,6 +5,7 @@ import { formatTime } from '@/lib/day-names'
 import { toISODate } from '@/lib/sessions'
 import { DateJumpInput } from './date-jump-input'
 import { ClassRoster } from '../class-roster'
+import { BackButton } from './back-button'
 
 type ClassRow = {
   id: string
@@ -63,7 +64,8 @@ export default async function PasarListaPage({
 
   return (
     <div>
-      <p className="text-xs uppercase tracking-[0.25em] text-moss">
+      <BackButton />
+      <p className="mt-4 text-xs uppercase tracking-[0.25em] text-moss">
         {isAdmin ? 'Estudio' : 'Tu agenda'}
       </p>
       <h1 className="mt-2 font-display text-3xl italic text-ink">Pasar lista</h1>

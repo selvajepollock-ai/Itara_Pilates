@@ -56,10 +56,12 @@ export function ReprogramarButton({
       if (res?.withinDeadline) {
         setRecoveryCreditId(res.recoveryCreditId ?? null)
         setStep('offer')
+        // Ojo: NO refrescamos acá todavía — si lo hacemos, la tarjeta de esta clase
+        // pasa a "Ya avisaste que no vas" y este cartel desaparece antes de que
+        // puedas elegir "Buscar horario". Se refresca recién al cerrar el flujo.
       } else {
         setStep('too-late')
       }
-      router.refresh()
     })
   }
 
@@ -70,6 +72,7 @@ export function ReprogramarButton({
   function handleSkipForNow() {
     setDone('requested-later')
     close()
+    router.refresh()
   }
 
   if (done === 'requested-later') {
@@ -115,8 +118,8 @@ export function ReprogramarButton({
                   </p>
                   <p className="flex items-center gap-1.5 text-xs">
                     <Clock size={13} />
-                    Te quedan {Math.max(hoursLeft, 0)} hs de anticipación (mínimo {minHours} hs para
-                    poder recuperar)
+                    Te quedan {Math.max(Math.round(hoursLeft), 0)} hs de anticipación (mínimo{' '}
+                    {minHours} hs para poder solicitar recuperatorio)
                   </p>
                 </div>
                 <div className="mt-5 flex gap-2">
@@ -171,6 +174,7 @@ export function ReprogramarButton({
                   onClick={() => {
                     setDone('no-recovery')
                     close()
+                    router.refresh()
                   }}
                   className="mt-5 w-full rounded-full bg-moss px-4 py-2.5 text-sm font-medium text-white hover:bg-moss-dark"
                 >

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { toISODate, isInPast } from '@/lib/sessions'
+import { displayClassType } from '@/lib/class-type-display'
 import { DayAccordion } from './day-accordion'
 
 type ClassOption = {
@@ -122,7 +123,9 @@ export default async function RecuperarPage({
     })
   )
 
-  const typeName = (credit.class_types as unknown as { name: string } | null)?.name
+  const typeName = displayClassType(
+    (credit.class_types as unknown as { name: string } | null)?.name
+  )
   const firstDayWithRoom = optionsByDay.findIndex((d) => d.options.some((o) => o.hasRoom))
 
   return (

@@ -97,7 +97,7 @@ export default async function AlumnoCalendarioPage({
       </div>
 
       <p className="mt-4 text-xs text-ink/40">
-        Pilates Reformer, todo el estudio. Marcado en verde, tus clases fijas.
+        Pilates, todo el estudio. Marcado en verde, tus clases fijas.
       </p>
 
       <div className="mt-4 space-y-6">
