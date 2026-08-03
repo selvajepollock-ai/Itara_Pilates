@@ -25,6 +25,9 @@ type RecoveryRow = {
 export default async function AvisosPage() {
   const supabase = await createClient()
 
+  // Marcar como vistas todas las cancelaciones nuevas (apaga la campanita)
+  await supabase.from('session_cancellations').update({ acknowledged: true }).eq('acknowledged', false)
+
   const [{ data: cancellationsData }, { data: recoveriesData }, { data: pendingCredits }] =
     await Promise.all([
       supabase
@@ -45,7 +48,7 @@ export default async function AvisosPage() {
       supabase
         .from('recovery_credits')
         .select(
-          'id, week_end, class_types(name), profiles(full_name), requested_class_id, requested_session_date, classes:requested_class_id(day_of_week, start_time, room)'
+          'id, week_end, class_types(name), profiles(full_name), requested_class_id, requested_session_date, classes:requested_class_id(day_of_week, start_time, room), session_cancellations:source_cancellation_id(session_date, classes(day_of_week, start_time))'
         )
         .eq('status', 'requested')
         .order('created_at', { ascending: false }),
@@ -90,6 +93,10 @@ export default async function AvisosPage() {
                 start_time: string
                 room: string
               } | null
+              const originalCancellation = c.session_cancellations as unknown as {
+                session_date: string
+                classes: { day_of_week: number; start_time: string } | null
+              } | null
               return (
                 <li key={c.id} className="flex items-center justify-between gap-3 px-5 py-4">
                   <div>
@@ -98,9 +105,21 @@ export default async function AvisosPage() {
                         {(c.profiles as unknown as { full_name: string } | null)?.full_name}
                       </span>{' '}
                       quiere pasar su clase de{' '}
-                      <span className="font-medium">
-                        {(c.class_types as unknown as { name: string } | null)?.name}
-                      </span>{' '}
+                      <span className="font-medium">Pilates</span>
+                      {originalCancellation && (
+                        <>
+                          {' '}
+                          del{' '}
+                          <span className="font-medium">
+                            {DAY_NAMES[originalCancellation.classes?.day_of_week ?? 0]}{' '}
+                            {formatTime(originalCancellation.classes?.start_time ?? '')}
+                            {` (${new Date(`${originalCancellation.session_date}T00:00:00`).toLocaleDateString(
+                              'es-AR',
+                              { day: 'numeric', month: 'short' }
+                            )})`}
+                          </span>
+                        </>
+                      )}{' '}
                       al{' '}
                       {requestedClass ? (
                         <span className="font-medium">
