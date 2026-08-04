@@ -46,6 +46,7 @@ export async function updateStudioSettings(formData: FormData) {
   const cancellationMinHours = Number(formData.get('cancellation_min_hours') ?? 2)
   const paymentDueDay = Number(formData.get('payment_due_day') ?? 10)
   const paymentReminderDaysBefore = Number(formData.get('payment_reminder_days_before') ?? 3)
+  const dropInClassPrice = Number(formData.get('drop_in_class_price') ?? 0)
 
   const { error } = await supabase
     .from('studio_settings')
@@ -53,6 +54,7 @@ export async function updateStudioSettings(formData: FormData) {
       cancellation_min_hours: cancellationMinHours,
       payment_due_day: paymentDueDay,
       payment_reminder_days_before: paymentReminderDaysBefore,
+      drop_in_class_price: dropInClassPrice,
     })
     .eq('id', 1)
 

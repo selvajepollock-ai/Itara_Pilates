@@ -259,6 +259,103 @@ export async function bookRecovery({
   return { success: true }
 }
 
+// Admin agrega una clase EXTRA paga (no reemplaza ninguna de sus clases fijas).
+// Se anota directo y genera un cargo pendiente por el precio configurado.
+export async function addExtraClass({
+  studentId,
+  classId,
+  sessionDate,
+}: {
+  studentId: string
+  classId: string
+  sessionDate: string
+}) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
+
+  const { data: targetClass } = await supabase
+    .from('classes')
+    .select('id, class_type_id, capacity')
+    .eq('id', classId)
+    .maybeSingle()
+
+  if (!targetClass) return { error: 'La clase no existe.' }
+
+  const [{ count: enrolledCount }, { count: cancelledCount }, { count: recoveringCount }] = await Promise.all([
+    supabase
+      .from('enrollments')
+      .select('id', { count: 'exact', head: true })
+      .eq('class_id', classId)
+      .eq('status', 'active'),
+    supabase
+      .from('session_cancellations')
+      .select('id', { count: 'exact', head: true })
+      .eq('class_id', classId)
+      .eq('session_date', sessionDate),
+    supabase
+      .from('attendance')
+      .select('id', { count: 'exact', head: true })
+      .eq('class_id', classId)
+      .eq('session_date', sessionDate)
+      .not('recovery_credit_id', 'is', null),
+  ])
+
+  const occupancy = (enrolledCount ?? 0) - (cancelledCount ?? 0) + (recoveringCount ?? 0)
+  if (occupancy >= targetClass.capacity) return { error: 'Esa clase ya está completa.' }
+
+  const { data: settings } = await supabase
+    .from('studio_settings')
+    .select('drop_in_class_price')
+    .maybeSingle()
+  const price = settings?.drop_in_class_price ?? 0
+
+  const { data: credit, error: creditError } = await supabase
+    .from('recovery_credits')
+    .insert({
+      student_id: studentId,
+      class_type_id: targetClass.class_type_id,
+      week_start: sessionDate,
+      week_end: sessionDate,
+      status: 'used',
+      used_class_id: classId,
+      used_session_date: sessionDate,
+      is_paid_extra: true,
+    })
+    .select('id')
+    .maybeSingle()
+
+  if (creditError || !credit) return { error: creditError?.message ?? 'No se pudo crear la reserva.' }
+
+  const { error: attendanceError } = await supabase.from('attendance').insert({
+    class_id: classId,
+    session_date: sessionDate,
+    student_id: studentId,
+    status: 'recovering',
+    recovery_credit_id: credit.id,
+  })
+
+  if (attendanceError) {
+    if (attendanceError.message.toLowerCase().includes('duplicate')) {
+      return { error: 'Ya hay una reserva anotada en esa clase para este alumno.' }
+    }
+    return { error: attendanceError.message }
+  }
+
+  const { error: chargeError } = await supabase.from('extra_charges').insert({
+    student_id: studentId,
+    recovery_credit_id: credit.id,
+    description: `Clase extra — ${sessionDate}`,
+    amount: price,
+  })
+
+  if (chargeError) return { error: chargeError.message }
+
+  revalidatePath(`/admin/alumnos/${studentId}`)
+  revalidatePath('/alumno')
+  return { success: true }
+}
+
 // Admin aprueba el horario solicitado: recién ahora se confirma la asistencia de verdad.
 export async function approveRecoveryRequest(creditId: string) {
   const auth = await assertAdmin()

@@ -8,6 +8,7 @@ import { StudentBilling } from './student-billing'
 import { MonthSessions } from './month-sessions'
 import { PlanEditorToggle } from './plan-editor-toggle'
 import { GrantAccessForm } from './grant-access-form'
+import { ExtraChargesSection } from './extra-charges-section'
 import { DeleteStudentButton } from './delete-student-button'
 import { ToggleStudentActiveButton } from './toggle-active-button'
 import { isNoAccessEmail } from '@/lib/auth-username'
@@ -104,6 +105,7 @@ export default async function EditarAlumnoPage({
           )}
 
           <StudentBilling studentId={student.id} />
+          <ExtraChargesSection studentId={student.id} />
 
           <div>
             <h2 className="text-xs uppercase tracking-[0.25em] text-moss">

@@ -7,6 +7,7 @@ type Settings = {
   cancellation_min_hours: number
   payment_due_day: number
   payment_reminder_days_before: number
+  drop_in_class_price: number
 }
 
 export function StudioSettingsForm({ settings }: { settings: Settings }) {
@@ -69,6 +70,21 @@ export function StudioSettingsForm({ settings }: { settings: Settings }) {
           defaultValue={settings.payment_reminder_days_before}
           className={inputClass}
         />
+      </div>
+
+      <div>
+        <label className={labelClass}>Precio de clase suelta / extra (ARS)</label>
+        <input
+          type="number"
+          name="drop_in_class_price"
+          min={0}
+          step="0.01"
+          defaultValue={settings.drop_in_class_price}
+          className={inputClass}
+        />
+        <p className="mt-1 text-xs text-ink/40">
+          Se usa cuando agregás una clase extra paga a un alumno, fuera de su plan fijo.
+        </p>
       </div>
 
       {error && <p className="text-sm text-clay">{error}</p>}

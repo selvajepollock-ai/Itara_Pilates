@@ -13,7 +13,7 @@ export default async function PerfilPage() {
     supabase.from('profiles').select('full_name, email').eq('id', user?.id ?? '').single(),
     supabase
       .from('studio_settings')
-      .select('cancellation_min_hours, payment_due_day, payment_reminder_days_before')
+      .select('cancellation_min_hours, payment_due_day, payment_reminder_days_before, drop_in_class_price')
       .single(),
   ])
 
@@ -42,6 +42,7 @@ export default async function PerfilPage() {
           cancellation_min_hours: settings?.cancellation_min_hours ?? 2,
           payment_due_day: settings?.payment_due_day ?? 10,
           payment_reminder_days_before: settings?.payment_reminder_days_before ?? 3,
+          drop_in_class_price: settings?.drop_in_class_price ?? 0,
         }}
       />
     </div>
