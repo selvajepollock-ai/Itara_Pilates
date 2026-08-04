@@ -24,6 +24,7 @@ export async function updateStudent(studentId: string, formData: FormData) {
   if (!auth.ok) return { error: auth.error }
 
   const fullName = String(formData.get('full_name') ?? '').trim()
+  const nickname = String(formData.get('nickname') ?? '').trim()
   const email = String(formData.get('email') ?? '').trim().toLowerCase()
   const phone = String(formData.get('phone') ?? '').trim()
   const birthDate = String(formData.get('birth_date') ?? '').trim()
@@ -40,6 +41,7 @@ export async function updateStudent(studentId: string, formData: FormData) {
     .from('profiles')
     .update({
       full_name: fullName,
+      nickname: nickname || null,
       email,
       phone: phone || null,
       birth_date: birthDate || null,

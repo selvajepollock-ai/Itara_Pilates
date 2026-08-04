@@ -11,7 +11,7 @@ export default async function AlumnosPage() {
   const [{ data: students }, { data: subscriptions }, { data: settings }] = await Promise.all([
     supabase
       .from('profiles')
-      .select('id, full_name, email, contact_email, phone, active, created_at')
+      .select('id, full_name, nickname, email, contact_email, phone, active, created_at')
       .contains('roles', ['student'])
       .order('created_at', { ascending: false }),
     supabase.from('subscriptions').select('student_id, end_date').eq('status', 'active'),
@@ -36,21 +36,13 @@ export default async function AlumnosPage() {
           <h1 className="mt-2 font-display text-3xl italic text-ink">Alumnos</h1>
           <p className="mt-1 text-sm text-ink/50">{students?.length ?? 0} en total</p>
         </div>
-        <div className="flex gap-3">
-          <Link
-            href="/admin/alumnos/importar"
-            className="flex items-center gap-1.5 rounded-full border border-sand px-5 py-2.5 text-sm font-medium text-ink/70 transition hover:border-moss hover:text-moss"
-          >
-            Importar masivo
-          </Link>
-          <Link
-            href="/admin/alumnos/nuevo"
-            className="flex items-center gap-1.5 rounded-full bg-moss px-5 py-2.5 text-sm font-medium text-white transition hover:bg-moss-dark"
-          >
-            <Plus size={16} strokeWidth={2.5} />
-            Nuevo alumno
-          </Link>
-        </div>
+        <Link
+          href="/admin/alumnos/nuevo"
+          className="flex items-center gap-1.5 rounded-full bg-moss px-5 py-2.5 text-sm font-medium text-white transition hover:bg-moss-dark"
+        >
+          <Plus size={16} strokeWidth={2.5} />
+          Nuevo alumno
+        </Link>
       </div>
 
       <div className="mt-8">

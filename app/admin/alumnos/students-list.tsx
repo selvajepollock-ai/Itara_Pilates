@@ -8,7 +8,10 @@ import { STATUS_LABEL, STATUS_CLASSES, type PaymentStatus } from '@/lib/billing'
 type Student = {
   id: string
   full_name: string
+  nickname: string | null
   email: string
+  displayEmail: string | null
+  hasAccess: boolean
   phone: string | null
   active: boolean
   status: PaymentStatus
@@ -37,7 +40,11 @@ export function StudentsList({ students }: { students: Student[] }) {
     if (query.trim()) {
       const q = query.trim().toLowerCase()
       list = list.filter(
-        (s) => s.full_name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q)
+        (s) =>
+          s.full_name.toLowerCase().includes(q) ||
+          s.nickname?.toLowerCase().includes(q) ||
+          s.email.toLowerCase().includes(q) ||
+          s.displayEmail?.toLowerCase().includes(q)
       )
     }
     return list
@@ -94,10 +101,24 @@ export function StudentsList({ students }: { students: Student[] }) {
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blush text-xs font-medium text-ink">
                       {s.full_name?.slice(0, 1).toUpperCase()}
                     </div>
-                    <span className="text-ink">{s.full_name}</span>
+                    <div>
+                      <span className="text-ink">{s.full_name}</span>
+                      {s.nickname && <p className="text-xs text-ink/40">"{s.nickname}"</p>}
+                    </div>
                   </div>
                 </td>
-                <td className="px-5 py-3.5 text-ink/60">{s.email}</td>
+                <td className="px-5 py-3.5 text-ink/60">
+                  {s.hasAccess ? (
+                    s.email
+                  ) : (
+                    <span className="flex items-center gap-1.5">
+                      <span className="rounded-full bg-sand px-2 py-0.5 text-xs text-ink/50">
+                        Sin acceso
+                      </span>
+                      {s.displayEmail && <span className="text-xs text-ink/40">{s.displayEmail}</span>}
+                    </span>
+                  )}
+                </td>
                 <td className="px-5 py-3.5">
                   <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_CLASSES[s.status]}`}>
                     {STATUS_LABEL[s.status]}

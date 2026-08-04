@@ -6,6 +6,7 @@ import { updateStudent } from './actions'
 type Student = {
   id: string
   full_name: string
+  nickname: string | null
   email: string
   phone: string | null
   birth_date: string | null
@@ -42,6 +43,21 @@ export function EditStudentForm({ student }: { student: Student }) {
           defaultValue={student.full_name}
           className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
         />
+      </div>
+
+      <div>
+        <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
+          Apodo / nombre de pila (opcional)
+        </label>
+        <input
+          name="nickname"
+          defaultValue={student.nickname ?? ''}
+          placeholder="Ej: Vale, Cami, Toti..."
+          className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
+        />
+        <p className="mt-1 text-xs text-ink/40">
+          Si lo cargás, también podés buscarlo por este nombre en el buscador de Alumnos.
+        </p>
       </div>
 
       <div>

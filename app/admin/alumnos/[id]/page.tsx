@@ -28,16 +28,16 @@ export default async function EditarAlumnoPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ month?: string }>
+  searchParams: Promise<{ week?: string }>
 }) {
   const { id } = await params
-  const { month } = await searchParams
-  const monthOffset = month ? parseInt(month, 10) || 0 : 0
+  const { week } = await searchParams
+  const weekOffset = week ? parseInt(week, 10) || 0 : 0
   const supabase = await createClient()
 
   const [{ data: student }, { data: classesData }, { data: myEnrollments }, { data: allEnrollments }] =
     await Promise.all([
-      supabase.from('profiles').select('id, full_name, email, phone, birth_date, health_notes, contact_email, active').eq('id', id).single(),
+      supabase.from('profiles').select('id, full_name, nickname, email, phone, birth_date, health_notes, contact_email, active').eq('id', id).single(),
       supabase
         .from('classes')
         .select('id, day_of_week, start_time, end_time, capacity, room, class_types(name)')
@@ -117,7 +117,7 @@ export default async function EditarAlumnoPage({
         </div>
 
         <div>
-          <MonthSessions studentId={student.id} monthOffset={monthOffset} />
+          <MonthSessions studentId={student.id} weekOffset={weekOffset} />
 
           <PlanEditorToggle>
             <p className="mb-2 text-xs text-ink/50">

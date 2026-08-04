@@ -5,19 +5,32 @@ import { MonthMoveCalendar } from './month-move-calendar'
 
 export async function MonthSessions({
   studentId,
-  monthOffset = 0,
+  weekOffset = 0,
 }: {
   studentId: string
-  monthOffset?: number
+  weekOffset?: number
 }) {
   const supabase = await createClient()
   const admin = createAdminClient()
 
   const today = new Date()
-  const targetMonth = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1)
-  const monthStart = new Date(targetMonth.getFullYear(), targetMonth.getMonth(), 1)
-  const monthEnd = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0)
-  const monthLabel = targetMonth.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
+  const baseMonday = new Date(today)
+  const toMonday = (baseMonday.getDay() + 6) % 7
+  baseMonday.setDate(baseMonday.getDate() - toMonday)
+  const monday = new Date(baseMonday)
+  monday.setDate(monday.getDate() + weekOffset * 7)
+
+  const weekDates = Array.from({ length: 5 }, (_, i) => {
+    const d = new Date(monday)
+    d.setDate(d.getDate() + i)
+    return toISODate(d)
+  })
+  const weekStart = weekDates[0]
+  const weekEnd = weekDates[4]
+  const weekLabel = `${new Date(`${weekStart}T00:00:00`).toLocaleDateString('es-AR', {
+    day: 'numeric',
+    month: 'short',
+  })} – ${new Date(`${weekEnd}T00:00:00`).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}`
 
   const [
     { data: myEnrollments },
@@ -39,15 +52,15 @@ export async function MonthSessions({
       .from('session_cancellations')
       .select('enrollment_id, class_id, session_date')
       .eq('student_id', studentId)
-      .gte('session_date', toISODate(monthStart))
-      .lte('session_date', toISODate(monthEnd)),
+      .gte('session_date', weekStart)
+      .lte('session_date', weekEnd),
     supabase
       .from('attendance')
       .select('id, class_id, session_date')
       .eq('student_id', studentId)
       .not('recovery_credit_id', 'is', null)
-      .gte('session_date', toISODate(monthStart))
-      .lte('session_date', toISODate(monthEnd)),
+      .gte('session_date', weekStart)
+      .lte('session_date', weekEnd),
     admin.from('enrollments').select('class_id').eq('status', 'active'),
   ])
 
@@ -78,10 +91,8 @@ export async function MonthSessions({
     enrolledCountByClass.set(e.class_id, (enrolledCountByClass.get(e.class_id) ?? 0) + 1)
   }
 
-  const cancelledKeys = new Set(
-    (cancellations ?? []).map((c) => `${c.class_id}_${c.session_date}`)
-  )
-  const recoveryByDateClass = new Map<string, string>() // "classId_date" -> attendance id
+  const cancelledKeys = new Set((cancellations ?? []).map((c) => `${c.class_id}_${c.session_date}`))
+  const recoveryByDateClass = new Map<string, string>()
   for (const r of recoveries ?? []) {
     recoveryByDateClass.set(`${r.class_id}_${r.session_date}`, r.id)
   }
@@ -92,70 +103,47 @@ export async function MonthSessions({
 
   const hours = Array.from(new Set(classes.map((c) => c.start_time))).sort()
   const dayLabels = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie']
+  const dayOfWeekByIndex = weekDates.map((d) => new Date(`${d}T00:00:00`).getDay())
 
-  // Semanas del mes (lunes a viernes)
-  const firstWeekMonday = new Date(monthStart)
-  const offsetToMonday = (firstWeekMonday.getDay() + 6) % 7
-  firstWeekMonday.setDate(firstWeekMonday.getDate() - offsetToMonday)
+  const cells = hours.map((hour) => ({
+    hour,
+    row: weekDates.map((date, i) => {
+      const dow = dayOfWeekByIndex[i]
+      const classForSlot = classes.find((c) => c.day_of_week === dow && c.start_time === hour)
+      if (!classForSlot) return null
 
-  const weeks: { label: string; days: { date: string; dayOfWeek: number }[] }[] = []
-  const cursor = new Date(firstWeekMonday)
-  while (cursor <= monthEnd) {
-    const days: { date: string; dayOfWeek: number }[] = []
-    for (let i = 0; i < 5; i++) {
-      days.push({ date: toISODate(cursor), dayOfWeek: cursor.getDay() })
-      cursor.setDate(cursor.getDate() + 1)
-    }
-    cursor.setDate(cursor.getDate() + 2)
-    const label = `${new Date(`${days[0].date}T00:00:00`).getDate()} al ${new Date(
-      `${days[4].date}T00:00:00`
-    ).getDate()}`
-    weeks.push({ label, days })
-  }
+      const key = `${classForSlot.id}_${date}`
+      const isMyFixedSlot = myEnrollmentByClassId.has(classForSlot.id)
+      const isCancelledThisDate = cancelledKeys.has(key)
+      const recoveryId = recoveryByDateClass.get(key)
+      const isScheduled = (isMyFixedSlot && !isCancelledThisDate) || Boolean(recoveryId)
 
-  // Armar la data completa de celdas para el cliente
-  const weeksData = weeks.map((week) => ({
-    label: week.label,
-    days: week.days.map((d) => d.date),
-    cells: hours.map((hour) => ({
-      hour,
-      row: week.days.map((d) => {
-        const classForSlot = classes.find((c) => c.day_of_week === d.dayOfWeek && c.start_time === hour)
-        if (!classForSlot) return null
+      const enrolled = enrolledCountByClass.get(classForSlot.id) ?? 0
+      const hasRoom = enrolled < classForSlot.capacity
 
-        const key = `${classForSlot.id}_${d.date}`
-        const isMyFixedSlot = myEnrollmentByClassId.has(classForSlot.id)
-        const isCancelledThisDate = cancelledKeys.has(key)
-        const recoveryId = recoveryByDateClass.get(key)
-        const isScheduled = (isMyFixedSlot && !isCancelledThisDate) || Boolean(recoveryId)
-
-        const enrolled = enrolledCountByClass.get(classForSlot.id) ?? 0
-        const hasRoom = enrolled < classForSlot.capacity
-
-        return {
-          date: d.date,
-          classId: classForSlot.id,
-          enrollmentId: isMyFixedSlot ? myEnrollmentByClassId.get(classForSlot.id)! : null,
-          typeName: classForSlot.class_types?.name ?? 'Clase',
-          isScheduled,
-          isMyFixedSlot,
-          hasRoom: hasRoom || isScheduled,
-        }
-      }),
-    })),
+      return {
+        date,
+        classId: classForSlot.id,
+        enrollmentId: isMyFixedSlot ? myEnrollmentByClassId.get(classForSlot.id)! : null,
+        typeName: classForSlot.class_types?.name ?? 'Clase',
+        isScheduled,
+        isMyFixedSlot,
+        hasRoom: hasRoom || isScheduled,
+      }
+    }),
   }))
 
-  const prevOffset = monthOffset - 1
-  const nextOffset = monthOffset + 1
+  const prevOffset = weekOffset - 1
+  const nextOffset = weekOffset + 1
 
   return (
     <MonthMoveCalendar
       studentId={studentId}
-      monthLabel={monthLabel}
+      weekLabel={weekLabel}
       prevOffset={prevOffset}
       nextOffset={nextOffset}
       dayLabels={dayLabels}
-      weeks={weeksData}
+      cells={cells}
     />
   )
 }
