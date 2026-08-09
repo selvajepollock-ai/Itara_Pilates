@@ -39,6 +39,7 @@ export async function MonthSessions({
     { data: recoveries },
     { data: allEnrollmentsGlobal },
     { data: settings },
+    { data: subscription },
   ] = await Promise.all([
     supabase
       .from('enrollments')
@@ -64,7 +65,19 @@ export async function MonthSessions({
       .lte('session_date', weekEnd),
     admin.from('enrollments').select('class_id').eq('status', 'active'),
     supabase.from('studio_settings').select('drop_in_class_price').maybeSingle(),
+    supabase
+      .from('subscriptions')
+      .select('plans(price, classes_per_week)')
+      .eq('student_id', studentId)
+      .eq('status', 'active')
+      .maybeSingle(),
   ])
+
+  const plan = subscription?.plans as unknown as { price: number; classes_per_week: number | null } | null
+  const dropInPrice =
+    plan?.classes_per_week && plan.classes_per_week > 0
+      ? Math.round((plan.price / (plan.classes_per_week * 4)) * 100) / 100
+      : settings?.drop_in_class_price ?? 0
 
   type MyEnrollment = {
     id: string
@@ -146,7 +159,7 @@ export async function MonthSessions({
       nextOffset={nextOffset}
       dayLabels={dayLabels}
       cells={cells}
-      dropInPrice={settings?.drop_in_class_price ?? 0}
+      dropInPrice={dropInPrice}
     />
   )
 }

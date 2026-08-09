@@ -65,6 +65,18 @@ export function NewPlanForm() {
           <option value="ambos">Reformer + Fuerza</option>
         </select>
       </div>
+      <div>
+        <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
+          Clases por semana (opcional)
+        </label>
+        <input
+          type="number"
+          name="classes_per_week"
+          min={1}
+          placeholder="Ej: 2"
+          className="mt-1.5 rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-moss focus:bg-white"
+        />
+      </div>
       <button
         type="submit"
         disabled={isPending}

@@ -6,7 +6,7 @@ export default async function PlanesPage() {
   const supabase = await createClient()
   const { data: plans } = await supabase
     .from('plans')
-    .select('id, name, price, active, category')
+    .select('id, name, price, active, category, classes_per_week')
     .order('active', { ascending: false })
     .order('price')
 

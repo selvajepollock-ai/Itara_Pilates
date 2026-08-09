@@ -5,7 +5,14 @@ import { Eye, EyeOff, Pencil } from 'lucide-react'
 import { setPlanActive, updatePlan } from './actions'
 import { formatARS } from '@/lib/currency'
 
-type Plan = { id: string; name: string; price: number; active: boolean; category: string }
+type Plan = {
+  id: string
+  name: string
+  price: number
+  active: boolean
+  category: string
+  classes_per_week: number | null
+}
 
 const CATEGORY_LABEL: Record<string, string> = {
   reformer: 'Reformer',
@@ -82,6 +89,19 @@ export function PlanCard({ plan }: { plan: Plan }) {
               <option value="fuerza">Fuerza</option>
               <option value="ambos">Reformer + Fuerza</option>
             </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
+              Clases por semana (para calcular precio de clase suelta)
+            </label>
+            <input
+              type="number"
+              name="classes_per_week"
+              min={1}
+              defaultValue={plan.classes_per_week ?? ''}
+              placeholder="Ej: 2"
+              className="mt-1 w-full rounded-lg border border-sand bg-linen/40 px-3 py-2 text-sm text-ink outline-none focus:border-moss focus:bg-white"
+            />
           </div>
           {error && <p className="text-sm text-clay">{error}</p>}
           <div className="flex gap-2">

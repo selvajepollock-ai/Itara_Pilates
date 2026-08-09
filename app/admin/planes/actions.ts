@@ -24,6 +24,8 @@ export async function createPlan(formData: FormData) {
   const name = String(formData.get('name') ?? '').trim()
   const price = Number(formData.get('price') ?? 0)
   const category = String(formData.get('category') ?? 'reformer')
+  const classesPerWeekRaw = String(formData.get('classes_per_week') ?? '').trim()
+  const classesPerWeek = classesPerWeekRaw ? Number(classesPerWeekRaw) : null
 
   if (!name || !price) return { error: 'Nombre y precio son obligatorios.' }
 
@@ -31,6 +33,7 @@ export async function createPlan(formData: FormData) {
     name,
     price,
     category,
+    classes_per_week: classesPerWeek,
     type: 'monthly',
     classes_included: null,
     duration_days: 30,
@@ -49,10 +52,15 @@ export async function updatePlan(planId: string, formData: FormData) {
   const name = String(formData.get('name') ?? '').trim()
   const price = Number(formData.get('price') ?? 0)
   const category = String(formData.get('category') ?? 'reformer')
+  const classesPerWeekRaw = String(formData.get('classes_per_week') ?? '').trim()
+  const classesPerWeek = classesPerWeekRaw ? Number(classesPerWeekRaw) : null
 
   if (!name || !price) return { error: 'Nombre y precio son obligatorios.' }
 
-  const { error } = await auth.supabase.from('plans').update({ name, price, category }).eq('id', planId)
+  const { error } = await auth.supabase
+    .from('plans')
+    .update({ name, price, category, classes_per_week: classesPerWeek })
+    .eq('id', planId)
   if (error) return { error: error.message }
 
   revalidatePath('/admin/planes')

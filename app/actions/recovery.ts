@@ -304,11 +304,20 @@ export async function addExtraClass({
   const occupancy = (enrolledCount ?? 0) - (cancelledCount ?? 0) + (recoveringCount ?? 0)
   if (occupancy >= targetClass.capacity) return { error: 'Esa clase ya está completa.' }
 
-  const { data: settings } = await supabase
-    .from('studio_settings')
-    .select('drop_in_class_price')
-    .maybeSingle()
-  const price = settings?.drop_in_class_price ?? 0
+  const [{ data: settings }, { data: subscription }] = await Promise.all([
+    supabase.from('studio_settings').select('drop_in_class_price').maybeSingle(),
+    supabase
+      .from('subscriptions')
+      .select('plans(price, classes_per_week)')
+      .eq('student_id', studentId)
+      .eq('status', 'active')
+      .maybeSingle(),
+  ])
+  const plan = subscription?.plans as unknown as { price: number; classes_per_week: number | null } | null
+  const price =
+    plan?.classes_per_week && plan.classes_per_week > 0
+      ? Math.round((plan.price / (plan.classes_per_week * 4)) * 100) / 100
+      : settings?.drop_in_class_price ?? 0
 
   const { data: credit, error: creditError } = await supabase
     .from('recovery_credits')
