@@ -15,17 +15,18 @@ export default async function AlumnosPage() {
       .contains('roles', ['student'])
       .order('created_at', { ascending: false }),
     supabase.from('subscriptions').select('student_id, end_date').eq('status', 'active'),
-    supabase.from('studio_settings').select('payment_reminder_days_before').single(),
+    supabase.from('studio_settings').select('payment_reminder_days_before, payment_due_day').single(),
   ])
 
   const endDateByStudent = new Map((subscriptions ?? []).map((s) => [s.student_id, s.end_date]))
   const reminderDays = settings?.payment_reminder_days_before ?? 3
+  const graceDay = settings?.payment_due_day ?? 10
 
   const studentsWithStatus = (students ?? []).map((s) => ({
     ...s,
     hasAccess: !isNoAccessEmail(s.email),
     displayEmail: isNoAccessEmail(s.email) ? s.contact_email ?? null : s.email,
-    status: getPaymentStatus(endDateByStudent.get(s.id) ?? null, reminderDays),
+    status: getPaymentStatus(endDateByStudent.get(s.id) ?? null, reminderDays, graceDay),
   }))
 
   return (

@@ -63,7 +63,7 @@ export default async function AlumnoDashboard() {
       .eq('student_id', studentId)
       .eq('status', 'active')
       .maybeSingle(),
-    supabase.from('studio_settings').select('payment_reminder_days_before, cancellation_min_hours').single(),
+    supabase.from('studio_settings').select('payment_reminder_days_before, cancellation_min_hours, payment_due_day').single(),
     supabase
       .from('session_cancellations')
       .select('enrollment_id, session_date')
@@ -112,7 +112,8 @@ export default async function AlumnoDashboard() {
 
   const status = getPaymentStatus(
     subscription?.end_date ?? null,
-    settings?.payment_reminder_days_before ?? 3
+    settings?.payment_reminder_days_before ?? 3,
+    settings?.payment_due_day ?? 10
   )
   const planInfo = subscription?.plans as unknown as { name: string } | null
 

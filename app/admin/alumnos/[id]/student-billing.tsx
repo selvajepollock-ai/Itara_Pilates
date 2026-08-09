@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { getPaymentStatus, STATUS_LABEL, STATUS_CLASSES, suggestNextDueDate } from '@/lib/billing'
+import { getPaymentStatus, STATUS_LABEL, STATUS_CLASSES, suggestNextDueDate, applyLateSurcharge } from '@/lib/billing'
 import { formatARS } from '@/lib/currency'
 import { AssignPlanForm } from './assign-plan-form'
 import { RegisterPaymentForm } from './register-payment-form'
@@ -29,13 +29,13 @@ export async function StudentBilling({ studentId }: { studentId: string }) {
 
   const dueDay = settings?.payment_due_day ?? 10
   const reminderDays = settings?.payment_reminder_days_before ?? 3
-  const status = getPaymentStatus(subscription?.end_date ?? null, reminderDays)
+  const status = getPaymentStatus(subscription?.end_date ?? null, reminderDays, dueDay)
   const suggestedNextDate = suggestNextDueDate(
-    subscription?.end_date ? new Date(`${subscription.end_date}T00:00:00`) : new Date(),
-    dueDay
+    subscription?.end_date ? new Date(`${subscription.end_date}T00:00:00`) : new Date()
   )
 
   const planInfo = subscription?.plans as unknown as { name: string; price: number } | null
+  const { amount: amountWithSurcharge, hasSurcharge } = applyLateSurcharge(planInfo?.price ?? 0, status)
 
   return (
     <div className="rounded-2xl border border-sand bg-white p-6">
@@ -56,6 +56,11 @@ export async function StudentBilling({ studentId }: { studentId: string }) {
               month: 'long',
             })}
           </p>
+          {hasSurcharge && (
+            <p className="mt-1 text-xs font-medium text-clay">
+              Pasó el margen de pago (día {dueDay}) — con recargo del 10% debe {formatARS(amountWithSurcharge)}.
+            </p>
+          )}
         </div>
       ) : (
         <p className="mt-3 text-sm text-ink/50">Todavía no tiene un plan asignado.</p>
@@ -78,7 +83,7 @@ export async function StudentBilling({ studentId }: { studentId: string }) {
           <RegisterPaymentForm
             subscriptionId={subscription.id}
             studentId={studentId}
-            defaultAmount={planInfo?.price ?? 0}
+            defaultAmount={amountWithSurcharge}
             suggestedNextDate={suggestedNextDate}
           />
         </div>
