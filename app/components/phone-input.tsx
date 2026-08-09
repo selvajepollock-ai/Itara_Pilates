@@ -3,15 +3,15 @@
 import { useState } from 'react'
 
 const COUNTRIES = [
-  { code: '+54', label: '🇦🇷 Argentina' },
-  { code: '+598', label: '🇺🇾 Uruguay' },
-  { code: '+595', label: '🇵🇾 Paraguay' },
-  { code: '+56', label: '🇨🇱 Chile' },
-  { code: '+591', label: '🇧🇴 Bolivia' },
-  { code: '+55', label: '🇧🇷 Brasil' },
-  { code: '+57', label: '🇨🇴 Colombia' },
-  { code: '+51', label: '🇵🇪 Perú' },
-  { code: '+34', label: '🇪🇸 España' },
+  { code: '+54', name: 'Argentina' },
+  { code: '+598', name: 'Uruguay' },
+  { code: '+595', name: 'Paraguay' },
+  { code: '+56', name: 'Chile' },
+  { code: '+591', name: 'Bolivia' },
+  { code: '+55', name: 'Brasil' },
+  { code: '+57', name: 'Colombia' },
+  { code: '+51', name: 'Perú' },
+  { code: '+34', name: 'España' },
 ]
 
 // Intenta separar un teléfono guardado ("+54 9 11 1234-5678") en código de país + resto.
@@ -32,15 +32,16 @@ export function PhoneInput({ name, defaultValue = '' }: { name: string; defaultV
 
   return (
     <div>
-      <div className="flex gap-2">
+      <div className="flex gap-1.5">
         <select
           value={countryCode}
           onChange={(e) => setCountryCode(e.target.value)}
-          className="rounded-lg border border-sand bg-linen/40 px-2 py-2.5 text-sm text-ink outline-none focus:border-moss focus:bg-white"
+          title={COUNTRIES.find((c) => c.code === countryCode)?.name}
+          className="w-[70px] shrink-0 rounded-lg border border-sand bg-linen/40 px-1.5 py-2.5 text-sm text-ink outline-none focus:border-moss focus:bg-white"
         >
           {COUNTRIES.map((c) => (
-            <option key={c.code} value={c.code}>
-              {c.label} {c.code}
+            <option key={c.code} value={c.code} title={c.name}>
+              {c.code}
             </option>
           ))}
         </select>
@@ -49,13 +50,11 @@ export function PhoneInput({ name, defaultValue = '' }: { name: string; defaultV
           value={rest}
           onChange={(e) => setRest(e.target.value)}
           placeholder="9 11 1234-5678"
-          className="flex-1 rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-moss focus:bg-white"
+          className="min-w-0 flex-1 rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-moss focus:bg-white"
         />
       </div>
       <input type="hidden" name={name} value={combined} />
-      <p className="mt-1 text-xs text-ink/40">
-        Elegí el país y escribí el resto del número — queda listo para WhatsApp más adelante.
-      </p>
+      <p className="mt-1 text-xs text-ink/40">Código de país + número.</p>
     </div>
   )
 }
