@@ -48,7 +48,7 @@ export async function StudentBilling({ studentId }: { studentId: string }) {
     ? (() => {
         const end = new Date(`${subscription.end_date}T00:00:00`)
         const deadline = new Date(end.getFullYear(), end.getMonth() + 1, dueDay)
-        return deadline.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })
+        return deadline.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })
       })()
     : null
 
@@ -65,18 +65,17 @@ export async function StudentBilling({ studentId }: { studentId: string }) {
         <div className="mt-3 space-y-1">
           <p className="font-display text-lg italic text-ink">{planInfo?.name}</p>
           <p className="text-sm text-ink/60">
-            Cubre hasta{' '}
+            Pagado hasta el{' '}
             <span className="font-medium text-ink">
               {new Date(`${subscription.end_date}T00:00:00`).toLocaleDateString('es-AR', {
-                day: 'numeric',
-                month: 'long',
+                day: '2-digit',
+                month: '2-digit',
               })}
             </span>
           </p>
           {graceDeadlineLabel && (
             <p className="text-sm text-ink/60">
-              Vence (con margen hasta ahí){' '}
-              <span className="font-medium text-ink">{graceDeadlineLabel}</span>
+              Próximo pago vence el <span className="font-medium text-ink">{graceDeadlineLabel}</span>
             </p>
           )}
           {hasSurcharge && (
