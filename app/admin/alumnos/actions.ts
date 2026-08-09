@@ -27,6 +27,7 @@ export async function createStudent(formData: FormData) {
   const phone = String(formData.get('phone') ?? '').trim()
   const birthDate = String(formData.get('birth_date') ?? '').trim()
   const healthNotes = String(formData.get('health_notes') ?? '').trim()
+  const nickname = String(formData.get('nickname') ?? '').trim()
   const planId = String(formData.get('plan_id') ?? '').trim()
   const endDate = String(formData.get('end_date') ?? '').trim()
   const grantAccess = formData.get('grant_access') === 'on'
@@ -73,13 +74,14 @@ export async function createStudent(formData: FormData) {
     }
   }
 
-  if (newUserId && (phone || birthDate || healthNotes)) {
+  if (newUserId && (phone || birthDate || healthNotes || nickname)) {
     await admin
       .from('profiles')
       .update({
         ...(phone ? { phone } : {}),
         ...(birthDate ? { birth_date: birthDate } : {}),
         ...(healthNotes ? { health_notes: healthNotes } : {}),
+        ...(nickname ? { nickname } : {}),
       })
       .eq('id', newUserId)
   }

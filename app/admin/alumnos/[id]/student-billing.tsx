@@ -1,8 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
-import { getPaymentStatus, STATUS_LABEL, STATUS_CLASSES, suggestNextDueDate, applyLateSurcharge } from '@/lib/billing'
+import {
+  getPaymentStatus,
+  STATUS_LABEL,
+  STATUS_CLASSES,
+  suggestNextPaymentDate,
+  applyLateSurcharge,
+} from '@/lib/billing'
 import { formatARS } from '@/lib/currency'
 import { AssignPlanForm } from './assign-plan-form'
 import { RegisterPaymentForm } from './register-payment-form'
+import { PlanSectionToggle } from './plan-section-toggle'
 
 export async function StudentBilling({ studentId }: { studentId: string }) {
   const supabase = await createClient()
@@ -30,12 +37,20 @@ export async function StudentBilling({ studentId }: { studentId: string }) {
   const dueDay = settings?.payment_due_day ?? 10
   const reminderDays = settings?.payment_reminder_days_before ?? 3
   const status = getPaymentStatus(subscription?.end_date ?? null, reminderDays, dueDay)
-  const suggestedNextDate = suggestNextDueDate(
-    subscription?.end_date ? new Date(`${subscription.end_date}T00:00:00`) : new Date()
-  )
+  const suggestedNextDate = suggestNextPaymentDate(subscription?.end_date ?? null)
 
   const planInfo = subscription?.plans as unknown as { name: string; price: number } | null
   const { amount: amountWithSurcharge, hasSurcharge } = applyLateSurcharge(planInfo?.price ?? 0, status)
+
+  // Fecha de vencimiento real (con margen de gracia): día `dueDay` del mes siguiente
+  // al que ya está cubierto.
+  const graceDeadlineLabel = subscription?.end_date
+    ? (() => {
+        const end = new Date(`${subscription.end_date}T00:00:00`)
+        const deadline = new Date(end.getFullYear(), end.getMonth() + 1, dueDay)
+        return deadline.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })
+      })()
+    : null
 
   return (
     <div className="rounded-2xl border border-sand bg-white p-6">
@@ -47,18 +62,26 @@ export async function StudentBilling({ studentId }: { studentId: string }) {
       </div>
 
       {subscription ? (
-        <div className="mt-3">
+        <div className="mt-3 space-y-1">
           <p className="font-display text-lg italic text-ink">{planInfo?.name}</p>
-          <p className="mt-0.5 text-sm text-ink/50">
-            Pagado hasta{' '}
-            {new Date(`${subscription.end_date}T00:00:00`).toLocaleDateString('es-AR', {
-              day: 'numeric',
-              month: 'long',
-            })}
+          <p className="text-sm text-ink/60">
+            Cubre hasta{' '}
+            <span className="font-medium text-ink">
+              {new Date(`${subscription.end_date}T00:00:00`).toLocaleDateString('es-AR', {
+                day: 'numeric',
+                month: 'long',
+              })}
+            </span>
           </p>
+          {graceDeadlineLabel && (
+            <p className="text-sm text-ink/60">
+              Vence (con margen hasta ahí){' '}
+              <span className="font-medium text-ink">{graceDeadlineLabel}</span>
+            </p>
+          )}
           {hasSurcharge && (
             <p className="mt-1 text-xs font-medium text-clay">
-              Pasó el margen de pago (día {dueDay}) — con recargo del 10% debe {formatARS(amountWithSurcharge)}.
+              Pasó el margen de pago — con recargo del 10% debe {formatARS(amountWithSurcharge)}.
             </p>
           )}
         </div>
@@ -66,19 +89,40 @@ export async function StudentBilling({ studentId }: { studentId: string }) {
         <p className="mt-3 text-sm text-ink/50">Todavía no tiene un plan asignado.</p>
       )}
 
-      <div className="mt-4">
-        <AssignPlanForm
-          studentId={studentId}
-          plans={plans ?? []}
-          currentPlanId={subscription?.plan_id ?? null}
-          defaultEndDate={subscription?.end_date ?? suggestedNextDate}
-        />
-      </div>
+      {subscription ? (
+        <div className="mt-4">
+          <PlanSectionToggle>
+            <AssignPlanForm
+              studentId={studentId}
+              plans={plans ?? []}
+              currentPlanId={subscription?.plan_id ?? null}
+              defaultEndDate={subscription?.end_date ?? suggestedNextDate}
+            />
+          </PlanSectionToggle>
+        </div>
+      ) : (
+        <div className="mt-4">
+          <AssignPlanForm
+            studentId={studentId}
+            plans={plans ?? []}
+            currentPlanId={null}
+            defaultEndDate={suggestedNextDate}
+          />
+        </div>
+      )}
 
       {subscription && (
         <div className="mt-5 border-t border-sand pt-5">
           <p className="text-xs font-medium uppercase tracking-wide text-ink/40">
-            Marcar como pagado
+            Registrar pago
+          </p>
+          <p className="mt-0.5 text-xs text-ink/40">
+            Extiende la cobertura hasta{' '}
+            {new Date(`${suggestedNextDate}T00:00:00`).toLocaleDateString('es-AR', {
+              day: 'numeric',
+              month: 'long',
+            })}
+            .
           </p>
           <RegisterPaymentForm
             subscriptionId={subscription.id}

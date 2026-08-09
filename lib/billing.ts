@@ -44,6 +44,16 @@ export function suggestNextDueDate(fromDate: Date, _dueDay?: number): string {
   return endOfMonth.toISOString().slice(0, 10)
 }
 
+// Para REGISTRAR UN PAGO NUEVO sobre una suscripción existente: extiende al mes
+// siguiente al que ya tiene cubierto (no repite el mismo mes). Si no tiene cobertura
+// previa, cubre el mes actual (como un alta nueva).
+export function suggestNextPaymentDate(currentEndDate: string | null): string {
+  const base = currentEndDate ? new Date(`${currentEndDate}T00:00:00`) : new Date()
+  const monthsToAdd = currentEndDate ? 2 : 1
+  const endOfTargetMonth = new Date(base.getFullYear(), base.getMonth() + monthsToAdd, 0)
+  return endOfTargetMonth.toISOString().slice(0, 10)
+}
+
 // Si ya venció el margen de gracia, se le suma el recargo (10% por default) a la cuota.
 export function applyLateSurcharge(
   baseAmount: number,

@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createStudent } from '../actions'
 import { formatARS } from '@/lib/currency'
+import { PhoneInput } from '@/app/components/phone-input'
 
 type Plan = { id: string; name: string; price: number }
 
@@ -44,7 +45,6 @@ export function NewStudentForm({
       <h1 className="mt-2 font-display text-3xl italic text-ink">Nuevo alumno</h1>
 
       <form action={handleSubmit} className="mt-8 grid gap-6 lg:grid-cols-2">
-        {/* Acceso al portal — ocupa las 2 columnas */}
         <div className={`${cardClass} lg:col-span-2`}>
           <p className="text-sm font-medium text-ink">Acceso al portal</p>
           <p className="mt-0.5 text-xs text-ink/50">
@@ -62,7 +62,6 @@ export function NewStudentForm({
           </label>
         </div>
 
-        {/* Identidad */}
         <div className={cardClass}>
           <p className="text-sm font-medium text-ink">Identidad</p>
           <div className="mt-3 grid grid-cols-2 gap-3">
@@ -81,14 +80,19 @@ export function NewStudentForm({
             </label>
             <input type="email" name="email" required={grantAccess} className={inputClass} />
           </div>
+          <div className="mt-3">
+            <label className={labelClass}>Apodo / nombre de pila (opcional)</label>
+            <input name="nickname" placeholder="Ej: Vale, Cami, Toti..." className={inputClass} />
+          </div>
         </div>
 
-        {/* Datos personales */}
         <div className={cardClass}>
           <p className="text-sm font-medium text-ink">Datos personales</p>
           <div className="mt-3">
             <label className={labelClass}>Teléfono</label>
-            <input name="phone" defaultValue="+54 9 " className={inputClass} />
+            <div className="mt-1.5">
+              <PhoneInput name="phone" defaultValue="" />
+            </div>
           </div>
           <div className="mt-3">
             <label className={labelClass}>Fecha de nacimiento</label>
@@ -96,7 +100,6 @@ export function NewStudentForm({
           </div>
         </div>
 
-        {/* Salud */}
         <div className={cardClass}>
           <p className="text-sm font-medium text-ink">Salud</p>
           <p className="mt-0.5 text-xs text-ink/50">Lesiones, condiciones a tener en cuenta.</p>
@@ -108,7 +111,6 @@ export function NewStudentForm({
           />
         </div>
 
-        {/* Plan */}
         <div className={cardClass}>
           <p className="text-sm font-medium text-ink">Plan contratado</p>
           <div className="mt-3">
@@ -128,7 +130,6 @@ export function NewStudentForm({
           </div>
         </div>
 
-        {/* Acciones — ocupa las 2 columnas */}
         <div className="lg:col-span-2">
           {error && <p className="text-sm text-clay">{error}</p>}
           {success && <p className="text-sm text-moss-dark">Alumno creado correctamente ✓</p>}

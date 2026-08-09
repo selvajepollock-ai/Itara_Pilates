@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { updateStudent } from './actions'
+import { PhoneInput } from '@/app/components/phone-input'
 
 type Student = {
   id: string
@@ -74,11 +75,9 @@ export function EditStudentForm({ student }: { student: Student }) {
 
       <div>
         <label className="text-xs font-medium uppercase tracking-wide text-ink/60">Teléfono</label>
-        <input
-          name="phone"
-          defaultValue={student.phone ?? ''}
-          className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
-        />
+        <div className="mt-1.5">
+          <PhoneInput name="phone" defaultValue={student.phone ?? ''} />
+        </div>
       </div>
 
       <div>
