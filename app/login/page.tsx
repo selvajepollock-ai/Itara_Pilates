@@ -93,9 +93,9 @@ export default function LoginPage() {
 
           <Link
             href="/forgot-password"
-            className="block text-center text-xs text-ink/40 hover:text-moss"
+            className="block text-center text-xs text-ink/50 underline decoration-sand underline-offset-2 hover:text-moss"
           >
-            ¿Olvidaste tu contraseña?
+            Recuperar contraseña
           </Link>
         </form>
 
