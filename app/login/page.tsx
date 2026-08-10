@@ -15,12 +15,19 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
     setLoading(true)
 
-    const email = isEmailLike(identifier) ? identifier : await resolveLoginEmail(identifier)
+    // Leemos directo del formulario (no solo del estado de React) — si el navegador
+    // autocompletó el usuario/contraseña, a veces React no se entera del cambio y
+    // el primer click mandaba valores vacíos.
+    const formData = new FormData(e.currentTarget)
+    const rawIdentifier = String(formData.get('identifier') ?? identifier).trim()
+    const rawPassword = String(formData.get('password') ?? password)
+
+    const email = isEmailLike(rawIdentifier) ? rawIdentifier : await resolveLoginEmail(rawIdentifier)
 
     if (!email) {
       setError('Email/usuario o contraseña incorrectos.')
@@ -28,7 +35,7 @@ export default function LoginPage() {
       return
     }
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { error } = await supabase.auth.signInWithPassword({ email, password: rawPassword })
 
     setLoading(false)
 
@@ -62,6 +69,7 @@ export default function LoginPage() {
             <input
               required
               autoFocus
+              name="identifier"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
@@ -75,6 +83,7 @@ export default function LoginPage() {
             <input
               type="password"
               required
+              name="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"

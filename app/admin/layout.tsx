@@ -58,7 +58,7 @@ export default async function AdminLayout({
 
   const pendingCount = (pendingRecoveries ?? 0) + (pendingPlanRequests ?? 0) + (newCancellations ?? 0)
   const birthdaysToday = (birthdayProfiles ?? []).filter(
-    (p) => p.birth_date && daysUntilNextBirthday(p.birth_date) === 0
+    (p) => p.birth_date && daysUntilNextBirthday(p.birth_date) <= 5
   ).length
 
   return (

@@ -1,7 +1,8 @@
-import { CalendarX, RefreshCw, Repeat, Clock } from 'lucide-react'
+import { CalendarX, RefreshCw, Repeat, Clock, Bell } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, formatTime } from '@/lib/day-names'
 import { formatARS } from '@/lib/currency'
+import { relativeTime } from '@/lib/relative-time'
 import { ResolvePlanRequestButton } from './resolve-plan-request-button'
 import { RecoveryRequestActions } from './recovery-request-actions'
 
@@ -48,7 +49,7 @@ export default async function AvisosPage() {
       supabase
         .from('recovery_credits')
         .select(
-          'id, week_end, class_types(name), profiles(full_name), requested_class_id, requested_session_date, classes:requested_class_id(day_of_week, start_time, room), session_cancellations:source_cancellation_id(session_date, classes(day_of_week, start_time))'
+          'id, week_end, created_at, class_types(name), profiles(full_name), requested_class_id, requested_session_date, classes:requested_class_id(day_of_week, start_time, room), session_cancellations:source_cancellation_id(session_date, classes(day_of_week, start_time))'
         )
         .eq('status', 'requested')
         .order('created_at', { ascending: false }),
@@ -72,6 +73,8 @@ export default async function AvisosPage() {
     ...recoveries.map((row): FeedItem => ({ kind: 'recover', at: row.created_at, row })),
   ].sort((a, b) => b.at.localeCompare(a.at))
 
+  const pendingActionCount = (pendingCredits?.length ?? 0) + (planRequests?.length ?? 0)
+
   return (
     <div className="max-w-2xl">
       <p className="text-xs uppercase tracking-[0.25em] text-moss">Estudio</p>
@@ -80,14 +83,14 @@ export default async function AvisosPage() {
         Quién avisó que no venía y quién se anotó a recuperar.
       </p>
 
-      {pendingCredits && pendingCredits.length > 0 && (
+      {pendingActionCount > 0 && (
         <div className="mt-8">
           <p className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-clay">
-            <Clock size={13} />
-            Recuperaciones solicitadas ({pendingCredits.length})
+            <Bell size={13} />
+            Requiere tu atención ({pendingActionCount})
           </p>
-          <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-clay/30 bg-clay/5">
-            {pendingCredits.map((c) => {
+          <ul className="mt-3 divide-y divide-clay/20 rounded-2xl border border-clay/30 bg-clay/5">
+            {pendingCredits?.map((c) => {
               const requestedClass = c.classes as unknown as {
                 day_of_week: number
                 start_time: string
@@ -98,14 +101,16 @@ export default async function AvisosPage() {
                 classes: { day_of_week: number; start_time: string } | null
               } | null
               return (
-                <li key={c.id} className="flex items-center justify-between gap-3 px-5 py-4">
-                  <div>
+                <li key={`credit-${c.id}`} className="flex items-center gap-3 px-5 py-4">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-clay/10 text-clay">
+                    <Clock size={15} />
+                  </div>
+                  <div className="min-w-0 flex-1">
                     <p className="text-sm text-ink">
                       <span className="font-medium">
                         {(c.profiles as unknown as { full_name: string } | null)?.full_name}
                       </span>{' '}
-                      quiere pasar su clase de{' '}
-                      <span className="font-medium">Pilates</span>
+                      quiere pasar su clase de <span className="font-medium">Pilates</span>
                       {originalCancellation && (
                         <>
                           {' '}
@@ -134,38 +139,31 @@ export default async function AvisosPage() {
                         'un horario'
                       )}
                     </p>
+                    <p className="mt-0.5 text-xs text-ink/40">{relativeTime(c.created_at)}</p>
                   </div>
                   <RecoveryRequestActions creditId={c.id} />
                 </li>
               )
             })}
-          </ul>
-        </div>
-      )}
 
-      {planRequests && planRequests.length > 0 && (
-        <div className="mt-8">
-          <p className="text-xs uppercase tracking-wide text-clay">Solicitudes de cambio de plan</p>
-          <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-clay/30 bg-clay/5">
-            {planRequests.map((r) => (
-              <li key={r.id} className="flex items-center justify-between gap-3 px-5 py-4">
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-clay/10 text-clay">
-                    <Repeat size={15} />
-                  </div>
-                  <div>
-                    <p className="text-sm text-ink">
-                      <span className="font-medium">
-                        {(r.profiles as unknown as { full_name: string } | null)?.full_name}
-                      </span>{' '}
-                      quiere pasarse a{' '}
-                      <span className="font-medium">
-                        {(r.plans as unknown as { name: string } | null)?.name}
-                      </span>{' '}
-                      ({formatARS((r.plans as unknown as { price: number } | null)?.price ?? 0)})
-                    </p>
-                    {r.note && <p className="mt-0.5 text-xs text-ink/50">"{r.note}"</p>}
-                  </div>
+            {planRequests?.map((r) => (
+              <li key={`plan-${r.id}`} className="flex items-center gap-3 px-5 py-4">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-clay/10 text-clay">
+                  <Repeat size={15} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-ink">
+                    <span className="font-medium">
+                      {(r.profiles as unknown as { full_name: string } | null)?.full_name}
+                    </span>{' '}
+                    quiere pasarse a{' '}
+                    <span className="font-medium">
+                      {(r.plans as unknown as { name: string } | null)?.name}
+                    </span>{' '}
+                    ({formatARS((r.plans as unknown as { price: number } | null)?.price ?? 0)})
+                  </p>
+                  {r.note && <p className="mt-0.5 text-xs text-ink/50">"{r.note}"</p>}
+                  <p className="mt-0.5 text-xs text-ink/40">{relativeTime(r.created_at)}</p>
                 </div>
                 <ResolvePlanRequestButton requestId={r.id} />
               </li>
@@ -175,7 +173,7 @@ export default async function AvisosPage() {
       )}
 
       <p className="mt-8 flex items-center gap-2 text-xs uppercase tracking-wide text-ink/40">
-        Actividad
+        Actividad reciente
         {feed.length > 0 && (
           <span className="rounded-full bg-sand px-2 py-0.5 text-[10px] font-medium text-ink/50">
             {feed.length}
@@ -188,11 +186,15 @@ export default async function AvisosPage() {
           const dayLabel = item.row.classes ? DAY_NAMES[item.row.classes.day_of_week] : ''
           const timeLabel = item.row.classes ? formatTime(item.row.classes.start_time) : ''
           const name = item.row.profiles?.full_name ?? 'Alumno'
+          const isRecent = Date.now() - new Date(item.at).getTime() < 3 * 60 * 60 * 1000
 
           return (
             <li key={`${item.kind}-${item.row.id}`} className="flex items-center gap-3 px-5 py-4">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blush text-xs font-medium text-ink">
+              <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blush text-xs font-medium text-ink">
                 {name.slice(0, 1).toUpperCase()}
+                {isRecent && (
+                  <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-moss" />
+                )}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm text-ink">
@@ -211,12 +213,15 @@ export default async function AvisosPage() {
                   })}
                 </p>
               </div>
-              <div
-                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
-                  item.kind === 'cancel' ? 'bg-clay/10 text-clay' : 'bg-moss/10 text-moss'
-                }`}
-              >
-                {item.kind === 'cancel' ? <CalendarX size={14} /> : <RefreshCw size={14} />}
+              <div className="flex shrink-0 flex-col items-end gap-1">
+                <div
+                  className={`flex h-7 w-7 items-center justify-center rounded-full ${
+                    item.kind === 'cancel' ? 'bg-clay/10 text-clay' : 'bg-moss/10 text-moss'
+                  }`}
+                >
+                  {item.kind === 'cancel' ? <CalendarX size={14} /> : <RefreshCw size={14} />}
+                </div>
+                <span className="whitespace-nowrap text-[10px] text-ink/30">{relativeTime(item.at)}</span>
               </div>
             </li>
           )
