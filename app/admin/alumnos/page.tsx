@@ -4,19 +4,26 @@ import { createClient } from '@/lib/supabase/server'
 import { getPaymentStatus } from '@/lib/billing'
 import { isNoAccessEmail } from '@/lib/auth-username'
 import { StudentsList } from './students-list'
+import { SignupRequestsSection } from './signup-requests-section'
 
 export default async function AlumnosPage() {
   const supabase = await createClient()
 
-  const [{ data: students }, { data: subscriptions }, { data: settings }] = await Promise.all([
-    supabase
-      .from('profiles')
-      .select('id, full_name, nickname, email, contact_email, phone, active, created_at')
-      .contains('roles', ['student'])
-      .order('created_at', { ascending: false }),
-    supabase.from('subscriptions').select('student_id, end_date').eq('status', 'active'),
-    supabase.from('studio_settings').select('payment_reminder_days_before, payment_due_day').single(),
-  ])
+  const [{ data: students }, { data: subscriptions }, { data: settings }, { data: signupRequests }] =
+    await Promise.all([
+      supabase
+        .from('profiles')
+        .select('id, full_name, nickname, email, contact_email, phone, active, created_at')
+        .contains('roles', ['student'])
+        .order('created_at', { ascending: false }),
+      supabase.from('subscriptions').select('student_id, end_date').eq('status', 'active'),
+      supabase.from('studio_settings').select('payment_reminder_days_before, payment_due_day').single(),
+      supabase
+        .from('signup_requests')
+        .select('id, first_name, last_name, email, phone, created_at')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false }),
+    ])
 
   const endDateByStudent = new Map((subscriptions ?? []).map((s) => [s.student_id, s.end_date]))
   const reminderDays = settings?.payment_reminder_days_before ?? 3
@@ -47,6 +54,7 @@ export default async function AlumnosPage() {
       </div>
 
       <div className="mt-8">
+        <SignupRequestsSection requests={signupRequests ?? []} />
         <StudentsList students={studentsWithStatus} />
       </div>
     </div>

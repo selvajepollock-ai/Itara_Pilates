@@ -11,9 +11,19 @@ type Plan = { id: string; name: string; price: number }
 export function NewStudentForm({
   plans,
   defaultEndDate,
+  requestId,
+  defaultFirstName = '',
+  defaultLastName = '',
+  defaultEmail = '',
+  defaultPhone = '',
 }: {
   plans: Plan[]
   defaultEndDate: string
+  requestId?: string
+  defaultFirstName?: string
+  defaultLastName?: string
+  defaultEmail?: string
+  defaultPhone?: string
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -45,6 +55,7 @@ export function NewStudentForm({
       <h1 className="mt-2 font-display text-3xl italic text-ink">Nuevo alumno</h1>
 
       <form action={handleSubmit} className="mt-8 grid gap-6 lg:grid-cols-2">
+        {requestId && <input type="hidden" name="request_id" value={requestId} />}
         <div className={`${cardClass} lg:col-span-2`}>
           <p className="text-sm font-medium text-ink">Acceso al portal</p>
           <p className="mt-0.5 text-xs text-ink/50">
@@ -67,18 +78,18 @@ export function NewStudentForm({
           <div className="mt-3 grid grid-cols-2 gap-3">
             <div>
               <label className={labelClass}>Nombre</label>
-              <input name="first_name" required className={inputClass} />
+              <input name="first_name" required defaultValue={defaultFirstName} className={inputClass} />
             </div>
             <div>
               <label className={labelClass}>Apellido</label>
-              <input name="last_name" required className={inputClass} />
+              <input name="last_name" required defaultValue={defaultLastName} className={inputClass} />
             </div>
           </div>
           <div className="mt-3">
             <label className={labelClass}>
               Email {grantAccess ? '' : '(opcional)'}
             </label>
-            <input type="email" name="email" required={grantAccess} className={inputClass} />
+            <input type="email" name="email" required={grantAccess} defaultValue={defaultEmail} className={inputClass} />
           </div>
           <div className="mt-3">
             <label className={labelClass}>Apodo / nombre de pila (opcional)</label>
@@ -91,7 +102,7 @@ export function NewStudentForm({
           <div className="mt-3">
             <label className={labelClass}>Teléfono</label>
             <div className="mt-1.5">
-              <PhoneInput name="phone" defaultValue="" />
+              <PhoneInput name="phone" defaultValue={defaultPhone} />
             </div>
           </div>
           <div className="mt-3">

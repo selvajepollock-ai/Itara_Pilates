@@ -10,6 +10,7 @@ export async function getNotificationCounts() {
     { count: pendingRecoveries },
     { count: pendingPlanRequests },
     { count: newCancellations },
+    { count: pendingSignups },
     { data: birthdayProfiles },
   ] = await Promise.all([
     supabase
@@ -25,6 +26,10 @@ export async function getNotificationCounts() {
       .select('id', { count: 'exact', head: true })
       .eq('acknowledged', false),
     supabase
+      .from('signup_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending'),
+    supabase
       .from('profiles')
       .select('birth_date')
       .contains('roles', ['student'])
@@ -36,5 +41,5 @@ export async function getNotificationCounts() {
     (p) => p.birth_date && daysUntilNextBirthday(p.birth_date) === 0
   ).length
 
-  return { pendingCount, birthdaysToday }
+  return { pendingCount, birthdaysToday, pendingSignups: pendingSignups ?? 0 }
 }

@@ -21,29 +21,33 @@ export function TopNav({
   fullName,
   pendingCount: initialPendingCount = 0,
   birthdaysToday: initialBirthdaysToday = 0,
+  pendingSignups: initialPendingSignups = 0,
 }: {
   fullName: string
   pendingCount?: number
   birthdaysToday?: number
+  pendingSignups?: number
 }) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
   const [pendingCount, setPendingCount] = useState(initialPendingCount)
   const [birthdaysToday, setBirthdaysToday] = useState(initialBirthdaysToday)
+  const [pendingSignups, setPendingSignups] = useState(initialPendingSignups)
 
   useEffect(() => {
     const interval = setInterval(async () => {
       const counts = await getNotificationCounts()
       setPendingCount(counts.pendingCount)
       setBirthdaysToday(counts.birthdaysToday)
+      setPendingSignups(counts.pendingSignups)
     }, 5 * 60 * 1000) // cada 5 minutos
     return () => clearInterval(interval)
   }, [])
 
   const NAV_ITEMS = [
     { href: '/admin', label: 'Inicio', icon: LayoutDashboard, exact: true, badge: birthdaysToday },
-    { href: '/admin/alumnos', label: 'Alumnos', icon: Users, badge: 0 },
+    { href: '/admin/alumnos', label: 'Alumnos', icon: Users, badge: pendingSignups },
     { href: '/admin/instructores', label: 'Equipo', icon: UserCog, badge: 0 },
     { href: '/admin/horarios', label: 'Horarios', icon: CalendarDays, badge: 0 },
     { href: '/admin/planes', label: 'Planes', icon: CreditCard, badge: 0 },

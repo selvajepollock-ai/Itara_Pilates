@@ -95,6 +95,14 @@ export async function createStudent(formData: FormData) {
     })
   }
 
+  const requestId = String(formData.get('request_id') ?? '').trim()
+  if (requestId && newUserId) {
+    await admin
+      .from('signup_requests')
+      .update({ status: 'accepted', accepted_student_id: newUserId })
+      .eq('id', requestId)
+  }
+
   revalidatePath('/admin/alumnos')
   return { success: true }
 }
