@@ -294,7 +294,7 @@ export default async function AlumnoDashboard() {
               }
             >
               <p className="text-xs font-medium text-clay">
-                Pendientes de elegir ({credits.length})
+                Pendientes de solicitar recuperación ({credits.length})
               </p>
               <ul className="mt-1.5 space-y-2">
                 {credits.map((c, i) => (
