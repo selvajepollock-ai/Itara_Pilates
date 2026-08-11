@@ -3,7 +3,17 @@ import { updateSession } from '@/lib/supabase/middleware'
 
 const PUBLIC_PATHS = ['/login', '/auth', '/forgot-password', '/registro']
 
+// ⚙️ MODO MANTENIMIENTO — cambiar a false para volver a la normalidad
+const MAINTENANCE_MODE = true
+
 export async function middleware(request: NextRequest) {
+  const path = request.nextUrl.pathname
+
+  // Si está en mantenimiento, redirigir todo a /mantenimiento (salvo la propia página)
+  if (MAINTENANCE_MODE && path !== '/mantenimiento') {
+    return NextResponse.redirect(new URL('/mantenimiento', request.url))
+  }
+
   const { supabaseResponse, user, supabase } = await updateSession(request)
   const path = request.nextUrl.pathname
 
