@@ -96,7 +96,7 @@ export function InstallPrompt() {
             <div className="flex items-center gap-2.5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/icons/icon-192.png" alt="" className="h-9 w-9 rounded-xl" />
-              <p className="font-display text-lg italic text-ink">Instalá Itara Pilates</p>
+              <p className="font-display text-lg italic text-ink">Crear acceso directo</p>
             </div>
             <button onClick={dismiss} className="text-ink/30 hover:text-ink/60">
               <X size={18} />
@@ -119,7 +119,6 @@ export function InstallPrompt() {
                 </span>
                 Tocá el ícono de Compartir
               </p>
-              <p className="mt-0.5 text-[11px] text-ink/40">¿No lo ves? Primero tocá los ⋯</p>
             </div>
           </div>
 
