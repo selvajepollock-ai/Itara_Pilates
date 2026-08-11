@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { X, Share, Plus } from 'lucide-react'
+import { X, Share, Plus, ArrowDown, Wifi, Battery, Signal } from 'lucide-react'
 
 const DISMISS_KEY = 'itara-install-dismissed-at'
 const DISMISS_DAYS = 14
@@ -20,7 +20,6 @@ export function InstallPrompt() {
   const [showIOS, setShowIOS] = useState(false)
 
   useEffect(() => {
-    // Registrar el service worker (necesario para que Chrome/Android ofrezca instalar)
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {})
     }
@@ -30,7 +29,6 @@ export function InstallPrompt() {
 
     if (isStandalone || wasRecentlyDismissed()) return
 
-    // Android/Chrome: capturamos el evento nativo para mostrar NUESTRO cartel en vez del suyo
     function handleBeforeInstall(e: Event) {
       e.preventDefault()
       setDeferredPrompt(e)
@@ -38,7 +36,6 @@ export function InstallPrompt() {
     }
     window.addEventListener('beforeinstallprompt', handleBeforeInstall)
 
-    // iOS: no existe ese evento, así que detectamos manualmente y mostramos instrucciones
     const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
     if (isIOS) {
       const timer = setTimeout(() => setShowIOS(true), 2000)
@@ -65,47 +62,100 @@ export function InstallPrompt() {
     setShowAndroid(false)
   }
 
-  if (!showAndroid && !showIOS) return null
-
-  return (
-    <div className="fixed inset-x-0 bottom-0 z-50">
-      <div className="mx-auto max-w-md p-3">
-        <div className="flex items-center gap-3 rounded-2xl border border-sand bg-white p-4 shadow-[0_4px_24px_rgba(46,43,38,0.12)]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icons/icon-192.png" alt="" className="h-11 w-11 shrink-0 rounded-xl" />
-
-          {showAndroid && (
-            <>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-ink">Instalá Itara Pilates</p>
-                <p className="text-xs text-ink/50">Accedé directo desde tu pantalla de inicio</p>
-              </div>
-              <button
-                onClick={handleInstallClick}
-                className="shrink-0 rounded-full bg-moss px-4 py-2 text-xs font-medium text-white hover:bg-moss-dark"
-              >
-                Instalar
-              </button>
-            </>
-          )}
-
-          {showIOS && (
+  if (showAndroid) {
+    return (
+      <div className="fixed inset-x-0 bottom-0 z-50">
+        <div className="mx-auto max-w-md p-3">
+          <div className="flex items-center gap-3 rounded-2xl border border-sand bg-white p-4 shadow-[0_4px_24px_rgba(46,43,38,0.12)]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icons/icon-192.png" alt="" className="h-11 w-11 shrink-0 rounded-xl" />
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-ink">Instalá Itara Pilates</p>
-              <p className="mt-0.5 flex flex-wrap items-center gap-1 text-xs text-ink/50">
-                Tocá <Share size={13} className="inline text-moss" /> y después{' '}
-                <span className="inline-flex items-center gap-0.5 font-medium text-ink/70">
-                  <Plus size={12} /> Agregar a inicio
-                </span>
-              </p>
+              <p className="text-xs text-ink/50">Accedé directo desde tu pantalla de inicio</p>
             </div>
-          )}
+            <button
+              onClick={handleInstallClick}
+              className="shrink-0 rounded-full bg-moss px-4 py-2 text-xs font-medium text-white hover:bg-moss-dark"
+            >
+              Instalar
+            </button>
+            <button onClick={dismiss} className="shrink-0 text-ink/30 hover:text-ink/60">
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
-          <button onClick={dismiss} className="shrink-0 text-ink/30 hover:text-ink/60">
-            <X size={16} />
+  if (showIOS) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 sm:items-center sm:px-4">
+        <div className="w-full max-w-sm rounded-t-3xl bg-white p-6 shadow-xl sm:rounded-3xl">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-2.5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/icons/icon-192.png" alt="" className="h-9 w-9 rounded-xl" />
+              <p className="font-display text-lg italic text-ink">Instalá Itara Pilates</p>
+            </div>
+            <button onClick={dismiss} className="text-ink/30 hover:text-ink/60">
+              <X size={18} />
+            </button>
+          </div>
+
+          <p className="mt-3 text-sm text-ink/60">
+            Así entrás directo, más rápido, sin buscar el link cada vez.
+          </p>
+
+          {/* Paso 1: mini recreación de la barra de Safari, mostrando el botón de compartir */}
+          <div className="mt-5 rounded-2xl border border-sand bg-linen/40 p-3">
+            <p className="text-xs font-medium text-ink/60">
+              <span className="mr-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-moss text-[10px] font-medium text-white">
+                1
+              </span>
+              Tocá el botón de Compartir, abajo de la pantalla en Safari
+            </p>
+            <div className="mt-2.5 flex items-center justify-around rounded-xl bg-ink px-2 py-2.5">
+              <span className="text-[10px] text-white/40">◀</span>
+              <span className="text-[10px] text-white/40">▶</span>
+              <span className="relative flex flex-col items-center">
+                <span className="absolute -top-6 flex flex-col items-center">
+                  <span className="whitespace-nowrap text-[9px] font-medium text-clay">Tocá acá</span>
+                  <ArrowDown size={12} className="text-clay" />
+                </span>
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white ring-2 ring-clay">
+                  <Share size={14} className="text-ink" />
+                </span>
+              </span>
+              <span className="text-[10px] text-white/40">☆</span>
+              <span className="text-[10px] text-white/40">▢▢</span>
+            </div>
+          </div>
+
+          {/* Paso 2 */}
+          <div className="mt-3 rounded-2xl border border-sand bg-linen/40 p-3">
+            <p className="text-xs font-medium text-ink/60">
+              <span className="mr-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-moss text-[10px] font-medium text-white">
+                2
+              </span>
+              En la lista que aparece, buscá y tocá:
+            </p>
+            <div className="mt-2 flex items-center gap-2 rounded-lg bg-white px-3 py-2">
+              <Plus size={15} className="text-ink/50" />
+              <span className="text-sm text-ink">Agregar a inicio</span>
+            </div>
+          </div>
+
+          <button
+            onClick={dismiss}
+            className="mt-5 w-full rounded-full border border-sand px-4 py-2.5 text-sm font-medium text-ink/60 hover:border-moss hover:text-moss"
+          >
+            Entendido
           </button>
         </div>
       </div>
-    </div>
-  )
+    )
+  }
+
+  return null
 }
