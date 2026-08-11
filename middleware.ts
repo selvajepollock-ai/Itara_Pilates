@@ -15,7 +15,6 @@ export async function middleware(request: NextRequest) {
   }
 
   const { supabaseResponse, user, supabase } = await updateSession(request)
-  const path = request.nextUrl.pathname
 
   const isPublic = PUBLIC_PATHS.some((p) => path.startsWith(p))
 
