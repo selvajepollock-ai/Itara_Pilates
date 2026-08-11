@@ -108,6 +108,13 @@ export default function LoginPage() {
           </Link>
         </form>
 
+        <p className="mt-4 text-center text-sm text-ink/60">
+          ¿Todavía no sos alumna del estudio?{' '}
+          <Link href="/registro" className="font-medium text-moss underline decoration-moss/30 hover:text-moss-dark">
+            Registrate acá
+          </Link>
+        </p>
+
         <p className="mt-6 text-center text-xs text-ink/30">Itara Pilates · Estudio de Pilates y Entrenamiento</p>
       </div>
     </main>
