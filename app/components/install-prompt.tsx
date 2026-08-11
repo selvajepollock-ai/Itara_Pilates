@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { X, Share, Plus, ArrowDown, Wifi, Battery, Signal } from 'lucide-react'
+import { X, Share, Plus } from 'lucide-react'
 
 const DISMISS_KEY = 'itara-install-dismissed-at'
 const DISMISS_DAYS = 14
@@ -107,28 +107,19 @@ export function InstallPrompt() {
             Así entrás directo, más rápido, sin buscar el link cada vez.
           </p>
 
-          {/* Paso 1: mini recreación de la barra de Safari, mostrando el botón de compartir */}
-          <div className="mt-5 rounded-2xl border border-sand bg-linen/40 p-3">
-            <p className="text-xs font-medium text-ink/60">
-              <span className="mr-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-moss text-[10px] font-medium text-white">
-                1
-              </span>
-              Tocá el botón de Compartir, abajo de la pantalla en Safari
-            </p>
-            <div className="mt-2.5 flex items-center justify-around rounded-xl bg-ink px-2 py-2.5">
-              <span className="text-[10px] text-white/40">◀</span>
-              <span className="text-[10px] text-white/40">▶</span>
-              <span className="relative flex flex-col items-center">
-                <span className="absolute -top-6 flex flex-col items-center">
-                  <span className="whitespace-nowrap text-[9px] font-medium text-clay">Tocá acá</span>
-                  <ArrowDown size={12} className="text-clay" />
+          {/* Paso 1 */}
+          <div className="mt-5 flex items-center gap-3 rounded-2xl border border-sand bg-linen/40 p-4">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white ring-2 ring-clay">
+              <Share size={17} className="text-ink" />
+            </span>
+            <div>
+              <p className="text-xs font-medium text-ink/70">
+                <span className="mr-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-moss text-[10px] font-medium text-white">
+                  1
                 </span>
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white ring-2 ring-clay">
-                  <Share size={14} className="text-ink" />
-                </span>
-              </span>
-              <span className="text-[10px] text-white/40">☆</span>
-              <span className="text-[10px] text-white/40">▢▢</span>
+                Tocá el ícono de Compartir
+              </p>
+              <p className="mt-0.5 text-[11px] text-ink/40">¿No lo ves? Primero tocá los ⋯</p>
             </div>
           </div>
 
