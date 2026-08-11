@@ -81,10 +81,15 @@ export default async function ClaseDetailPage({ params }: { params: Promise<{ id
       <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
         {enrollments.map((e) => (
           <li key={e.id} className="flex items-center justify-between px-5 py-3">
-            <div>
-              <p className="text-sm text-ink">{e.profiles?.full_name}</p>
+            <Link
+              href={`/admin/alumnos/${e.student_id}`}
+              className="group -my-1 flex-1 rounded-lg py-1 transition hover:bg-linen/60"
+            >
+              <p className="text-sm text-ink group-hover:text-moss group-hover:underline">
+                {e.profiles?.full_name}
+              </p>
               <p className="text-xs text-ink/50">{e.profiles?.email}</p>
-            </div>
+            </Link>
             <RemoveEnrollmentButton enrollmentId={e.id} classId={classItem.id} />
           </li>
         ))}

@@ -40,6 +40,7 @@ export function RegisterPaymentForm({
         <input
           type="number"
           name="amount"
+          key={defaultAmount}
           min={0}
           step="0.01"
           defaultValue={defaultAmount}
@@ -53,6 +54,7 @@ export function RegisterPaymentForm({
         <input
           type="date"
           name="new_end_date"
+          key={suggestedNextDate}
           required
           defaultValue={suggestedNextDate}
           className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-moss focus:bg-white"
