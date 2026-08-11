@@ -8,8 +8,18 @@ export default function RegistroPage() {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
+  const [emailError, setEmailError] = useState<string | null>(null)
 
   function handleSubmit(formData: FormData) {
+    const email = String(formData.get('email') ?? '').trim().toLowerCase()
+    const emailConfirm = String(formData.get('email_confirm') ?? '').trim().toLowerCase()
+
+    if (email !== emailConfirm) {
+      setEmailError('Los mails no coinciden. Revisá que estén escritos igual.')
+      return
+    }
+
+    setEmailError(null)
     setError(null)
     startTransition(async () => {
       const res = await createSignupRequest(formData)
@@ -72,6 +82,21 @@ export default function RegistroPage() {
                   required
                   className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-moss focus:bg-white"
                 />
+              </div>
+
+              <div>
+                <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
+                  Confirmá tu email
+                </label>
+                <input
+                  type="email"
+                  name="email_confirm"
+                  required
+                  className={`mt-1.5 w-full rounded-lg border bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none focus:bg-white ${
+                    emailError ? 'border-clay focus:border-clay' : 'border-sand focus:border-moss'
+                  }`}
+                />
+                {emailError && <p className="mt-1 text-xs text-clay">{emailError}</p>}
               </div>
 
               <div>
