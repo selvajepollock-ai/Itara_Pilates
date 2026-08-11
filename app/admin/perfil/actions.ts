@@ -12,9 +12,11 @@ export async function updateMyProfile(formData: FormData) {
   if (!user) return { error: 'No autenticado.' }
 
   const fullName = String(formData.get('full_name') ?? '').trim()
+  const username = String(formData.get('username') ?? '').trim().toLowerCase()
   const email = String(formData.get('email') ?? '').trim().toLowerCase()
 
   if (!fullName || !email) return { error: 'Nombre y email son obligatorios.' }
+  if (username && /\s/.test(username)) return { error: 'El usuario no puede tener espacios.' }
 
   if (email !== user.email) {
     const { error: authError } = await supabase.auth.updateUser({ email })
@@ -23,7 +25,7 @@ export async function updateMyProfile(formData: FormData) {
 
   const { error } = await supabase
     .from('profiles')
-    .update({ full_name: fullName, email })
+    .update({ full_name: fullName, username: username || null, email })
     .eq('id', user.id)
 
   if (error) return { error: error.message }

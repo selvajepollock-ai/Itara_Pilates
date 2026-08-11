@@ -67,7 +67,11 @@ export default async function AlumnoCalendarioPage({
 
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <Link href="/alumno" className="text-sm text-moss hover:text-moss-dark">
+        ← Volver a tu horario
+      </Link>
+
+      <div className="mt-4 flex items-center justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.25em] text-moss">Calendario</p>
           <h1 className="mt-2 font-display text-2xl italic capitalize text-ink sm:text-3xl">

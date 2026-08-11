@@ -3,7 +3,11 @@
 import { useState, useTransition } from 'react'
 import { updateMyProfile } from './actions'
 
-export function EditMyProfileForm({ profile }: { profile: { full_name: string; email: string } }) {
+export function EditMyProfileForm({
+  profile,
+}: {
+  profile: { full_name: string; email: string; username: string | null }
+}) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
@@ -33,6 +37,20 @@ export function EditMyProfileForm({ profile }: { profile: { full_name: string; e
           defaultValue={profile.full_name}
           className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
         />
+      </div>
+
+      <div>
+        <label className="text-xs font-medium uppercase tracking-wide text-ink/60">Usuario</label>
+        <input
+          name="username"
+          defaultValue={profile.username ?? ''}
+          placeholder="sin espacios, ej: vic"
+          className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
+        />
+        <p className="mt-1 text-xs text-ink/40">
+          Si lo cambiás, vas a tener que usar el usuario nuevo para entrar (el email también sigue
+          funcionando).
+        </p>
       </div>
 
       <div>
