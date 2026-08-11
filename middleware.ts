@@ -9,23 +9,21 @@ const MAINTENANCE_MODE = true
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
 
-  // Si está en mantenimiento, redirigir todo a /mantenimiento (salvo la propia página)
-  if (MAINTENANCE_MODE && path !== '/mantenimiento' && !path.startsWith('/_next') && !path.startsWith('/icons') && !path.startsWith('/mantenimiento') && !path.match(/\.(gif|png|jpg|ico|svg|webmanifest|js)$/)) {
-    return NextResponse.redirect(new URL('/mantenimiento', request.url))
+  // Mantenimiento: cortar acá, antes de cualquier otra lógica
+  if (MAINTENANCE_MODE && path !== '/mantenimiento') {
+    return NextResponse.rewrite(new URL('/mantenimiento', request.url))
   }
 
   const { supabaseResponse, user, supabase } = await updateSession(request)
 
   const isPublic = PUBLIC_PATHS.some((p) => path.startsWith(p))
 
-  // No autenticado intentando entrar a ruta protegida -> login
   if (!user && !isPublic) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  // Autenticado entrando a "/" o "/login" -> lo mando a SU dashboard según rol
   if (user && (path === '/login' || path === '/')) {
     const { data: profile } = await supabase
       .from('profiles')
