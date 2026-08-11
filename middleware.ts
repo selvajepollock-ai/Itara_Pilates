@@ -10,7 +10,7 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
 
   // Si está en mantenimiento, redirigir todo a /mantenimiento (salvo la propia página)
-  if (MAINTENANCE_MODE && path !== '/mantenimiento') {
+  if (MAINTENANCE_MODE && path !== '/mantenimiento' && !path.startsWith('/_next') && !path.startsWith('/icons') && !path.startsWith('/mantenimiento') && !path.match(/\.(gif|png|jpg|ico|svg|webmanifest|js)$/)) {
     return NextResponse.redirect(new URL('/mantenimiento', request.url))
   }
 

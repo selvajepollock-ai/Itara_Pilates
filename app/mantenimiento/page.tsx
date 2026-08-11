@@ -1,6 +1,6 @@
 export default function MantenimientoPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-linen px-6 text-center">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-white px-6 text-center">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/logo-emblem.png" alt="Itara Pilates" className="h-16 w-16 object-contain" />
       <p className="mt-4 text-xs uppercase tracking-[0.3em] text-moss">Itara Pilates</p>
