@@ -9,21 +9,38 @@ const MAINTENANCE_MODE = true
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
 
-  // Mantenimiento: cortar acá, antes de cualquier otra lógica
+  // Mantenimiento: cortar acá, antes de cualquier otra lógica,
+  // salvo que el usuario tenga rol 'developer'
   if (MAINTENANCE_MODE && path !== '/mantenimiento') {
-    return NextResponse.rewrite(new URL('/mantenimiento', request.url))
+    const { user, supabase } = await updateSession(request)
+
+    let isDeveloper = false
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('roles')
+        .eq('id', user.id)
+        .single()
+      isDeveloper = profile?.roles?.includes('developer') ?? false
+    }
+
+    if (!isDeveloper) {
+      return NextResponse.rewrite(new URL('/mantenimiento', request.url))
+    }
   }
 
   const { supabaseResponse, user, supabase } = await updateSession(request)
 
   const isPublic = PUBLIC_PATHS.some((p) => path.startsWith(p))
 
+  // No autenticado intentando entrar a ruta protegida -> login
   if (!user && !isPublic) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
+  // Autenticado entrando a "/" o "/login" -> lo mando a SU dashboard según rol
   if (user && (path === '/login' || path === '/')) {
     const { data: profile } = await supabase
       .from('profiles')

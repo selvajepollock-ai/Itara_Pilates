@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { Plus, ShieldCheck, GraduationCap } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { DeleteTeamMemberButton } from './delete-team-member-button'
 
 type Person = {
   id: string
@@ -31,7 +30,6 @@ function PersonRow({ person }: { person: Person }) {
         >
           Editar
         </Link>
-        <DeleteTeamMemberButton personId={person.id} fullName={person.full_name} />
       </div>
     </li>
   )
@@ -45,7 +43,9 @@ export default async function EquipoPage() {
     .or('roles.cs.{admin},roles.cs.{instructor}')
     .order('full_name')
 
-  const admins = (people ?? []).filter((p) => p.roles?.includes('admin')) as Person[]
+  const admins = (people ?? []).filter(
+    (p) => p.roles?.includes('admin') && !p.roles?.includes('developer')
+  ) as Person[]
   const pureInstructors = (people ?? []).filter(
     (p) => p.roles?.includes('instructor') && !p.roles?.includes('admin')
   ) as Person[]
