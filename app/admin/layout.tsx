@@ -26,6 +26,8 @@ export default async function AdminLayout({
     redirect('/')
   }
 
+  const isDeveloper = profile?.roles?.includes('developer') ?? false
+
   const [
     { count: pendingRecoveries },
     { count: pendingPlanRequests },
@@ -62,22 +64,23 @@ export default async function AdminLayout({
   ).length
 
   return (
-    <div className="flex min-h-screen flex-col bg-linen lg:flex-row">
+    <div className="flex min-h-screen flex-col bg-linen md:flex-row">
       <TopNav
         fullName={profile.full_name}
         pendingCount={pendingCount}
         birthdaysToday={birthdaysToday}
         pendingSignups={pendingSignups ?? 0}
       />
-      <div className="hidden lg:block">
+      <div className="hidden md:block">
         <Sidebar
           fullName={profile.full_name}
           pendingCount={pendingCount}
           birthdaysToday={birthdaysToday}
           pendingSignups={pendingSignups ?? 0}
+          isDeveloper={isDeveloper}
         />
       </div>
-      <main className="flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-8 lg:px-14 lg:py-10">
+      <main className="flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-8 md:px-10 md:py-10 lg:px-14">
         <div className="mx-auto max-w-6xl">{children}</div>
       </main>
     </div>

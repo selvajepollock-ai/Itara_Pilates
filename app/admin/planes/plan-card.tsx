@@ -15,9 +15,9 @@ type Plan = {
 }
 
 const CATEGORY_LABEL: Record<string, string> = {
-  reformer: 'Reformer',
+  reformer: 'Pilates',
   fuerza: 'Fuerza',
-  ambos: 'Reformer + Fuerza',
+  ambos: 'Pilates + Fuerza',
 }
 
 const CATEGORY_CLASSES: Record<string, string> = {
@@ -85,9 +85,9 @@ export function PlanCard({ plan }: { plan: Plan }) {
               defaultValue={plan.category}
               className="mt-1 w-full rounded-lg border border-sand bg-linen/40 px-3 py-2 text-sm text-ink outline-none focus:border-moss focus:bg-white"
             >
-              <option value="reformer">Reformer</option>
+              <option value="reformer">Pilates</option>
               <option value="fuerza">Fuerza</option>
-              <option value="ambos">Reformer + Fuerza</option>
+              <option value="ambos">Pilates + Fuerza</option>
             </select>
           </div>
           <div>
@@ -128,7 +128,7 @@ export function PlanCard({ plan }: { plan: Plan }) {
   return (
     <div className={`rounded-2xl border border-sand bg-white p-5 ${plan.active ? '' : 'opacity-40'}`}>
       <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${CATEGORY_CLASSES[plan.category] ?? CATEGORY_CLASSES.reformer}`}>
-        {CATEGORY_LABEL[plan.category] ?? 'Reformer'}
+        {CATEGORY_LABEL[plan.category] ?? 'Pilates'}
       </span>
       <p className="mt-3 font-display text-xl italic text-ink">
         {plan.name}

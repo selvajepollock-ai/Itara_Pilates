@@ -60,9 +60,9 @@ export function NewPlanForm() {
           defaultValue="reformer"
           className="mt-1.5 rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-moss focus:bg-white"
         >
-          <option value="reformer">Reformer</option>
+          <option value="reformer">Pilates</option>
           <option value="fuerza">Fuerza</option>
-          <option value="ambos">Reformer + Fuerza</option>
+          <option value="ambos">Pilates + Fuerza</option>
         </select>
       </div>
       <div>

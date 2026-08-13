@@ -10,6 +10,7 @@ type Instructor = {
   email: string
   username: string | null
   phone: string | null
+  birth_date: string | null
   roles: string[]
 }
 
@@ -84,6 +85,19 @@ export function EditInstructorForm({ instructor }: { instructor: Instructor }) {
           defaultValue={instructor.phone ?? ''}
           className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
         />
+      </div>
+
+      <div>
+        <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
+          Fecha de nacimiento
+        </label>
+        <input
+          type="date"
+          name="birth_date"
+          defaultValue={instructor.birth_date ?? ''}
+          className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
+        />
+        <p className="mt-1 text-xs text-ink/40">Opcional — para recordar el cumpleaños.</p>
       </div>
 
       <label className="flex items-center gap-2 text-sm text-ink/70">

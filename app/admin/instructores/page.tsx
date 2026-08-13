@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Plus, ShieldCheck, GraduationCap } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import { DeleteTeamMemberButton } from './delete-team-member-button'
 
 type Person = {
   id: string
@@ -10,7 +11,9 @@ type Person = {
   roles: string[]
 }
 
-function PersonRow({ person }: { person: Person }) {
+function PersonRow({ person, currentUserId }: { person: Person; currentUserId: string }) {
+  const isAlsoInstructor = person.roles?.includes('admin') && person.roles?.includes('instructor')
+
   return (
     <li key={person.id} className="flex items-center justify-between px-5 py-3.5">
       <div className="flex items-center gap-3">
@@ -18,7 +21,14 @@ function PersonRow({ person }: { person: Person }) {
           {person.full_name?.slice(0, 1).toUpperCase()}
         </div>
         <div>
-          <p className="text-sm text-ink">{person.full_name}</p>
+          <p className="flex items-center gap-2 text-sm text-ink">
+            {person.full_name}
+            {isAlsoInstructor && (
+              <span className="rounded-full bg-clay/10 px-2 py-0.5 text-[10px] font-medium text-clay">
+                + Instructor
+              </span>
+            )}
+          </p>
           <p className="text-xs text-ink/40">{person.username ?? '—'}</p>
         </div>
       </div>
@@ -30,6 +40,9 @@ function PersonRow({ person }: { person: Person }) {
         >
           Editar
         </Link>
+        {person.id !== currentUserId && (
+          <DeleteTeamMemberButton personId={person.id} fullName={person.full_name} />
+        )}
       </div>
     </li>
   )
@@ -37,6 +50,10 @@ function PersonRow({ person }: { person: Person }) {
 
 export default async function EquipoPage() {
   const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   const { data: people } = await supabase
     .from('profiles')
     .select('id, full_name, username, phone, roles')
@@ -88,7 +105,7 @@ export default async function EquipoPage() {
         </p>
         <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
           {admins.map((p) => (
-            <PersonRow key={p.id} person={p} />
+            <PersonRow key={p.id} person={p} currentUserId={user?.id ?? ''} />
           ))}
           {admins.length === 0 && (
             <li className="px-5 py-8 text-center text-sm text-ink/40">Sin administradores.</li>
@@ -108,7 +125,7 @@ export default async function EquipoPage() {
         </p>
         <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
           {pureInstructors.map((p) => (
-            <PersonRow key={p.id} person={p} />
+            <PersonRow key={p.id} person={p} currentUserId={user?.id ?? ''} />
           ))}
           {pureInstructors.length === 0 && (
             <li className="px-5 py-8 text-center text-sm text-ink/40">

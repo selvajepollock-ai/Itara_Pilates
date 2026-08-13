@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, UserCog, CalendarDays, CreditCard, Bell, BarChart3, Megaphone, Instagram, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, UserCog, CalendarDays, CreditCard, Bell, BarChart3, Megaphone, Instagram, LogOut, Eye } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { getNotificationCounts } from './notification-counts'
@@ -13,11 +13,13 @@ export function Sidebar({
   pendingCount: initialPendingCount = 0,
   birthdaysToday: initialBirthdaysToday = 0,
   pendingSignups: initialPendingSignups = 0,
+  isDeveloper = false,
 }: {
   fullName: string
   pendingCount?: number
   birthdaysToday?: number
   pendingSignups?: number
+  isDeveloper?: boolean
 }) {
   const pathname = usePathname()
   const router = useRouter()
@@ -91,6 +93,28 @@ export function Sidebar({
             </Link>
           )
         })}
+
+        {isDeveloper && (
+          <div className="mt-4 border-t border-sand pt-4">
+            <p className="px-3 pb-1.5 text-[10px] font-medium uppercase tracking-[0.2em] text-ink/30">
+              Ver como
+            </p>
+            <Link
+              href="/alumno"
+              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-ink/60 transition hover:bg-linen hover:text-ink"
+            >
+              <Eye size={17} strokeWidth={2} />
+              <span className="flex-1">Alumno</span>
+            </Link>
+            <Link
+              href="/instructor"
+              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-ink/60 transition hover:bg-linen hover:text-ink"
+            >
+              <Eye size={17} strokeWidth={2} />
+              <span className="flex-1">Instructor</span>
+            </Link>
+          </div>
+        )}
       </nav>
 
       <div className="border-t border-sand px-3 py-4">

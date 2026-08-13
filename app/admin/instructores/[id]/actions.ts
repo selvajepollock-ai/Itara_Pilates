@@ -26,6 +26,7 @@ export async function updateInstructor(instructorId: string, formData: FormData)
   const username = String(formData.get('username') ?? '').trim().toLowerCase()
   const email = String(formData.get('email') ?? '').trim().toLowerCase()
   const phone = String(formData.get('phone') ?? '').trim()
+  const birthDateRaw = String(formData.get('birth_date') ?? '').trim()
   const alsoAdmin = formData.get('also_admin') === 'on'
 
   if (!fullName || !username || !email) return { error: 'Nombre, usuario y email son obligatorios.' }
@@ -43,7 +44,14 @@ export async function updateInstructor(instructorId: string, formData: FormData)
 
   const { error } = await admin
     .from('profiles')
-    .update({ full_name: fullName, username, email, phone: phone || null, roles })
+    .update({
+      full_name: fullName,
+      username,
+      email,
+      phone: phone || null,
+      birth_date: birthDateRaw || null,
+      roles,
+    })
     .eq('id', instructorId)
 
   if (error) return { error: error.message }

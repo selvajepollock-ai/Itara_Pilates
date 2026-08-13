@@ -55,8 +55,7 @@ export default async function PerfilPage() {
           <User size={15} className="text-ink/40" />
           <p className="text-xs uppercase tracking-[0.25em] text-ink/40">Mi cuenta</p>
         </div>
-
-        <div className="mt-4 grid gap-6 lg:grid-cols-2">
+        <div className="mt-4 grid gap-6 md:grid-cols-2">
           <EditMyProfileForm
             profile={{
               full_name: profile?.full_name ?? '',
@@ -64,7 +63,6 @@ export default async function PerfilPage() {
               username: profile?.username ?? null,
             }}
           />
-
           <div>
             <div className="rounded-2xl border border-sand bg-white p-6">
               <p className="text-xs font-medium uppercase tracking-wide text-ink/60">Contraseña</p>

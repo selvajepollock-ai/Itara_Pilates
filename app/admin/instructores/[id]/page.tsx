@@ -13,7 +13,7 @@ export default async function EditarInstructorPage({
   const supabase = await createClient()
   const { data: instructor } = await supabase
     .from('profiles')
-    .select('id, full_name, email, username, phone, roles')
+    .select('id, full_name, email, username, phone, birth_date, roles')
     .eq('id', id)
     .single()
 

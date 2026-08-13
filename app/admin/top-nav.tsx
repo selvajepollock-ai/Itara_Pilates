@@ -63,7 +63,7 @@ export function TopNav({
   }
 
   return (
-    <div className="border-b border-sand bg-white lg:hidden">
+    <div className="border-b border-sand bg-white md:hidden">
       <div className="flex items-center justify-between px-4 py-3">
         <Link href="/admin/perfil" className="flex items-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
