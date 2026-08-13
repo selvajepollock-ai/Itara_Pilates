@@ -1,14 +1,11 @@
 'use client'
-
 import { useRef, useState, useTransition } from 'react'
 import { updateMyPassword } from './actions'
-
 export function SetMyPasswordForm() {
   const formRef = useRef<HTMLFormElement>(null)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-
   function handleSubmit(formData: FormData) {
     setError(null)
     setSuccess(false)
@@ -22,14 +19,9 @@ export function SetMyPasswordForm() {
       formRef.current?.reset()
     })
   }
-
   return (
-    <form
-      ref={formRef}
-      action={handleSubmit}
-      className="mt-3 flex flex-wrap items-end gap-3 rounded-2xl border border-dashed border-sand bg-white/50 p-5"
-    >
-      <div className="flex-1">
+    <form ref={formRef} action={handleSubmit} className="space-y-3">
+      <div>
         <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
           Contraseña nueva
         </label>
@@ -45,12 +37,12 @@ export function SetMyPasswordForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-full bg-moss px-5 py-2.5 text-sm font-medium text-white transition hover:bg-moss-dark disabled:opacity-50"
+        className="w-full rounded-full bg-moss px-5 py-2.5 text-sm font-medium text-white transition hover:bg-moss-dark disabled:opacity-50"
       >
         {isPending ? 'Cambiando...' : 'Cambiar contraseña'}
       </button>
-      {error && <p className="w-full text-sm text-clay">{error}</p>}
-      {success && <p className="w-full text-sm text-moss-dark">Contraseña actualizada ✓</p>}
+      {error && <p className="text-sm text-clay">{error}</p>}
+      {success && <p className="text-sm text-moss-dark">Contraseña actualizada ✓</p>}
     </form>
   )
 }
