@@ -17,7 +17,7 @@ export async function createAnnouncement(formData: FormData) {
   const auth = await assertAdmin()
   if (!auth.ok) return { error: auth.error }
   const message = String(formData.get('message') ?? '').trim()
-  const expiresAt = String(formData.get('expires_at') ?? '').trim()
+  let expiresAt = String(formData.get('expires_at') ?? '').trim()
   const targetType = String(formData.get('target_type') ?? 'all').trim()
 
   if (!message) return { error: 'El mensaje no puede estar vacío.' }
@@ -27,6 +27,7 @@ export async function createAnnouncement(formData: FormData) {
 
   let targetUsernames: string[] | null = null
   let targetClassId: string | null = null
+  let targetDate: string | null = null
 
   if (targetType === 'people') {
     const raw = String(formData.get('target_usernames') ?? '').trim()
@@ -41,7 +42,24 @@ export async function createAnnouncement(formData: FormData) {
 
   if (targetType === 'class') {
     targetClassId = String(formData.get('target_class_id') ?? '').trim() || null
+    targetDate = String(formData.get('target_date') ?? '').trim() || null
     if (!targetClassId) return { error: 'Elegí una clase.' }
+    if (!targetDate) return { error: 'Elegí la fecha puntual.' }
+
+    const { data: classInfo } = await auth.supabase
+      .from('classes')
+      .select('day_of_week')
+      .eq('id', targetClassId)
+      .maybeSingle()
+
+    if (!classInfo) return { error: 'Esa clase ya no existe.' }
+
+    const chosenDayOfWeek = new Date(`${targetDate}T00:00:00`).getDay()
+    if (chosenDayOfWeek !== classInfo.day_of_week) {
+      return { error: 'La fecha elegida no coincide con el día de la semana de esa clase.' }
+    }
+
+    if (!expiresAt) expiresAt = targetDate
   }
 
   const { error } = await auth.supabase.from('announcements').insert({
@@ -51,6 +69,7 @@ export async function createAnnouncement(formData: FormData) {
     target_type: targetType,
     target_usernames: targetUsernames,
     target_class_id: targetClassId,
+    target_date: targetDate,
   })
   if (error) return { error: error.message }
   revalidatePath('/admin/notificaciones')

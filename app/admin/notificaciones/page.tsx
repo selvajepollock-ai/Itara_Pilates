@@ -10,7 +10,7 @@ export default async function NotificacionesPage() {
   const [{ data: announcements }, { data: classes }] = await Promise.all([
     supabase
       .from('announcements')
-      .select('id, message, expires_at, created_at, target_type, target_usernames, target_class_id')
+      .select('id, message, expires_at, created_at, target_type, target_usernames, target_class_id, target_date')
       .order('created_at', { ascending: false }),
     supabase
       .from('classes')
@@ -20,10 +20,11 @@ export default async function NotificacionesPage() {
       .order('start_time'),
   ])
 
-  type ClassOption = { id: string; day_of_week: number; start_time: string; class_types: { name: string } | null }
-  const classOptions = ((classes ?? []) as unknown as ClassOption[]).map((c) => ({
+  type ClassRow = { id: string; day_of_week: number; start_time: string; class_types: { name: string } | null }
+  const classOptions = ((classes ?? []) as unknown as ClassRow[]).map((c) => ({
     id: c.id,
     label: `${DAY_NAMES[c.day_of_week]} ${formatTime(c.start_time)} — ${c.class_types?.name ?? 'Clase'}`,
+    dayOfWeek: c.day_of_week,
   }))
   const classLabelById = new Map(classOptions.map((c) => [c.id, c.label]))
 
@@ -42,7 +43,14 @@ export default async function NotificacionesPage() {
             a.target_type === 'people'
               ? `Para: ${(a.target_usernames ?? []).map((u: string) => `@${u}`).join(', ')}`
               : a.target_type === 'class'
-                ? `Para: ${classLabelById.get(a.target_class_id ?? '') ?? 'clase eliminada'}`
+                ? `Para: ${classLabelById.get(a.target_class_id ?? '') ?? 'clase eliminada'}${
+                    a.target_date
+                      ? ` — ${new Date(`${a.target_date}T00:00:00`).toLocaleDateString('es-AR', {
+                          day: 'numeric',
+                          month: 'short',
+                        })}`
+                      : ''
+                  }`
                 : null
           return (
             <li key={a.id} className="flex items-start justify-between gap-3 px-5 py-4">

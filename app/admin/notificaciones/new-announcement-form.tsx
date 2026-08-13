@@ -3,7 +3,9 @@
 import { useRef, useState, useTransition } from 'react'
 import { createAnnouncement } from './actions'
 
-type ClassOption = { id: string; label: string }
+type ClassOption = { id: string; label: string; dayOfWeek: number }
+
+const DAY_NAMES_ES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
 export function NewAnnouncementForm({ classOptions }: { classOptions: ClassOption[] }) {
   const formRef = useRef<HTMLFormElement>(null)
@@ -11,6 +13,9 @@ export function NewAnnouncementForm({ classOptions }: { classOptions: ClassOptio
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [targetType, setTargetType] = useState<'all' | 'people' | 'class'>('all')
+  const [selectedClassId, setSelectedClassId] = useState('')
+
+  const selectedClass = classOptions.find((c) => c.id === selectedClassId)
 
   function handleSubmit(formData: FormData) {
     setError(null)
@@ -24,6 +29,7 @@ export function NewAnnouncementForm({ classOptions }: { classOptions: ClassOptio
       setSuccess(true)
       formRef.current?.reset()
       setTargetType('all')
+      setSelectedClassId('')
     })
   }
 
@@ -78,27 +84,43 @@ export function NewAnnouncementForm({ classOptions }: { classOptions: ClassOptio
       )}
 
       {targetType === 'class' && (
-        <div>
-          <label className="text-xs font-medium uppercase tracking-wide text-ink/60">Clase</label>
-          <select
-            name="target_class_id"
-            required
-            defaultValue=""
-            className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-moss focus:bg-white"
-          >
-            <option value="" disabled>
-              Elegí una clase...
-            </option>
-            {classOptions.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.label}
+        <>
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wide text-ink/60">Clase</label>
+            <select
+              name="target_class_id"
+              required
+              value={selectedClassId}
+              onChange={(e) => setSelectedClassId(e.target.value)}
+              className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-moss focus:bg-white"
+            >
+              <option value="" disabled>
+                Elegí una clase...
               </option>
-            ))}
-          </select>
-          <p className="mt-1 text-xs text-ink/40">
-            Lo ven los alumnos anotados fijos en esa clase, y el instructor que la da.
-          </p>
-        </div>
+              {classOptions.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
+              Fecha puntual
+            </label>
+            <input
+              type="date"
+              name="target_date"
+              required
+              className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-moss focus:bg-white"
+            />
+            <p className="mt-1 text-xs text-ink/40">
+              {selectedClass
+                ? `Tiene que ser un/a ${DAY_NAMES_ES[selectedClass.dayOfWeek]}, coincidiendo con esa clase.`
+                : 'Elegí primero la clase.'}
+            </p>
+          </div>
+        </>
       )}
 
       <div>
@@ -110,6 +132,9 @@ export function NewAnnouncementForm({ classOptions }: { classOptions: ClassOptio
           name="expires_at"
           className="mt-1.5 rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-moss focus:bg-white"
         />
+        {targetType === 'class' && (
+          <p className="mt-1 text-xs text-ink/40">Si lo dejás vacío, se oculta sola al pasar la fecha puntual.</p>
+        )}
       </div>
       <button
         type="submit"
