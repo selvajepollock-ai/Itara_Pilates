@@ -49,13 +49,14 @@ export default async function PerfilPage() {
           />
         </div>
       </div>
-      {/* Mi cuenta — datos personales, secundario */}
+
+      {/* Mi cuenta — una sola tarjeta con datos + contraseña adentro */}
       <div className="mt-10">
         <div className="flex items-center gap-2">
           <User size={15} className="text-ink/40" />
           <p className="text-xs uppercase tracking-[0.25em] text-ink/40">Mi cuenta</p>
         </div>
-        <div className="mt-4 grid gap-6 xl:grid-cols-2">
+        <div className="mt-4 rounded-2xl border border-sand bg-white p-6">
           <EditMyProfileForm
             profile={{
               full_name: profile?.full_name ?? '',
@@ -63,13 +64,12 @@ export default async function PerfilPage() {
               username: profile?.username ?? null,
             }}
           />
-          <div>
-            <div className="rounded-2xl border border-sand bg-white p-6">
-              <p className="text-xs font-medium uppercase tracking-wide text-ink/60">Contraseña</p>
-              <p className="mt-1 text-sm text-ink/50">Cambiá tu contraseña de acceso.</p>
-              <div className="mt-4">
-                <SetMyPasswordForm />
-              </div>
+
+          <div className="mt-8 border-t border-sand pt-6">
+            <p className="text-xs font-medium uppercase tracking-wide text-ink/60">Contraseña</p>
+            <p className="mt-1 text-sm text-ink/50">Cambiá tu contraseña de acceso.</p>
+            <div className="mt-4 max-w-xs">
+              <SetMyPasswordForm />
             </div>
           </div>
         </div>
