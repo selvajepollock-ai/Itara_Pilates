@@ -8,16 +8,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        linen: "#FAF6F0",
-        ink: "#2E2B26",
+        linen: "#FFFFFF",
+        ink: "#2B2B28",
         moss: {
-          DEFAULT: "#5B6E4F",
+          DEFAULT: "#5B7561",
           dark: "#43533A",
           light: "#8B9C7E",
         },
-        clay: "#C97F5A",
+        clay: "#C17A5D",
         blush: "#EFE1D6",
-        sand: "#E4DACD",
+        sand: "#E8E6E1",
       },
       fontFamily: {
         display: ["var(--font-display)", "serif"],
