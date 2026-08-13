@@ -75,6 +75,22 @@ export default function RegistroPage() {
               </div>
 
               <div>
+                <label className="text-xs font-medium uppercase tracking-wide text-ink/60">Usuario</label>
+                <div className="mt-1.5 flex items-center rounded-lg border border-sand bg-linen/40 focus-within:border-moss focus-within:bg-white">
+                  <span className="pl-3.5 text-sm text-ink/40">@</span>
+                  <input
+                    name="username"
+                    required
+                    pattern="[a-z0-9_.]{3,20}"
+                    title="Minúsculas, números, puntos o guiones bajos. Entre 3 y 20 caracteres."
+                    placeholder="tuusuario"
+                    className="w-full bg-transparent px-2 py-2.5 text-sm text-ink outline-none"
+                  />
+                </div>
+                <p className="mt-1 text-xs text-ink/40">Minúsculas, sin espacios. Se permiten "_" y ".".</p>
+              </div>
+
+              <div>
                 <label className="text-xs font-medium uppercase tracking-wide text-ink/60">Email</label>
                 <input
                   type="email"

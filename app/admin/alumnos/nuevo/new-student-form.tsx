@@ -16,6 +16,7 @@ export function NewStudentForm({
   defaultLastName = '',
   defaultEmail = '',
   defaultPhone = '',
+  defaultUsername = '',
 }: {
   plans: Plan[]
   defaultEndDate: string
@@ -24,6 +25,7 @@ export function NewStudentForm({
   defaultLastName?: string
   defaultEmail?: string
   defaultPhone?: string
+  defaultUsername?: string
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -83,6 +85,20 @@ export function NewStudentForm({
             <div>
               <label className={labelClass}>Apellido</label>
               <input name="last_name" required defaultValue={defaultLastName} className={inputClass} />
+            </div>
+          </div>
+          <div className="mt-3">
+            <label className={labelClass}>Usuario</label>
+            <div className="mt-1.5 flex items-center rounded-lg border border-sand bg-linen/40 focus-within:border-moss focus-within:bg-white">
+              <span className="pl-3.5 text-sm text-ink/40">@</span>
+              <input
+                name="username"
+                required
+                defaultValue={defaultUsername}
+                pattern="[a-z0-9_.]{3,20}"
+                title="Minúsculas, números, puntos o guiones bajos. Entre 3 y 20 caracteres."
+                className="w-full bg-transparent px-2 py-2.5 text-sm text-ink outline-none"
+              />
             </div>
           </div>
           <div className="mt-3">

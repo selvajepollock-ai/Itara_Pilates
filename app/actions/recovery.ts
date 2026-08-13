@@ -259,8 +259,7 @@ export async function bookRecovery({
   return { success: true }
 }
 
-// Admin agrega una clase EXTRA paga (no reemplaza ninguna de sus clases fijas).
-// Se anota directo y genera un cargo pendiente por el precio configurado.
+// Admin agrega una clase EXTRA paga individual (se mantiene por compatibilidad).
 export async function addExtraClass({
   studentId,
   classId,
@@ -270,42 +269,31 @@ export async function addExtraClass({
   classId: string
   sessionDate: string
 }) {
+  return addExtraClassesBatch({ studentId, selections: [{ classId, sessionDate }] })
+}
+
+// Admin agrega una o varias clases EXTRA pagas en una misma tanda.
+// Si el alumno NO tiene plan activo, el precio se calcula por escalón según
+// la cantidad total elegida en esta tanda (1/2/3/4+). Si tiene plan, se usa
+// el precio proporcional de siempre (igual para cada clase de la tanda).
+export async function addExtraClassesBatch({
+  studentId,
+  selections,
+}: {
+  studentId: string
+  selections: { classId: string; sessionDate: string }[]
+}) {
   const auth = await assertAdmin()
   if (!auth.ok) return { error: auth.error }
   const { supabase } = auth
 
-  const { data: targetClass } = await supabase
-    .from('classes')
-    .select('id, class_type_id, capacity')
-    .eq('id', classId)
-    .maybeSingle()
-
-  if (!targetClass) return { error: 'La clase no existe.' }
-
-  const [{ count: enrolledCount }, { count: cancelledCount }, { count: recoveringCount }] = await Promise.all([
-    supabase
-      .from('enrollments')
-      .select('id', { count: 'exact', head: true })
-      .eq('class_id', classId)
-      .eq('status', 'active'),
-    supabase
-      .from('session_cancellations')
-      .select('id', { count: 'exact', head: true })
-      .eq('class_id', classId)
-      .eq('session_date', sessionDate),
-    supabase
-      .from('attendance')
-      .select('id', { count: 'exact', head: true })
-      .eq('class_id', classId)
-      .eq('session_date', sessionDate)
-      .not('recovery_credit_id', 'is', null),
-  ])
-
-  const occupancy = (enrolledCount ?? 0) - (cancelledCount ?? 0) + (recoveringCount ?? 0)
-  if (occupancy >= targetClass.capacity) return { error: 'Esa clase ya está completa.' }
+  if (!selections || selections.length === 0) return { error: 'Elegí al menos una clase.' }
 
   const [{ data: settings }, { data: subscription }] = await Promise.all([
-    supabase.from('studio_settings').select('drop_in_class_price').maybeSingle(),
+    supabase
+      .from('studio_settings')
+      .select('drop_in_class_price, drop_in_price_1, drop_in_price_2, drop_in_price_3, drop_in_price_4_plus')
+      .maybeSingle(),
     supabase
       .from('subscriptions')
       .select('plans(price, classes_per_week)')
@@ -313,56 +301,105 @@ export async function addExtraClass({
       .eq('status', 'active')
       .maybeSingle(),
   ])
+
   const plan = subscription?.plans as unknown as { price: number; classes_per_week: number | null } | null
-  const price =
-    plan?.classes_per_week && plan.classes_per_week > 0
-      ? Math.round((plan.price / (plan.classes_per_week * 4)) * 100) / 100
-      : settings?.drop_in_class_price ?? 0
+  const hasPlan = Boolean(plan?.classes_per_week && plan.classes_per_week > 0)
 
-  const { data: credit, error: creditError } = await supabase
-    .from('recovery_credits')
-    .insert({
-      student_id: studentId,
-      class_type_id: targetClass.class_type_id,
-      week_start: sessionDate,
-      week_end: sessionDate,
-      status: 'used',
-      used_class_id: classId,
-      used_session_date: sessionDate,
-      is_paid_extra: true,
-    })
-    .select('id')
-    .maybeSingle()
-
-  if (creditError || !credit) return { error: creditError?.message ?? 'No se pudo crear la reserva.' }
-
-  const { error: attendanceError } = await supabase.from('attendance').insert({
-    class_id: classId,
-    session_date: sessionDate,
-    student_id: studentId,
-    status: 'recovering',
-    recovery_credit_id: credit.id,
-  })
-
-  if (attendanceError) {
-    if (attendanceError.message.toLowerCase().includes('duplicate')) {
-      return { error: 'Ya hay una reserva anotada en esa clase para este alumno.' }
-    }
-    return { error: attendanceError.message }
+  let unitPrice: number
+  if (hasPlan) {
+    unitPrice = Math.round((plan!.price / (plan!.classes_per_week! * 4)) * 100) / 100
+  } else {
+    const count = selections.length
+    unitPrice =
+      count === 1
+        ? settings?.drop_in_price_1 ?? 10000
+        : count === 2
+          ? settings?.drop_in_price_2 ?? 9000
+          : count === 3
+            ? settings?.drop_in_price_3 ?? 8000
+            : settings?.drop_in_price_4_plus ?? 7000
   }
 
-  const { error: chargeError } = await supabase.from('extra_charges').insert({
-    student_id: studentId,
-    recovery_credit_id: credit.id,
-    description: `Clase extra — ${sessionDate}`,
-    amount: price,
-  })
+  for (const sel of selections) {
+    const { data: targetClass } = await supabase
+      .from('classes')
+      .select('id, class_type_id, capacity')
+      .eq('id', sel.classId)
+      .maybeSingle()
 
-  if (chargeError) return { error: chargeError.message }
+    if (!targetClass) return { error: 'Una de las clases seleccionadas ya no existe.' }
+
+    const [{ count: enrolledCount }, { count: cancelledCount }, { count: recoveringCount }] = await Promise.all([
+      supabase
+        .from('enrollments')
+        .select('id', { count: 'exact', head: true })
+        .eq('class_id', sel.classId)
+        .eq('status', 'active'),
+      supabase
+        .from('session_cancellations')
+        .select('id', { count: 'exact', head: true })
+        .eq('class_id', sel.classId)
+        .eq('session_date', sel.sessionDate),
+      supabase
+        .from('attendance')
+        .select('id', { count: 'exact', head: true })
+        .eq('class_id', sel.classId)
+        .eq('session_date', sel.sessionDate)
+        .not('recovery_credit_id', 'is', null),
+    ])
+
+    const occupancy = (enrolledCount ?? 0) - (cancelledCount ?? 0) + (recoveringCount ?? 0)
+    if (occupancy >= targetClass.capacity) {
+      return { error: `La clase del ${sel.sessionDate} ya está completa.` }
+    }
+
+    const { data: credit, error: creditError } = await supabase
+      .from('recovery_credits')
+      .insert({
+        student_id: studentId,
+        class_type_id: targetClass.class_type_id,
+        week_start: sel.sessionDate,
+        week_end: sel.sessionDate,
+        status: 'used',
+        used_class_id: sel.classId,
+        used_session_date: sel.sessionDate,
+        is_paid_extra: true,
+      })
+      .select('id')
+      .maybeSingle()
+
+    if (creditError || !credit) return { error: creditError?.message ?? 'No se pudo crear la reserva.' }
+
+    const { error: attendanceError } = await supabase.from('attendance').insert({
+      class_id: sel.classId,
+      session_date: sel.sessionDate,
+      student_id: studentId,
+      status: 'recovering',
+      recovery_credit_id: credit.id,
+    })
+
+    if (attendanceError) {
+      if (attendanceError.message.toLowerCase().includes('duplicate')) {
+        return { error: `Ya hay una reserva anotada en la clase del ${sel.sessionDate}.` }
+      }
+      return { error: attendanceError.message }
+    }
+
+    const { error: chargeError } = await supabase.from('extra_charges').insert({
+      student_id: studentId,
+      recovery_credit_id: credit.id,
+      description: hasPlan
+        ? `Clase extra — ${sel.sessionDate}`
+        : `Clase suelta (${selections.length}) — ${sel.sessionDate}`,
+      amount: unitPrice,
+    })
+
+    if (chargeError) return { error: chargeError.message }
+  }
 
   revalidatePath(`/admin/alumnos/${studentId}`)
   revalidatePath('/alumno')
-  return { success: true }
+  return { success: true, unitPrice, count: selections.length }
 }
 
 // Admin aprueba el horario solicitado: recién ahora se confirma la asistencia de verdad.

@@ -64,7 +64,10 @@ export async function MonthSessions({
       .gte('session_date', weekStart)
       .lte('session_date', weekEnd),
     admin.from('enrollments').select('class_id').eq('status', 'active'),
-    supabase.from('studio_settings').select('drop_in_class_price').maybeSingle(),
+    supabase
+      .from('studio_settings')
+      .select('drop_in_class_price, drop_in_price_1, drop_in_price_2, drop_in_price_3, drop_in_price_4_plus')
+      .maybeSingle(),
     supabase
       .from('subscriptions')
       .select('plans(price, classes_per_week)')
@@ -74,10 +77,17 @@ export async function MonthSessions({
   ])
 
   const plan = subscription?.plans as unknown as { price: number; classes_per_week: number | null } | null
-  const dropInPrice =
-    plan?.classes_per_week && plan.classes_per_week > 0
-      ? Math.round((plan.price / (plan.classes_per_week * 4)) * 100) / 100
-      : settings?.drop_in_class_price ?? 0
+  const hasPlan = Boolean(plan?.classes_per_week && plan.classes_per_week > 0)
+  const dropInPrice = hasPlan
+    ? Math.round((plan!.price / (plan!.classes_per_week! * 4)) * 100) / 100
+    : 0
+
+  const tierPrices = {
+    1: settings?.drop_in_price_1 ?? 10000,
+    2: settings?.drop_in_price_2 ?? 9000,
+    3: settings?.drop_in_price_3 ?? 8000,
+    4: settings?.drop_in_price_4_plus ?? 7000,
+  }
 
   type MyEnrollment = {
     id: string
@@ -160,6 +170,8 @@ export async function MonthSessions({
       dayLabels={dayLabels}
       cells={cells}
       dropInPrice={dropInPrice}
+      hasPlan={hasPlan}
+      tierPrices={tierPrices}
     />
   )
 }

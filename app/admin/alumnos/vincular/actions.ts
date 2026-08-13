@@ -5,6 +5,10 @@ import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+function isValidUsername(u: string) {
+  return /^[a-z0-9_.]{3,20}$/.test(u)
+}
+
 async function assertAdmin() {
   const supabase = await createClient()
   const {
@@ -45,8 +49,12 @@ export async function linkSignupToStudent(requestId: string, studentId: string, 
   const fullName = String(formData.get('full_name') ?? '').trim()
   const email = String(formData.get('email') ?? '').trim().toLowerCase()
   const phone = String(formData.get('phone') ?? '').trim()
+  const username = String(formData.get('username') ?? '').trim().toLowerCase()
 
   if (!fullName || !email) return { error: 'Faltan datos de la solicitud.' }
+  if (username && !isValidUsername(username)) {
+    return { error: 'El usuario de la solicitud no tiene un formato válido.' }
+  }
 
   const admin = createAdminClient()
 
@@ -63,10 +71,16 @@ export async function linkSignupToStudent(requestId: string, studentId: string, 
       email,
       contact_email: null,
       ...(phone ? { phone } : {}),
+      ...(username ? { username } : {}),
     })
     .eq('id', studentId)
 
-  if (profileError) return { error: profileError.message }
+  if (profileError) {
+    if (profileError.message.toLowerCase().includes('duplicate')) {
+      return { error: 'Ese usuario ya está en uso por otra persona.' }
+    }
+    return { error: profileError.message }
+  }
 
   const headersList = await headers()
   const host = headersList.get('host')

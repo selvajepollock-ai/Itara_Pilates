@@ -43,6 +43,12 @@ export default async function AlumnoLayout({
             >
               Inicio
             </Link>
+            <Link
+              href="/alumno/perfil"
+              className="rounded-full border border-sand px-4 py-1.5 text-xs font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+            >
+              Mi perfil
+            </Link>
             <LogoutButton />
           </div>
         </div>

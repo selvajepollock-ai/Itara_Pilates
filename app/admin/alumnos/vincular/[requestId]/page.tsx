@@ -12,7 +12,7 @@ export default async function VincularPage({
   const supabase = await createClient()
   const { data: request } = await supabase
     .from('signup_requests')
-    .select('id, first_name, last_name, email, phone, status')
+    .select('id, first_name, last_name, email, phone, username, status')
     .eq('id', requestId)
     .single()
 
@@ -31,6 +31,7 @@ export default async function VincularPage({
       <p className="mt-2 text-sm text-ink/60">
         {request.email}
         {request.phone ? ` · ${request.phone}` : ''}
+        {request.username ? ` · @${request.username}` : ''}
       </p>
 
       {request.status !== 'pending' ? (
@@ -43,6 +44,7 @@ export default async function VincularPage({
           defaultFullName={fullName}
           defaultEmail={request.email}
           defaultPhone={request.phone ?? ''}
+          defaultUsername={request.username ?? ''}
         />
       )}
     </div>
