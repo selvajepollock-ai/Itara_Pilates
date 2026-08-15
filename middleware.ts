@@ -8,10 +8,11 @@ const MAINTENANCE_MODE = true
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
+  const isPublic = PUBLIC_PATHS.some((p) => path.startsWith(p))
 
   // Mantenimiento: cortar acá, antes de cualquier otra lógica,
-  // salvo que el usuario tenga rol 'developer'
-  if (MAINTENANCE_MODE && path !== '/mantenimiento') {
+  // salvo rutas públicas (login, etc.) o que el usuario sea 'developer'
+  if (MAINTENANCE_MODE && path !== '/mantenimiento' && !isPublic) {
     const { user, supabase } = await updateSession(request)
 
     let isDeveloper = false
@@ -30,8 +31,6 @@ export async function middleware(request: NextRequest) {
   }
 
   const { supabaseResponse, user, supabase } = await updateSession(request)
-
-  const isPublic = PUBLIC_PATHS.some((p) => path.startsWith(p))
 
   // No autenticado intentando entrar a ruta protegida -> login
   if (!user && !isPublic) {
