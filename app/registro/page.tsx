@@ -91,6 +91,19 @@ export default function RegistroPage() {
               </div>
 
               <div>
+                <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
+                  Fecha de nacimiento
+                </label>
+                <input
+                  type="date"
+                  name="birth_date"
+                  required
+                  max={new Date().toISOString().slice(0, 10)}
+                  className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-moss focus:bg-white"
+                />
+              </div>
+
+              <div>
                 <label className="text-xs font-medium uppercase tracking-wide text-ink/60">Email</label>
                 <input
                   type="email"

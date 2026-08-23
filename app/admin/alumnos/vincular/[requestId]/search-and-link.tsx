@@ -19,12 +19,14 @@ export function SearchAndLink({
   defaultEmail,
   defaultPhone,
   defaultUsername,
+  defaultBirthDate,
 }: {
   requestId: string
   defaultFullName: string
   defaultEmail: string
   defaultPhone: string
   defaultUsername: string
+  defaultBirthDate: string
 }) {
   const router = useRouter()
   const [query, setQuery] = useState(defaultFullName)
@@ -56,6 +58,7 @@ export function SearchAndLink({
     formData.set('email', defaultEmail)
     formData.set('phone', defaultPhone)
     formData.set('username', defaultUsername)
+    formData.set('birth_date', defaultBirthDate)
 
     startLinking(async () => {
       const result = await linkSignupToStudent(requestId, studentId, formData)
@@ -141,7 +144,9 @@ export function SearchAndLink({
             defaultFullName.split(' ').slice(1).join(' ')
           )}&email=${encodeURIComponent(defaultEmail)}&phone=${encodeURIComponent(
             defaultPhone
-          )}&username=${encodeURIComponent(defaultUsername)}`}
+          )}&username=${encodeURIComponent(defaultUsername)}&birth_date=${encodeURIComponent(
+            defaultBirthDate
+          )}`}
           className="text-sm text-ink/50 underline hover:text-ink"
         >
           Ninguno de estos, crear alumno nuevo

@@ -17,6 +17,7 @@ export function NewStudentForm({
   defaultEmail = '',
   defaultPhone = '',
   defaultUsername = '',
+  defaultBirthDate = '',
 }: {
   plans: Plan[]
   defaultEndDate: string
@@ -26,6 +27,7 @@ export function NewStudentForm({
   defaultEmail?: string
   defaultPhone?: string
   defaultUsername?: string
+  defaultBirthDate?: string
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -123,7 +125,7 @@ export function NewStudentForm({
           </div>
           <div className="mt-3">
             <label className={labelClass}>Fecha de nacimiento</label>
-            <input type="date" name="birth_date" className={inputClass} />
+            <input type="date" name="birth_date" defaultValue={defaultBirthDate} className={inputClass} />
           </div>
         </div>
 

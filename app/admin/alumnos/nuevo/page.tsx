@@ -12,6 +12,7 @@ export default async function NuevoAlumnoPage({
     email?: string
     phone?: string
     username?: string
+    birth_date?: string
   }>
 }) {
   const params = await searchParams
@@ -35,6 +36,7 @@ export default async function NuevoAlumnoPage({
       defaultEmail={params.email ?? ''}
       defaultPhone={params.phone ?? ''}
       defaultUsername={params.username ?? ''}
+      defaultBirthDate={params.birth_date ?? ''}
     />
   )
 }

@@ -12,12 +12,16 @@ export async function createSignupRequest(formData: FormData) {
   const email = String(formData.get('email') ?? '').trim().toLowerCase()
   const phone = String(formData.get('phone') ?? '').trim()
   const username = String(formData.get('username') ?? '').trim().toLowerCase()
+  const birthDate = String(formData.get('birth_date') ?? '').trim()
 
   if (!firstName || !lastName || !email) {
     return { error: 'Completá nombre, apellido y email.' }
   }
   if (!username || !isValidUsername(username)) {
     return { error: 'Elegí un usuario válido: minúsculas, números, "_" o ".", entre 3 y 20 caracteres.' }
+  }
+  if (!birthDate) {
+    return { error: 'Completá tu fecha de nacimiento.' }
   }
 
   const supabase = await createClient()
@@ -27,6 +31,7 @@ export async function createSignupRequest(formData: FormData) {
     email,
     phone: phone || null,
     username,
+    birth_date: birthDate,
   })
 
   if (error) return { error: 'No se pudo enviar. Probá de nuevo en un momento.' }

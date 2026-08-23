@@ -40,6 +40,7 @@ export async function linkSignupToStudent(requestId: string, studentId: string, 
   const email = String(formData.get('email') ?? '').trim().toLowerCase()
   const phone = String(formData.get('phone') ?? '').trim()
   const username = String(formData.get('username') ?? '').trim().toLowerCase()
+  const birthDate = String(formData.get('birth_date') ?? '').trim()
   if (!fullName || !email) return { error: 'Faltan datos de la solicitud.' }
   if (username && !isValidUsername(username)) {
     return { error: 'El usuario de la solicitud no tiene un formato válido.' }
@@ -58,6 +59,7 @@ export async function linkSignupToStudent(requestId: string, studentId: string, 
       contact_email: null,
       ...(phone ? { phone } : {}),
       ...(username ? { username } : {}),
+      ...(birthDate ? { birth_date: birthDate } : {}),
     })
     .eq('id', studentId)
   if (profileError) {
