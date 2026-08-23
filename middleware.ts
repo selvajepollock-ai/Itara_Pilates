@@ -3,8 +3,8 @@ import { updateSession } from '@/lib/supabase/middleware'
 
 const PUBLIC_PATHS = ['/login', '/auth', '/forgot-password', '/registro']
 
-// ⚙️ MODO MANTENIMIENTO — cambiar a false para volver a la normalidad
-const MAINTENANCE_MODE = true
+// ⚙️ MODO MANTENIMIENTO — cambiar a true para bloquear la app
+const MAINTENANCE_MODE = false
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
