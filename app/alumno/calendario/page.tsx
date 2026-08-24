@@ -34,17 +34,25 @@ export default async function AlumnoCalendarioPage({
   prevWeek.setDate(prevWeek.getDate() - 7)
   const nextWeek = new Date(monday)
   nextWeek.setDate(nextWeek.getDate() + 7)
+  const sunday = new Date(monday)
+  sunday.setDate(sunday.getDate() + 6)
 
-  const [{ data: classesData }, { data: myEnrollments }, { data: enrollmentsAll }] = await Promise.all([
-    supabase
-      .from('classes')
-      .select('id, day_of_week, start_time, end_time, capacity, room, class_types(name), profiles(full_name)')
-      .eq('active', true),
-    supabase.from('enrollments').select('class_id').eq('student_id', studentId).eq('status', 'active'),
-    // Ocupación real de TODOS los alumnos: necesita el cliente admin, si no las políticas
-    // de privacidad esconden las inscripciones de otros alumnos y da 0 de ocupación.
-    admin.from('enrollments').select('class_id').eq('status', 'active'),
-  ])
+  const [{ data: classesData }, { data: myEnrollments }, { data: enrollmentsAll }, { data: cancelledData }] =
+    await Promise.all([
+      supabase
+        .from('classes')
+        .select('id, day_of_week, start_time, end_time, capacity, room, class_types(name), profiles(full_name)')
+        .eq('active', true),
+      supabase.from('enrollments').select('class_id').eq('student_id', studentId).eq('status', 'active'),
+      // Ocupación real de TODOS los alumnos: necesita el cliente admin, si no las políticas
+      // de privacidad esconden las inscripciones de otros alumnos y da 0 de ocupación.
+      admin.from('enrollments').select('class_id').eq('status', 'active'),
+      supabase
+        .from('class_cancellations')
+        .select('class_id, session_date')
+        .gte('session_date', toISODate(monday))
+        .lte('session_date', toISODate(sunday)),
+    ])
 
   const allClasses = (classesData ?? []) as unknown as ClassRow[]
   const classes = allClasses.filter((c) => !c.class_types?.name?.toLowerCase().includes('fuerza'))
@@ -53,6 +61,9 @@ export default async function AlumnoCalendarioPage({
   for (const e of enrollmentsAll ?? []) {
     countByClass.set(e.class_id, (countByClass.get(e.class_id) ?? 0) + 1)
   }
+  const cancelledKeys = new Set(
+    (cancelledData ?? []).map((c) => `${c.class_id}_${c.session_date}`)
+  )
 
   const monthLabel = monday.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
 
@@ -109,6 +120,7 @@ export default async function AlumnoCalendarioPage({
           const dayClasses = byDay.get(day) ?? []
           if (dayClasses.length === 0) return null
           const dayDate = dateForDayOfWeek(monday, day)
+          const dayISO = toISODate(dayDate)
 
           return (
             <section key={day}>
@@ -120,29 +132,36 @@ export default async function AlumnoCalendarioPage({
                   const isMine = myClassIds.has(c.id)
                   const enrolled = countByClass.get(c.id) ?? 0
                   const isFull = enrolled >= c.capacity
-                  const past = isInPast(toISODate(dayDate), c.start_time)
+                  const past = isInPast(dayISO, c.start_time)
+                  const isCancelled = cancelledKeys.has(`${c.id}_${dayISO}`)
 
                   return (
                     <div
                       key={c.id}
                       className={`rounded-xl border px-3.5 py-3 text-sm ${
-                        isMine
-                          ? 'border-moss bg-moss/5'
-                          : past
-                            ? 'border-sand/60 opacity-50'
-                            : 'border-sand bg-white'
+                        isCancelled
+                          ? 'border-dashed border-ink/20 bg-ink/5 opacity-70'
+                          : isMine
+                            ? 'border-moss bg-moss/5'
+                            : past
+                              ? 'border-sand/60 opacity-50'
+                              : 'border-sand bg-white'
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-display italic text-ink">{formatTime(c.start_time)}</span>
-                        {isMine && <span className="text-xs font-medium text-moss">Tuya</span>}
+                        {isMine && !isCancelled && <span className="text-xs font-medium text-moss">Tuya</span>}
                       </div>
                       <p className="mt-0.5 text-xs text-ink/50">
                         {c.room} · {c.profiles?.full_name ?? 'Sin instructor'}
                       </p>
-                      <p className={`mt-1 text-xs ${isFull ? 'text-clay' : 'text-ink/40'}`}>
-                        {isFull ? 'Completo' : `${c.capacity - enrolled} libres`}
-                      </p>
+                      {isCancelled ? (
+                        <p className="mt-1 text-xs font-medium text-clay">Cancelada</p>
+                      ) : (
+                        <p className={`mt-1 text-xs ${isFull ? 'text-clay' : 'text-ink/40'}`}>
+                          {isFull ? 'Completo' : `${c.capacity - enrolled} libres`}
+                        </p>
+                      )}
                     </div>
                   )
                 })}
