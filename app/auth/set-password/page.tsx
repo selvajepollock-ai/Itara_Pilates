@@ -44,6 +44,13 @@ export default function SetPasswordPage() {
         onSubmit={handleSubmit}
         className="w-full max-w-sm space-y-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
       >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/pilates_2.gif"
+          alt="Pilates"
+          className="mx-auto h-32 w-32 object-contain"
+        />
+
         <h1 className="text-xl font-semibold">Creá tu contraseña</h1>
         <p className="text-sm text-gray-500">
           Bienvenido/a al estudio. Elegí una contraseña para tu cuenta.

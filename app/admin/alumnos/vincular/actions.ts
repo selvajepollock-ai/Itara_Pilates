@@ -41,6 +41,7 @@ export async function linkSignupToStudent(requestId: string, studentId: string, 
   const phone = String(formData.get('phone') ?? '').trim()
   const username = String(formData.get('username') ?? '').trim().toLowerCase()
   const birthDate = String(formData.get('birth_date') ?? '').trim()
+  const firstName = fullName.split(' ')[0] ?? fullName
   if (!fullName || !email) return { error: 'Faltan datos de la solicitud.' }
   if (username && !isValidUsername(username)) {
     return { error: 'El usuario de la solicitud no tiene un formato válido.' }
@@ -49,6 +50,7 @@ export async function linkSignupToStudent(requestId: string, studentId: string, 
   const { error: authError } = await admin.auth.admin.updateUserById(studentId, {
     email,
     email_confirm: true,
+    user_metadata: { full_name: fullName, first_name: firstName },
   })
   if (authError) return { error: authError.message }
   const { error: profileError } = await admin

@@ -200,10 +200,23 @@ const QUOTES = [
   "Bienvenido. Tu bienestar te estaba esperando.",
 ]
 
-export function getDailyQuote() {
+// Hash simple y determinístico de un string (el UUID del alumno) a un número entero.
+function hashString(str: string): number {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) | 0
+  }
+  return Math.abs(hash)
+}
+
+// Frase fija por alumno durante todo el día: combina el día del año con un hash
+// del studentId, así cada persona ve una frase distinta ese día, y mañana cambia.
+export function getDailyQuote(studentId: string) {
   const today = new Date()
   const dayOfYear = Math.floor(
     (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000
   )
-  return QUOTES[dayOfYear % QUOTES.length]
+  const offset = studentId ? hashString(studentId) : 0
+  const index = (dayOfYear + offset) % QUOTES.length
+  return QUOTES[index]
 }

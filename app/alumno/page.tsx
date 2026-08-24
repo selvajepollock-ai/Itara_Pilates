@@ -107,7 +107,7 @@ export default async function AlumnoDashboard() {
   ])
 
   const firstName = profile?.full_name?.split(' ')[0]
-  const quote = getDailyQuote()
+  const quote = getDailyQuote(studentId)
   const minHours = settings?.cancellation_min_hours ?? 12
 
   const status = getPaymentStatus(

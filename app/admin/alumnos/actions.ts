@@ -60,7 +60,7 @@ export async function createStudent(formData: FormData) {
 
   if (grantAccess) {
     const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(emailInput, {
-      data: { full_name: fullName, roles: ['student'] },
+      data: { full_name: fullName, first_name: firstName, roles: ['student'] },
       redirectTo: `${siteUrl}/auth/confirm?next=/auth/set-password`,
     })
     if (inviteError) return { error: inviteError.message }
@@ -71,7 +71,7 @@ export async function createStudent(formData: FormData) {
       email: authEmail,
       password: crypto.randomUUID(),
       email_confirm: true,
-      user_metadata: { full_name: fullName, roles: ['student'] },
+      user_metadata: { full_name: fullName, first_name: firstName, roles: ['student'] },
     })
     if (createError) return { error: createError.message }
     newUserId = created.user?.id
