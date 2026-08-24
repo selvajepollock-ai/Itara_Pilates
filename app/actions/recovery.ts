@@ -33,7 +33,7 @@ async function assertAdmin() {
   if (!profile?.roles?.includes('admin')) {
     return { ok: false as const, error: 'No tenés permisos para esta acción.' }
   }
-  return { ok: true as const, supabase }
+  return { ok: true as const, supabase, userId: user.id }
 }
 
 export async function cancelSession({
@@ -462,6 +462,140 @@ export async function rejectRecoveryRequest(creditId: string) {
   if (error) return { error: error.message }
 
   revalidatePath('/admin/avisos')
+  revalidatePath('/alumno')
+  return { success: true }
+}
+
+// Admin cancela una clase ENTERA de un día puntual (ej: no hay instructor ese jueves).
+// A cada alumno anotado se le genera crédito de recuperación automático (igual que si
+// hubiese cancelado individualmente), y se dispara un aviso automático a esa clase/fecha.
+export async function cancelClassOccurrence({
+  classId,
+  sessionDate,
+  reason,
+}: {
+  classId: string
+  sessionDate: string
+  reason?: string
+}) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+  const { supabase, userId } = auth
+
+  const { data: classInfo } = await supabase
+    .from('classes')
+    .select('id, class_type_id, class_types(name)')
+    .eq('id', classId)
+    .maybeSingle()
+
+  if (!classInfo) return { error: 'La clase no existe.' }
+
+  const { data: cancellation, error: cancelError } = await supabase
+    .from('class_cancellations')
+    .insert({
+      class_id: classId,
+      session_date: sessionDate,
+      reason: reason || null,
+      cancelled_by: userId,
+    })
+    .select('id')
+    .maybeSingle()
+
+  if (cancelError) {
+    if (cancelError.message.toLowerCase().includes('duplicate')) {
+      return { error: 'Esa clase ya estaba cancelada para esa fecha.' }
+    }
+    return { error: cancelError.message }
+  }
+  if (!cancellation) return { error: 'No se pudo cancelar la clase.' }
+
+  const { data: enrollments } = await supabase
+    .from('enrollments')
+    .select('id, student_id')
+    .eq('class_id', classId)
+    .eq('status', 'active')
+
+  const sessionDateObj = new Date(`${sessionDate}T00:00:00`)
+  const monday = getMonday(sessionDateObj)
+  const sunday = getSunday(monday)
+
+  for (const e of enrollments ?? []) {
+    const { data: sc } = await supabase
+      .from('session_cancellations')
+      .insert({
+        enrollment_id: e.id,
+        student_id: e.student_id,
+        class_id: classId,
+        session_date: sessionDate,
+        within_deadline: true,
+      })
+      .select('id')
+      .maybeSingle()
+
+    // Si el alumno ya se había avisado individualmente ese día, no duplicamos el crédito.
+    if (!sc) continue
+
+    const { data: credit } = await supabase
+      .from('recovery_credits')
+      .insert({
+        student_id: e.student_id,
+        source_cancellation_id: sc.id,
+        class_type_id: classInfo.class_type_id,
+        week_start: toISODate(monday),
+        week_end: toISODate(sunday),
+        status: 'available',
+      })
+      .select('id')
+      .maybeSingle()
+
+    if (credit) {
+      await supabase.from('session_cancellations').update({ recovery_credit_id: credit.id }).eq('id', sc.id)
+    }
+  }
+
+  const className = (classInfo as unknown as { class_types: { name: string } | null }).class_types?.name ?? 'la clase'
+  const dateLabel = sessionDateObj.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })
+
+  await supabase.from('announcements').insert({
+    message: `Se canceló la clase de ${className} del ${dateLabel}. Si estabas anotado, ya tenés una recuperación disponible para agendar en tu horario.`,
+    expires_at: sessionDate,
+    created_by: userId,
+    target_type: 'class',
+    target_class_id: classId,
+    target_date: sessionDate,
+  })
+
+  revalidatePath('/admin/horarios')
+  revalidatePath(`/admin/horarios/${classId}`)
+  revalidatePath('/alumno')
+  revalidatePath('/admin/avisos')
+
+  return { success: true }
+}
+
+// Admin deshace la cancelación de una fecha puntual (por si fue un error).
+// No revierte créditos ya usados por el alumno, solo saca la marca de "Cancelada".
+export async function uncancelClassOccurrence({
+  classId,
+  sessionDate,
+}: {
+  classId: string
+  sessionDate: string
+}) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
+
+  const { error } = await supabase
+    .from('class_cancellations')
+    .delete()
+    .eq('class_id', classId)
+    .eq('session_date', sessionDate)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/horarios')
+  revalidatePath(`/admin/horarios/${classId}`)
   revalidatePath('/alumno')
   return { success: true }
 }

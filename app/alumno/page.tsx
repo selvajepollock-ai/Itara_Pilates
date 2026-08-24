@@ -48,6 +48,7 @@ export default async function AlumnoDashboard() {
     { data: activePlans },
     { data: upcomingRecoveries },
     { data: requestedCredits },
+    { data: studioCancellations },
   ] = await Promise.all([
     supabase
       .from('enrollments')
@@ -104,6 +105,11 @@ export default async function AlumnoDashboard() {
       )
       .eq('student_id', studentId)
       .eq('status', 'requested'),
+    supabase
+      .from('class_cancellations')
+      .select('class_id, session_date')
+      .gte('session_date', toISODate(thisMonday))
+      .lte('session_date', toISODate(nextSunday)),
   ])
 
   const firstName = profile?.full_name?.split(' ')[0]
@@ -120,6 +126,9 @@ export default async function AlumnoDashboard() {
   const enrollments = (data ?? []) as unknown as MyClassRow[]
   const cancelledKeys = new Set(
     (cancellations ?? []).map((c) => `${c.enrollment_id}_${c.session_date}`)
+  )
+  const studioCancelledKeys = new Set(
+    (studioCancellations ?? []).map((c) => `${c.class_id}_${c.session_date}`)
   )
 
   function buildWeek(monday: Date) {
@@ -348,6 +357,7 @@ export default async function AlumnoDashboard() {
                         const sessionDate = toISODate(dateForDayOfWeek(week.monday, day))
                         const key = `${e.id}_${sessionDate}`
                         const alreadyCancelled = cancelledKeys.has(key)
+                        const studioCancelled = studioCancelledKeys.has(`${e.class_id}_${sessionDate}`)
                         const past = isInPast(sessionDate, e.classes?.start_time ?? '23:59:00')
                         const isToday = sessionDate === todayISO
 
@@ -355,7 +365,7 @@ export default async function AlumnoDashboard() {
                           <div
                             key={e.id}
                             className={`rounded-2xl border bg-white px-4 py-4 shadow-[0_2px_12px_rgba(46,43,38,0.04)] ${
-                              past ? 'border-sand/60 opacity-60' : 'border-sand'
+                              past || studioCancelled ? 'border-sand/60 opacity-60' : 'border-sand'
                             }`}
                           >
                             <div className="flex items-start justify-between gap-2">
@@ -371,7 +381,11 @@ export default async function AlumnoDashboard() {
                             </p>
 
                             <div className="mt-2.5 border-t border-sand pt-2.5">
-                              {past ? (
+                              {studioCancelled ? (
+                                <p className="text-xs font-medium text-clay">
+                                  Cancelada por el estudio — ya tenés recuperación disponible
+                                </p>
+                              ) : past ? (
                                 <p className="text-xs text-ink/35">
                                   {alreadyCancelled ? 'No fuiste (avisada)' : 'Ya pasó'}
                                 </p>
