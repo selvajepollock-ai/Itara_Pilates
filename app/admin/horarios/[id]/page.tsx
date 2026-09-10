@@ -88,8 +88,9 @@ export default async function ClaseDetailPage({
 
   // Clases ordenadas como en la grilla (por día de la semana, después por hora)
   // para poder saltar a la anterior / siguiente sin volver al horario.
+  // Se saltean las de "Fuerza": anterior/siguiente recorre solo Reformer.
   const ordered = ((allClassesData ?? []) as unknown as NeighbourClass[])
-    .slice()
+    .filter((c) => !c.class_types?.name?.toLowerCase().includes('fuerza'))
     .sort((a, b) => {
       const dayDiff = DAY_ORDER.indexOf(a.day_of_week) - DAY_ORDER.indexOf(b.day_of_week)
       return dayDiff !== 0 ? dayDiff : a.start_time.localeCompare(b.start_time)
