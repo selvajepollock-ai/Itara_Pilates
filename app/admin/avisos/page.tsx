@@ -23,11 +23,32 @@ type RecoveryRow = {
   classes: { day_of_week: number; start_time: string; class_types: { name: string } | null } | null
 }
 
+const FEED_DAYS = 14
+
 export default async function AvisosPage() {
   const supabase = await createClient()
 
   // Marcar como vistas todas las cancelaciones nuevas (apaga la campanita)
   await supabase.from('session_cancellations').update({ acknowledged: true }).eq('acknowledged', false)
+
+  // Cuándo miró el admin esta pantalla por última vez (para separar nuevo / visto).
+  // Tolerante a que la columna todavía no exista (deploy antes de la migración 034).
+  let lastSeenAt: string | null = null
+  try {
+    const { data: settingsBefore } = await supabase
+      .from('studio_settings')
+      .select('avisos_seen_at')
+      .maybeSingle()
+    lastSeenAt = (settingsBefore?.avisos_seen_at as string | null) ?? null
+    await supabase
+      .from('studio_settings')
+      .update({ avisos_seen_at: new Date().toISOString() })
+      .eq('id', 1)
+  } catch {
+    // sin columna todavía: se muestra todo como "nuevo"
+  }
+
+  const feedCutoff = new Date(Date.now() - FEED_DAYS * 24 * 60 * 60 * 1000).toISOString()
 
   const [{ data: cancellationsData }, { data: recoveriesData }, { data: pendingCredits }] =
     await Promise.all([
@@ -36,16 +57,18 @@ export default async function AvisosPage() {
         .select(
           'id, session_date, within_deadline, cancelled_at, profiles(full_name), classes(day_of_week, start_time, class_types(name))'
         )
+        .gte('cancelled_at', feedCutoff)
         .order('cancelled_at', { ascending: false })
-        .limit(20),
+        .limit(50),
       supabase
         .from('attendance')
         .select(
           'id, session_date, created_at, profiles(full_name), classes(day_of_week, start_time, class_types(name))'
         )
         .not('recovery_credit_id', 'is', null)
+        .gte('created_at', feedCutoff)
         .order('created_at', { ascending: false })
-        .limit(20),
+        .limit(50),
       supabase
         .from('recovery_credits')
         .select(
@@ -73,7 +96,56 @@ export default async function AvisosPage() {
     ...recoveries.map((row): FeedItem => ({ kind: 'recover', at: row.created_at, row })),
   ].sort((a, b) => b.at.localeCompare(a.at))
 
+  const nuevos = lastSeenAt ? feed.filter((i) => i.at > lastSeenAt) : feed
+  const vistos = lastSeenAt ? feed.filter((i) => i.at <= lastSeenAt) : []
+
   const pendingActionCount = (pendingCredits?.length ?? 0) + (planRequests?.length ?? 0)
+
+  function FeedRow({ item, dimmed = false }: { item: FeedItem; dimmed?: boolean }) {
+    const typeName = item.row.classes?.class_types?.name
+    const dayLabel = item.row.classes ? DAY_NAMES[item.row.classes.day_of_week] : ''
+    const timeLabel = item.row.classes ? formatTime(item.row.classes.start_time) : ''
+    const name = item.row.profiles?.full_name ?? 'Alumno'
+    const isRecent = Date.now() - new Date(item.at).getTime() < 3 * 60 * 60 * 1000
+
+    return (
+      <li className={`flex items-center gap-3 px-5 py-4 ${dimmed ? 'opacity-55' : ''}`}>
+        <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blush text-xs font-medium text-ink">
+          {name.slice(0, 1).toUpperCase()}
+          {isRecent && !dimmed && (
+            <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-moss" />
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm text-ink">
+            <span className="font-medium">{name}</span>{' '}
+            {item.kind === 'cancel'
+              ? (item.row as CancellationRow).within_deadline
+                ? 'avisó que no va — tiene una recuperación para agendar'
+                : 'avisó que no va (fuera de horario, sin recuperación)'
+              : 'se anotó a recuperar'}
+          </p>
+          <p className="mt-0.5 truncate text-xs text-ink/40">
+            {typeName} · {dayLabel} {timeLabel} ·{' '}
+            {new Date(`${item.row.session_date}T00:00:00`).toLocaleDateString('es-AR', {
+              day: 'numeric',
+              month: 'short',
+            })}
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-col items-end gap-1">
+          <div
+            className={`flex h-7 w-7 items-center justify-center rounded-full ${
+              item.kind === 'cancel' ? 'bg-clay/10 text-clay' : 'bg-moss/10 text-moss'
+            }`}
+          >
+            {item.kind === 'cancel' ? <CalendarX size={14} /> : <RefreshCw size={14} />}
+          </div>
+          <span className="whitespace-nowrap text-[10px] text-ink/30">{relativeTime(item.at)}</span>
+        </div>
+      </li>
+    )
+  }
 
   return (
     <div className="max-w-2xl">
@@ -172,66 +244,46 @@ export default async function AvisosPage() {
         </div>
       )}
 
-      <p className="mt-8 flex items-center gap-2 text-xs uppercase tracking-wide text-ink/40">
-        Actividad reciente
-        {feed.length > 0 && (
-          <span className="rounded-full bg-sand px-2 py-0.5 text-[10px] font-medium text-ink/50">
-            {feed.length}
-          </span>
-        )}
-      </p>
-      <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
-        {feed.map((item) => {
-          const typeName = item.row.classes?.class_types?.name
-          const dayLabel = item.row.classes ? DAY_NAMES[item.row.classes.day_of_week] : ''
-          const timeLabel = item.row.classes ? formatTime(item.row.classes.start_time) : ''
-          const name = item.row.profiles?.full_name ?? 'Alumno'
-          const isRecent = Date.now() - new Date(item.at).getTime() < 3 * 60 * 60 * 1000
+      {nuevos.length > 0 && (
+        <>
+          <p className="mt-8 flex items-center gap-2 text-xs uppercase tracking-wide text-moss">
+            {lastSeenAt ? 'Nuevo desde tu última visita' : 'Actividad reciente'}
+            <span className="rounded-full bg-moss/10 px-2 py-0.5 text-[10px] font-medium text-moss">
+              {nuevos.length}
+            </span>
+          </p>
+          <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
+            {nuevos.map((item) => (
+              <FeedRow key={`${item.kind}-${item.row.id}`} item={item} />
+            ))}
+          </ul>
+        </>
+      )}
 
-          return (
-            <li key={`${item.kind}-${item.row.id}`} className="flex items-center gap-3 px-5 py-4">
-              <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blush text-xs font-medium text-ink">
-                {name.slice(0, 1).toUpperCase()}
-                {isRecent && (
-                  <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-moss" />
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm text-ink">
-                  <span className="font-medium">{name}</span>{' '}
-                  {item.kind === 'cancel'
-                    ? (item.row as CancellationRow).within_deadline
-                      ? 'avisó que no va — recuperación pendiente de aprobar'
-                      : 'avisó que no va (fuera de horario, sin recuperación)'
-                    : 'se anotó a recuperar'}
-                </p>
-                <p className="mt-0.5 truncate text-xs text-ink/40">
-                  {typeName} · {dayLabel} {timeLabel} ·{' '}
-                  {new Date(`${item.row.session_date}T00:00:00`).toLocaleDateString('es-AR', {
-                    day: 'numeric',
-                    month: 'short',
-                  })}
-                </p>
-              </div>
-              <div className="flex shrink-0 flex-col items-end gap-1">
-                <div
-                  className={`flex h-7 w-7 items-center justify-center rounded-full ${
-                    item.kind === 'cancel' ? 'bg-clay/10 text-clay' : 'bg-moss/10 text-moss'
-                  }`}
-                >
-                  {item.kind === 'cancel' ? <CalendarX size={14} /> : <RefreshCw size={14} />}
-                </div>
-                <span className="whitespace-nowrap text-[10px] text-ink/30">{relativeTime(item.at)}</span>
-              </div>
-            </li>
-          )
-        })}
-        {feed.length === 0 && (
-          <li className="px-5 py-14 text-center text-sm text-ink/40">
-            Todavía no hay avisos.
-          </li>
-        )}
-      </ul>
+      {vistos.length > 0 && (
+        <>
+          <p className="mt-8 text-xs uppercase tracking-wide text-ink/40">Ya visto</p>
+          <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
+            {vistos.map((item) => (
+              <FeedRow key={`${item.kind}-${item.row.id}`} item={item} dimmed />
+            ))}
+          </ul>
+        </>
+      )}
+
+      {feed.length === 0 && (
+        <>
+          <p className="mt-8 text-xs uppercase tracking-wide text-ink/40">Actividad reciente</p>
+          <p className="mt-3 rounded-2xl border border-sand bg-white px-5 py-14 text-center text-sm text-ink/40">
+            Sin movimientos en los últimos {FEED_DAYS} días.
+          </p>
+        </>
+      )}
+
+      <p className="mt-4 text-xs text-ink/30">
+        La actividad de más de {FEED_DAYS} días se oculta sola. Las solicitudes que necesitan tu
+        respuesta aparecen arriba, en "Requiere tu atención".
+      </p>
     </div>
   )
 }
