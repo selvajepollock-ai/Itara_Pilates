@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { siteUrlForHost } from '@/lib/site-url'
 function isValidUsername(u: string) {
   return /^[a-z0-9_.]{3,20}$/.test(u)
 }
@@ -71,9 +72,7 @@ export async function linkSignupToStudent(requestId: string, studentId: string, 
     return { error: profileError.message }
   }
   const headersList = await headers()
-  const host = headersList.get('host')
-  const protocol = host?.startsWith('localhost') ? 'http' : 'https'
-  const siteUrl = `${protocol}://${host}`
+  const siteUrl = siteUrlForHost(headersList.get('host'))
   const supabase = await createClient()
   // Mail de bienvenida (primer acceso): usa la plantilla "Magic Link" de Supabase,
   // separada de "Reset Password" que usan los alumnos ya activos que olvidaron su clave.

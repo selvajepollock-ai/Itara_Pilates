@@ -5,6 +5,7 @@ import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generateNoAccessEmail } from '@/lib/auth-username'
+import { siteUrlForHost } from '@/lib/site-url'
 
 function isValidUsername(u: string) {
   return /^[a-z0-9_.]{3,20}$/.test(u)
@@ -51,9 +52,7 @@ export async function createStudent(formData: FormData) {
   if (!auth.ok) return { error: auth.error }
 
   const headersList = await headers()
-  const host = headersList.get('host')
-  const protocol = host?.startsWith('localhost') ? 'http' : 'https'
-  const siteUrl = `${protocol}://${host}`
+  const siteUrl = siteUrlForHost(headersList.get('host'))
 
   const admin = createAdminClient()
   let newUserId: string | undefined

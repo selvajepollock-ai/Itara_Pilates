@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { siteUrlForHost } from '@/lib/site-url'
 
 export async function deleteTeamMember(personId: string) {
   const supabase = await createClient()
@@ -89,9 +90,7 @@ export async function createOwner(formData: FormData) {
 
   if (inviteByEmail) {
     const headersList = await headers()
-    const host = headersList.get('host')
-    const protocol = host?.startsWith('localhost') ? 'http' : 'https'
-    const siteUrl = `${protocol}://${host}`
+    const siteUrl = siteUrlForHost(headersList.get('host'))
 
     const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
       data: { full_name: fullName, username, roles },
@@ -173,9 +172,7 @@ export async function createInstructor(formData: FormData) {
 
   if (inviteByEmail) {
     const headersList = await headers()
-    const host = headersList.get('host')
-    const protocol = host?.startsWith('localhost') ? 'http' : 'https'
-    const siteUrl = `${protocol}://${host}`
+    const siteUrl = siteUrlForHost(headersList.get('host'))
 
     const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
       data: { full_name: fullName, username, roles },

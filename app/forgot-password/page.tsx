@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { isEmailLike } from '@/lib/auth-username'
 import { resolveLoginEmail } from '@/app/actions/auth-helpers'
+import { siteUrlForHost } from '@/lib/site-url'
 
 export default function ForgotPasswordPage() {
   const supabase = createClient()
@@ -19,7 +20,7 @@ export default function ForgotPasswordPage() {
     const email = isEmailLike(identifier) ? identifier : await resolveLoginEmail(identifier)
 
     if (email) {
-      const siteUrl = window.location.origin
+      const siteUrl = siteUrlForHost(window.location.host)
       await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${siteUrl}/auth/confirm?next=/auth/set-password`,
       })

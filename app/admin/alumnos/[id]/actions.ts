@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { siteUrlForHost } from '@/lib/site-url'
 
 async function assertAdmin() {
   const supabase = await createClient()
@@ -73,9 +74,7 @@ export async function grantStudentAccess(studentId: string, formData: FormData) 
   await admin.from('profiles').update({ email, contact_email: null }).eq('id', studentId)
 
   const headersList = await headers()
-  const host = headersList.get('host')
-  const protocol = host?.startsWith('localhost') ? 'http' : 'https'
-  const siteUrl = `${protocol}://${host}`
+  const siteUrl = siteUrlForHost(headersList.get('host'))
 
   const supabase = await createClient()
   const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {

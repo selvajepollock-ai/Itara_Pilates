@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Copy, Check, UserPlus } from 'lucide-react'
 import { RejectSignupButton } from './reject-signup-button'
+import { PUBLIC_SITE_URL } from '@/lib/site-url'
 
 type SignupRequest = {
   id: string
@@ -16,8 +17,7 @@ type SignupRequest = {
 
 export function SignupRequestsSection({ requests }: { requests: SignupRequest[] }) {
   const [copied, setCopied] = useState(false)
-  const registroUrl =
-    typeof window !== 'undefined' ? `${window.location.origin}/registro` : 'https://itara-pilates.vercel.app/registro'
+  const registroUrl = `${PUBLIC_SITE_URL}/registro`
 
   function handleCopy() {
     navigator.clipboard.writeText(registroUrl)
