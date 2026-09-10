@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react'
 import { Search } from 'lucide-react'
-import { registerPayment } from './planes/actions'
+import { registerPayment } from './pagos/actions'
 import { formatARS } from '@/lib/currency'
 
 type StudentBilling = {

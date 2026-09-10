@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, UserCog, CalendarDays, CreditCard, Bell, BarChart3, Megaphone, Instagram, LogOut, Eye } from 'lucide-react'
+import { LayoutDashboard, Users, UserCog, CalendarDays, CreditCard, Wallet, Bell, BarChart3, Megaphone, Instagram, LogOut, Eye } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { getNotificationCounts } from './notification-counts'
@@ -44,6 +44,7 @@ export function Sidebar({
     { href: '/admin/instructores', label: 'Equipo', icon: UserCog, badge: 0 },
     { href: '/admin/horarios', label: 'Horarios', icon: CalendarDays, badge: 0 },
     { href: '/admin/planes', label: 'Planes', icon: CreditCard, badge: 0 },
+    { href: '/admin/pagos', label: 'Pagos', icon: Wallet, badge: 0 },
     { href: '/admin/avisos', label: 'Avisos', icon: Bell, badge: pendingCount },
     { href: '/admin/reportes', label: 'Reportes', icon: BarChart3, badge: 0 },
     { href: '/admin/notificaciones', label: 'Notificaciones', icon: Megaphone, badge: 0 },

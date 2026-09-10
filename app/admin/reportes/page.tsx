@@ -25,6 +25,7 @@ export default async function ReportesPage({
 
   const [
     { data: paymentsData },
+    { data: dropInData },
     { data: classesData },
     { data: enrollmentsData },
     { data: lateCancellations },
@@ -33,6 +34,13 @@ export default async function ReportesPage({
     supabase
       .from('payments')
       .select('amount, paid_at, subscriptions(plan_id, plans(name))')
+      .is('voided_at', null)
+      .gte('paid_at', start.toISOString())
+      .lt('paid_at', end.toISOString()),
+    supabase
+      .from('extra_charges')
+      .select('amount, paid_at')
+      .eq('paid', true)
       .gte('paid_at', start.toISOString())
       .lt('paid_at', end.toISOString()),
     supabase
@@ -57,6 +65,8 @@ export default async function ReportesPage({
   // Ingresos
   const payments = paymentsData ?? []
   const totalIncome = payments.reduce((sum, p) => sum + Number(p.amount), 0)
+  const dropInIncome = (dropInData ?? []).reduce((sum, c) => sum + Number(c.amount), 0)
+  const grandTotalIncome = totalIncome + dropInIncome
   const incomeByPlan = new Map<string, number>()
   for (const p of payments) {
     const planName =
@@ -109,6 +119,7 @@ export default async function ReportesPage({
           <ReportExportButtons
             month={label}
             totalIncome={totalIncome}
+            dropInIncome={dropInIncome}
             incomeByPlan={Array.from(incomeByPlan.entries())}
             classRows={classRows}
             absenceRanking={absenceRanking}
@@ -129,10 +140,22 @@ export default async function ReportesPage({
           <TrendingUp size={16} className="text-moss" />
           <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Ingresos del mes</p>
         </div>
-        <p className="mt-2 font-display text-4xl italic text-ink">{formatARS(totalIncome)}</p>
+        <p className="mt-2 font-display text-4xl italic text-ink">{formatARS(grandTotalIncome)}</p>
+
+        <ul className="mt-4 space-y-1.5 border-t border-sand pt-4">
+          <li className="flex justify-between text-sm text-ink/70">
+            <span>Cuotas</span>
+            <span>{formatARS(totalIncome)}</span>
+          </li>
+          <li className="flex justify-between text-sm text-ink/70">
+            <span>Clases sueltas</span>
+            <span>{formatARS(dropInIncome)}</span>
+          </li>
+        </ul>
 
         {incomeByPlan.size > 0 && (
           <ul className="mt-4 space-y-1.5 border-t border-sand pt-4">
+            <li className="pb-1 text-[11px] uppercase tracking-wide text-ink/30">Cuotas por plan</li>
             {Array.from(incomeByPlan.entries())
               .sort((a, b) => b[1] - a[1])
               .map(([plan, amount]) => (
@@ -143,8 +166,8 @@ export default async function ReportesPage({
               ))}
           </ul>
         )}
-        {payments.length === 0 && (
-          <p className="mt-3 text-sm text-ink/40">Sin pagos registrados este mes.</p>
+        {grandTotalIncome === 0 && (
+          <p className="mt-3 text-sm text-ink/40">Sin ingresos registrados este mes.</p>
         )}
       </div>
 

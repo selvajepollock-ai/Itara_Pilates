@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { assignPlan } from '../../planes/actions'
+import { assignPlan } from '../../pagos/actions'
 import { formatARS } from '@/lib/currency'
 
 type Plan = { id: string; name: string; price: number }

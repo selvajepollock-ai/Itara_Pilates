@@ -9,20 +9,24 @@ type AbsenceRow = { name: string; count: number }
 export function ReportExportButtons({
   month,
   totalIncome,
+  dropInIncome,
   incomeByPlan,
   classRows,
   absenceRanking,
 }: {
   month: string
   totalIncome: number
+  dropInIncome: number
   incomeByPlan: [string, number][]
   classRows: ClassRow[]
   absenceRanking: AbsenceRow[]
 }) {
   function handleExcel() {
     exportToExcel(`reporte-${month}`, 'Ingresos', [
-      { Concepto: 'Total del mes', Monto: totalIncome },
-      ...incomeByPlan.map(([plan, amount]) => ({ Concepto: plan, Monto: amount })),
+      { Concepto: 'Total general', Monto: totalIncome + dropInIncome },
+      { Concepto: 'Cuotas', Monto: totalIncome },
+      { Concepto: 'Clases sueltas', Monto: dropInIncome },
+      ...incomeByPlan.map(([plan, amount]) => ({ Concepto: `Plan: ${plan}`, Monto: amount })),
     ])
   }
 

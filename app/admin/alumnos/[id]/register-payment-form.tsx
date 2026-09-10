@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { registerPayment } from '../../planes/actions'
+import { registerPayment } from '../../pagos/actions'
 
 export function RegisterPaymentForm({
   subscriptionId,
