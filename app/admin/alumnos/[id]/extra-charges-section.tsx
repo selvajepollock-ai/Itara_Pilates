@@ -9,11 +9,11 @@ export async function ExtraChargesSection({ studentId }: { studentId: string }) 
   const supabase = await createClient()
   const { data: charges } = await supabase
     .from('extra_charges')
-    .select('id, description, amount, paid, created_at')
+    .select('id, description, amount, paid, comp, created_at')
     .eq('student_id', studentId)
     .order('created_at', { ascending: false })
 
-  const pending = (charges ?? []).filter((c) => !c.paid)
+  const pending = (charges ?? []).filter((c) => !c.paid && !c.comp)
   if (pending.length === 0) return null
 
   const total = pending.reduce((sum, c) => sum + Number(c.amount), 0)

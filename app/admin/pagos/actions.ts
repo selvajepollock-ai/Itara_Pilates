@@ -36,9 +36,15 @@ export async function assignPlan(studentId: string, formData: FormData) {
   if (!auth.ok) return { error: auth.error }
 
   const plan_id = String(formData.get('plan_id') ?? '')
-  const end_date = String(formData.get('end_date') ?? '')
+  const comp = formData.get('comp') === 'on'
+  const comp_reason = String(formData.get('comp_reason') ?? '').trim() || null
+  // Bonificado no necesita fecha de pago: se guarda una lejana solo para cumplir el schema.
+  const end_date = comp
+    ? String(formData.get('end_date') ?? '') || '2999-12-31'
+    : String(formData.get('end_date') ?? '')
 
-  if (!plan_id || !end_date) return { error: 'Elegí un plan y una fecha.' }
+  if (!plan_id) return { error: 'Elegí un plan.' }
+  if (!comp && !end_date) return { error: 'Elegí hasta cuándo está paga la cuota.' }
 
   const { data: existing } = await auth.supabase
     .from('subscriptions')
@@ -47,18 +53,16 @@ export async function assignPlan(studentId: string, formData: FormData) {
     .eq('status', 'active')
     .maybeSingle()
 
+  const fields = { plan_id, end_date, comp, comp_reason: comp ? comp_reason : null }
+
   if (existing) {
-    const { error } = await auth.supabase
-      .from('subscriptions')
-      .update({ plan_id, end_date })
-      .eq('id', existing.id)
+    const { error } = await auth.supabase.from('subscriptions').update(fields).eq('id', existing.id)
     if (error) return { error: error.message }
   } else {
     const { error } = await auth.supabase.from('subscriptions').insert({
       student_id: studentId,
-      plan_id,
-      end_date,
       status: 'active',
+      ...fields,
     })
     if (error) return { error: error.message }
   }
@@ -122,7 +126,24 @@ export async function setExtraChargePaid(chargeId: string, paid: boolean) {
 
   const { error } = await auth.supabase
     .from('extra_charges')
-    .update({ paid, paid_at: paid ? new Date().toISOString() : null })
+    .update({ paid, paid_at: paid ? new Date().toISOString() : null, comp: false })
+    .eq('id', chargeId)
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/pagos/sueltas')
+  revalidatePath('/admin/reportes')
+  revalidatePath('/admin/alumnos')
+  return { success: true }
+}
+
+/** Marca una clase suelta como bonificada (no se cobra) o la vuelve a pendiente. */
+export async function setExtraChargeComp(chargeId: string, comp: boolean) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+
+  const { error } = await auth.supabase
+    .from('extra_charges')
+    .update({ comp, paid: false, paid_at: null })
     .eq('id', chargeId)
   if (error) return { error: error.message }
 

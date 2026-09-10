@@ -3,7 +3,7 @@ import { TrendingUp, AlertTriangle, Wallet } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { formatARS } from '@/lib/currency'
 import {
-  getPaymentStatus,
+  subscriptionStatus,
   suggestNextDueDate,
   STATUS_LABEL,
   STATUS_CLASSES,
@@ -45,7 +45,7 @@ export default async function PagosResumenPage({
     supabase.from('profiles').select('id, full_name').contains('roles', ['student']),
     supabase
       .from('subscriptions')
-      .select('id, student_id, end_date, plans(name, price)')
+      .select('id, student_id, end_date, comp, plans(name, price)')
       .eq('status', 'active'),
     supabase
       .from('studio_settings')
@@ -72,9 +72,9 @@ export default async function PagosResumenPage({
   const students = studentsData ?? []
   const nameById = new Map(students.map((s) => [s.id, s.full_name]))
 
-  // Esperado vs cobrado
+  // Esperado vs cobrado — los bonificados no se esperan cobrar.
   const expected = subs.reduce(
-    (sum, s) => sum + Number((s.plans as unknown as PlanRef)?.price ?? 0),
+    (sum, s) => sum + (s.comp ? 0 : Number((s.plans as unknown as PlanRef)?.price ?? 0)),
     0
   )
   const payments = monthPayments ?? []
@@ -82,7 +82,13 @@ export default async function PagosResumenPage({
   const summary = collectionSummary(expected, collected)
 
   // Estados de cobranza
-  const counts: Record<PaymentStatus, number> = { al_dia: 0, por_vencer: 0, vencido: 0, sin_plan: 0 }
+  const counts: Record<PaymentStatus, number> = {
+    al_dia: 0,
+    por_vencer: 0,
+    vencido: 0,
+    sin_plan: 0,
+    bonificado: 0,
+  }
   const deudores: {
     studentId: string
     name: string
@@ -94,7 +100,7 @@ export default async function PagosResumenPage({
 
   for (const s of subs) {
     studentsWithSub.add(s.student_id)
-    const status = getPaymentStatus(s.end_date, reminderDays, dueDay)
+    const status = subscriptionStatus(s, reminderDays, dueDay)
     counts[status] += 1
     if (status === 'vencido' || status === 'por_vencer') {
       deudores.push({
@@ -155,6 +161,7 @@ export default async function PagosResumenPage({
     { key: 'por_vencer', value: counts.por_vencer },
     { key: 'vencido', value: counts.vencido },
     { key: 'sin_plan', value: counts.sin_plan },
+    ...(counts.bonificado > 0 ? [{ key: 'bonificado' as const, value: counts.bonificado }] : []),
   ]
 
   const monthName = new Date(start).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })

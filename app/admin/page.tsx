@@ -41,7 +41,7 @@ export default async function AdminDashboard() {
       .contains('roles', ['student'])
       .not('birth_date', 'is', null),
     supabase.from('profiles').select('full_name').eq('id', user?.id ?? '').single(),
-    supabase.from('subscriptions').select('id, student_id, end_date, plans(name, price)').eq('status', 'active'),
+    supabase.from('subscriptions').select('id, student_id, end_date, comp, plans(name, price)').eq('status', 'active'),
     supabase.from('studio_settings').select('payment_due_day').single(),
     supabase.from('enrollments').select('class_id').eq('status', 'active'),
   ])
@@ -51,7 +51,7 @@ export default async function AdminDashboard() {
   const classesCount = classesData?.length ?? 0
 
   const today = new Date().toISOString().slice(0, 10)
-  const overdueCount = (subscriptionsData ?? []).filter((s) => s.end_date < today).length
+  const overdueCount = (subscriptionsData ?? []).filter((s) => !s.comp && s.end_date < today).length
 
   const stats = [
     { label: 'Alumnos activos', value: studentsCount, icon: Users, href: '/admin/alumnos' },

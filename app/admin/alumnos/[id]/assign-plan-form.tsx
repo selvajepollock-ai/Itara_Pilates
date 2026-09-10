@@ -11,15 +11,20 @@ export function AssignPlanForm({
   plans,
   currentPlanId,
   defaultEndDate,
+  currentComp = false,
+  currentCompReason = '',
 }: {
   studentId: string
   plans: Plan[]
   currentPlanId: string | null
   defaultEndDate: string
+  currentComp?: boolean
+  currentCompReason?: string
 }) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
+  const [comp, setComp] = useState(currentComp)
 
   function handleSubmit(formData: FormData) {
     setError(null)
@@ -66,18 +71,51 @@ export function AssignPlanForm({
           ))}
         </select>
       </div>
-      <div>
-        <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
-          Pagado hasta
-        </label>
+
+      <label className="flex items-start gap-2 rounded-lg border border-sand bg-linen/30 px-3 py-2.5">
         <input
-          type="date"
-          name="end_date"
-          required
-          defaultValue={defaultEndDate}
-          className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-moss focus:bg-white"
+          type="checkbox"
+          name="comp"
+          checked={comp}
+          onChange={(e) => setComp(e.target.checked)}
+          className="mt-0.5"
         />
-      </div>
+        <span className="text-sm text-ink/80">
+          Sin cargo (bonificado)
+          <span className="block text-xs text-ink/45">
+            Ocupa lugar pero no se le cobra ni cuenta como deuda. Queda así hasta que lo desmarques.
+          </span>
+        </span>
+      </label>
+
+      {comp ? (
+        <div>
+          <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
+            Motivo (opcional)
+          </label>
+          <input
+            type="text"
+            name="comp_reason"
+            defaultValue={currentCompReason}
+            placeholder="Ej: vale de cumpleaños, canje, staff"
+            className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-moss focus:bg-white"
+          />
+        </div>
+      ) : (
+        <div>
+          <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
+            Pagado hasta
+          </label>
+          <input
+            type="date"
+            name="end_date"
+            required
+            defaultValue={defaultEndDate}
+            className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-moss focus:bg-white"
+          />
+        </div>
+      )}
+
       <button
         type="submit"
         disabled={isPending}

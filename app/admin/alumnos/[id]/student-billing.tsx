@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import {
-  getPaymentStatus,
+  subscriptionStatus,
   STATUS_LABEL,
   STATUS_CLASSES,
   suggestNextPaymentDate,
@@ -18,7 +18,7 @@ export async function StudentBilling({ studentId }: { studentId: string }) {
     supabase.from('plans').select('id, name, price').eq('active', true).order('price'),
     supabase
       .from('subscriptions')
-      .select('id, plan_id, end_date, plans(name, price)')
+      .select('id, plan_id, end_date, comp, comp_reason, plans(name, price)')
       .eq('student_id', studentId)
       .eq('status', 'active')
       .maybeSingle(),
@@ -36,7 +36,8 @@ export async function StudentBilling({ studentId }: { studentId: string }) {
 
   const dueDay = settings?.payment_due_day ?? 10
   const reminderDays = settings?.payment_reminder_days_before ?? 3
-  const status = getPaymentStatus(subscription?.end_date ?? null, reminderDays, dueDay)
+  const isComp = Boolean(subscription?.comp)
+  const status = subscriptionStatus(subscription ?? null, reminderDays, dueDay)
   const suggestedNextDate = suggestNextPaymentDate(subscription?.end_date ?? null)
 
   const planInfo = subscription?.plans as unknown as { name: string; price: number } | null
@@ -64,24 +65,36 @@ export async function StudentBilling({ studentId }: { studentId: string }) {
       {subscription ? (
         <div className="mt-3 space-y-1">
           <p className="font-display text-lg italic text-ink">{planInfo?.name}</p>
-          <p className="text-sm text-ink/60">
-            Pagado hasta el{' '}
-            <span className="font-medium text-ink">
-              {new Date(`${subscription.end_date}T00:00:00`).toLocaleDateString('es-AR', {
-                day: '2-digit',
-                month: '2-digit',
-              })}
-            </span>
-          </p>
-          {graceDeadlineLabel && (
+          {isComp ? (
             <p className="text-sm text-ink/60">
-              Próximo pago vence el <span className="font-medium text-ink">{graceDeadlineLabel}</span>
+              Sin cargo — no se le cobra ni cuenta como deuda.
+              {subscription.comp_reason ? (
+                <span className="text-ink/45"> ({subscription.comp_reason})</span>
+              ) : null}
             </p>
-          )}
-          {hasSurcharge && (
-            <p className="mt-1 text-xs font-medium text-clay">
-              Pasó el margen de pago — con recargo del 10% debe {formatARS(amountWithSurcharge)}.
-            </p>
+          ) : (
+            <>
+              <p className="text-sm text-ink/60">
+                Pagado hasta el{' '}
+                <span className="font-medium text-ink">
+                  {new Date(`${subscription.end_date}T00:00:00`).toLocaleDateString('es-AR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                  })}
+                </span>
+              </p>
+              {graceDeadlineLabel && (
+                <p className="text-sm text-ink/60">
+                  Próximo pago vence el{' '}
+                  <span className="font-medium text-ink">{graceDeadlineLabel}</span>
+                </p>
+              )}
+              {hasSurcharge && (
+                <p className="mt-1 text-xs font-medium text-clay">
+                  Pasó el margen de pago — con recargo del 10% debe {formatARS(amountWithSurcharge)}.
+                </p>
+              )}
+            </>
           )}
         </div>
       ) : (
@@ -95,7 +108,13 @@ export async function StudentBilling({ studentId }: { studentId: string }) {
               studentId={studentId}
               plans={plans ?? []}
               currentPlanId={subscription?.plan_id ?? null}
-              defaultEndDate={subscription?.end_date ?? suggestedNextDate}
+              defaultEndDate={
+                subscription?.end_date && subscription.end_date < '2999-01-01'
+                  ? subscription.end_date
+                  : suggestedNextDate
+              }
+              currentComp={isComp}
+              currentCompReason={subscription.comp_reason ?? ''}
             />
           </PlanSectionToggle>
         </div>
@@ -110,7 +129,7 @@ export async function StudentBilling({ studentId }: { studentId: string }) {
         </div>
       )}
 
-      {subscription && (
+      {subscription && !isComp && (
         <div className="mt-5 border-t border-sand pt-5">
           <p className="text-xs font-medium uppercase tracking-wide text-ink/40">
             Registrar pago

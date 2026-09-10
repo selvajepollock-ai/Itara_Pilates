@@ -25,7 +25,7 @@ export default async function ClasesSueltasPage({
   const supabase = await createClient()
   const { data: rowsData } = await supabase
     .from('extra_charges')
-    .select('id, description, amount, paid, paid_at, created_at, profiles(full_name)')
+    .select('id, description, amount, paid, paid_at, comp, created_at, profiles(full_name)')
     .gte('created_at', `${from}T00:00:00`)
     .lte('created_at', `${to}T23:59:59`)
     .order('created_at', { ascending: false })
@@ -35,25 +35,30 @@ export default async function ClasesSueltasPage({
     description: (r.description as string) ?? 'Clase extra',
     amount: Number(r.amount),
     paid: Boolean(r.paid),
+    comp: Boolean(r.comp),
     paidAt: r.paid_at as string | null,
     createdAt: r.created_at as string,
     studentName:
       (r.profiles as unknown as { full_name: string } | null)?.full_name ?? 'Alumno',
   }))
 
+  const estadoLabel = (r: { paid: boolean; comp: boolean }) =>
+    r.comp ? 'Bonificada' : r.paid ? 'Pagado' : 'Pendiente'
+
   if (q) rows = rows.filter((r) => r.studentName.toLowerCase().includes(q))
-  if (estado === 'pendientes') rows = rows.filter((r) => !r.paid)
+  if (estado === 'pendientes') rows = rows.filter((r) => !r.paid && !r.comp)
   if (estado === 'pagadas') rows = rows.filter((r) => r.paid)
+  if (estado === 'bonificadas') rows = rows.filter((r) => r.comp)
 
   const totalPaid = rows.filter((r) => r.paid).reduce((s, r) => s + r.amount, 0)
-  const totalPending = rows.filter((r) => !r.paid).reduce((s, r) => s + r.amount, 0)
+  const totalPending = rows.filter((r) => !r.paid && !r.comp).reduce((s, r) => s + r.amount, 0)
 
   const exportRows = rows.map((r) => ({
     'Fecha cargo': new Date(r.createdAt).toLocaleDateString('es-AR'),
     Alumno: r.studentName,
     Concepto: r.description,
-    Monto: r.amount,
-    Estado: r.paid ? 'Pagado' : 'Pendiente',
+    Monto: r.comp ? 0 : r.amount,
+    Estado: estadoLabel(r),
     'Fecha pago': r.paidAt ? new Date(r.paidAt).toLocaleDateString('es-AR') : '',
   }))
 
@@ -98,6 +103,7 @@ export default async function ClasesSueltasPage({
             <option value="todas">Todas</option>
             <option value="pendientes">Pendientes</option>
             <option value="pagadas">Pagadas</option>
+            <option value="bonificadas">Bonificadas</option>
           </select>
         </label>
         <button
@@ -112,6 +118,12 @@ export default async function ClasesSueltasPage({
         <p className="text-sm text-ink/60">
           Pagado <span className="font-medium text-moss-dark">{formatARS(totalPaid)}</span> · Pendiente{' '}
           <span className="font-medium text-clay">{formatARS(totalPending)}</span>
+          {rows.some((r) => r.comp) && (
+            <>
+              {' '}
+              · <span className="text-ink/40">{rows.filter((r) => r.comp).length} bonificada(s)</span>
+            </>
+          )}
         </p>
         <ExportButton
           filename={`clases-sueltas-${from}_a_${to}`}
@@ -148,18 +160,24 @@ export default async function ClasesSueltasPage({
                 </td>
                 <td className="px-4 py-3">{r.studentName}</td>
                 <td className="px-4 py-3">{r.description}</td>
-                <td className="whitespace-nowrap px-4 py-3 text-right">{formatARS(r.amount)}</td>
+                <td className={`whitespace-nowrap px-4 py-3 text-right ${r.comp ? 'text-ink/35 line-through' : ''}`}>
+                  {formatARS(r.amount)}
+                </td>
                 <td className="px-4 py-3">
                   <span
                     className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
-                      r.paid ? 'bg-moss/10 text-moss-dark' : 'bg-clay/10 text-clay'
+                      r.comp
+                        ? 'bg-blush text-ink/70'
+                        : r.paid
+                          ? 'bg-moss/10 text-moss-dark'
+                          : 'bg-clay/10 text-clay'
                     }`}
                   >
-                    {r.paid ? 'Pagado' : 'Pendiente'}
+                    {estadoLabel(r)}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <ChargePaidToggle chargeId={r.id} paid={r.paid} />
+                  <ChargePaidToggle chargeId={r.id} paid={r.paid} comp={r.comp} />
                 </td>
               </tr>
             ))}

@@ -1,4 +1,16 @@
-export type PaymentStatus = 'al_dia' | 'por_vencer' | 'vencido' | 'sin_plan'
+export type PaymentStatus = 'al_dia' | 'por_vencer' | 'vencido' | 'sin_plan' | 'bonificado'
+
+// Estado a mostrar para una suscripción, contemplando el "sin cargo" (bonificado),
+// que ignora la fecha de vencimiento porque no se factura.
+export function subscriptionStatus(
+  sub: { end_date: string | null; comp?: boolean | null } | null | undefined,
+  reminderDaysBefore?: number,
+  graceDay?: number
+): PaymentStatus {
+  if (!sub) return 'sin_plan'
+  if (sub.comp) return 'bonificado'
+  return getPaymentStatus(sub.end_date ?? null, reminderDaysBefore, graceDay)
+}
 
 // endDate = último día del mes que ya está pagado (ej: 31/08 si pagó agosto).
 // Hay margen hasta el día `graceDay` del mes SIGUIENTE para pagar el mes que viene
@@ -29,6 +41,7 @@ export const STATUS_LABEL: Record<PaymentStatus, string> = {
   por_vencer: 'Por vencer',
   vencido: 'Vencido',
   sin_plan: 'Sin plan',
+  bonificado: 'Bonificado',
 }
 
 export const STATUS_CLASSES: Record<PaymentStatus, string> = {
@@ -36,6 +49,7 @@ export const STATUS_CLASSES: Record<PaymentStatus, string> = {
   por_vencer: 'bg-clay/10 text-clay',
   vencido: 'bg-clay text-white',
   sin_plan: 'bg-sand text-ink/50',
+  bonificado: 'bg-blush text-ink/70',
 }
 
 // Sugiere "pagado hasta" = último día del mes actual (se paga el mes completo, como un banco).

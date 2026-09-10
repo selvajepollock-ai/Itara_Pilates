@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Search, Pencil, CheckCircle2, Clock, AlertCircle, HelpCircle } from 'lucide-react'
+import { Search, Pencil, CheckCircle2, Clock, AlertCircle, HelpCircle, Gift } from 'lucide-react'
 import { STATUS_LABEL, STATUS_CLASSES, type PaymentStatus } from '@/lib/billing'
 
 type Student = {
@@ -22,6 +22,7 @@ const STATUS_CARDS: { status: PaymentStatus; label: string; icon: typeof CheckCi
   { status: 'por_vencer', label: 'Por vencer', icon: Clock },
   { status: 'vencido', label: 'Vencidos', icon: AlertCircle },
   { status: 'sin_plan', label: 'Sin plan', icon: HelpCircle },
+  { status: 'bonificado', label: 'Bonificados', icon: Gift },
 ]
 
 export function StudentsList({ students }: { students: Student[] }) {
@@ -29,7 +30,13 @@ export function StudentsList({ students }: { students: Student[] }) {
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | null>(null)
 
   const counts = useMemo(() => {
-    const c: Record<PaymentStatus, number> = { al_dia: 0, por_vencer: 0, vencido: 0, sin_plan: 0 }
+    const c: Record<PaymentStatus, number> = {
+      al_dia: 0,
+      por_vencer: 0,
+      vencido: 0,
+      sin_plan: 0,
+      bonificado: 0,
+    }
     for (const s of students) c[s.status]++
     return c
   }, [students])

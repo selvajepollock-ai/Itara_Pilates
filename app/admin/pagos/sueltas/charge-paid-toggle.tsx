@@ -2,33 +2,72 @@
 
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { setExtraChargePaid } from '../actions'
+import { setExtraChargePaid, setExtraChargeComp } from '../actions'
 
-export function ChargePaidToggle({ chargeId, paid }: { chargeId: string; paid: boolean }) {
+export function ChargePaidToggle({
+  chargeId,
+  paid,
+  comp = false,
+}: {
+  chargeId: string
+  paid: boolean
+  comp?: boolean
+}) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
-  function handleClick() {
-    const next = !paid
-    if (next && !confirm('¿Marcar este cargo como pagado?')) return
-    if (!next && !confirm('¿Volver a marcar este cargo como pendiente?')) return
+  function run(fn: () => Promise<unknown>, confirmMsg?: string) {
+    if (confirmMsg && !confirm(confirmMsg)) return
     startTransition(async () => {
-      await setExtraChargePaid(chargeId, next)
+      await fn()
       router.refresh()
     })
   }
 
+  const pill = 'whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium disabled:opacity-50'
+  const outline = `${pill} border border-sand text-ink/50 hover:border-clay hover:text-clay`
+  const solid = `${pill} bg-moss text-white hover:bg-moss-dark`
+
+  if (comp) {
+    return (
+      <button
+        onClick={() => run(() => setExtraChargeComp(chargeId, false), '¿Sacar el bonificado y volver a pendiente?')}
+        disabled={isPending}
+        className={outline}
+      >
+        {isPending ? '...' : 'Quitar bonificado'}
+      </button>
+    )
+  }
+
+  if (paid) {
+    return (
+      <button
+        onClick={() => run(() => setExtraChargePaid(chargeId, false), '¿Volver a marcar como pendiente?')}
+        disabled={isPending}
+        className={outline}
+      >
+        {isPending ? '...' : 'Marcar pendiente'}
+      </button>
+    )
+  }
+
   return (
-    <button
-      onClick={handleClick}
-      disabled={isPending}
-      className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium disabled:opacity-50 ${
-        paid
-          ? 'border border-sand text-ink/50 hover:border-clay hover:text-clay'
-          : 'bg-moss text-white hover:bg-moss-dark'
-      }`}
-    >
-      {isPending ? '...' : paid ? 'Marcar pendiente' : 'Marcar pagado'}
-    </button>
+    <div className="flex justify-end gap-1.5">
+      <button
+        onClick={() => run(() => setExtraChargePaid(chargeId, true), '¿Marcar este cargo como pagado?')}
+        disabled={isPending}
+        className={solid}
+      >
+        {isPending ? '...' : 'Pagado'}
+      </button>
+      <button
+        onClick={() => run(() => setExtraChargeComp(chargeId, true), '¿Bonificar esta clase? No se le va a cobrar.')}
+        disabled={isPending}
+        className={outline}
+      >
+        Bonificar
+      </button>
+    </div>
   )
 }
