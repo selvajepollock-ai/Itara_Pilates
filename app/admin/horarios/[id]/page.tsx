@@ -153,6 +153,10 @@ export default async function ClaseDetailPage({
       </Link>
 
       <h2 className="mt-8 text-xs uppercase tracking-[0.25em] text-moss">Alumnos anotados</h2>
+      <p className="mt-1 text-xs text-ink/40">
+        "Sacar del horario fijo" quita al alumno de esta clase en todas las semanas. Para una falta de
+        un día puntual, entrá a la ficha del alumno y cancelá esa fecha.
+      </p>
       <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
         {enrollments.map((e) => (
           <li key={e.id} className="flex items-center justify-between px-5 py-3">
@@ -165,7 +169,11 @@ export default async function ClaseDetailPage({
               </p>
               <p className="text-xs text-ink/50">{e.profiles?.email}</p>
             </Link>
-            <RemoveEnrollmentButton enrollmentId={e.id} classId={classItem.id} />
+            <RemoveEnrollmentButton
+              enrollmentId={e.id}
+              classId={classItem.id}
+              studentName={e.profiles?.full_name}
+            />
           </li>
         ))}
         {enrollments.length === 0 && (
