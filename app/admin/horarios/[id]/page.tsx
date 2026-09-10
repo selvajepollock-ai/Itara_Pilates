@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
 import { EnrollStudentForm } from './enroll-student-form'
 import { RemoveEnrollmentButton } from './remove-enrollment-button'
+import { CancelOccurrenceForm } from './cancel-occurrence-form'
 
 type ClassDetail = {
   id: string
@@ -42,8 +43,15 @@ export default async function ClaseDetailPage({
   const weekQS = week ? `?week=${week}` : ''
   const supabase = await createClient()
 
-  const [{ data: classData }, { data: enrollmentsData }, { data: studentsData }, { data: allClassesData }] =
-    await Promise.all([
+  const todayISO = new Date().toISOString().slice(0, 10)
+
+  const [
+    { data: classData },
+    { data: enrollmentsData },
+    { data: studentsData },
+    { data: allClassesData },
+    { data: cancelledData },
+  ] = await Promise.all([
       supabase
         .from('classes')
         .select(
@@ -61,6 +69,12 @@ export default async function ClaseDetailPage({
         .from('classes')
         .select('id, day_of_week, start_time, class_types(name)')
         .eq('active', true),
+      supabase
+        .from('class_cancellations')
+        .select('session_date, reason')
+        .eq('class_id', id)
+        .gte('session_date', todayISO)
+        .order('session_date'),
     ])
 
   if (!classData) notFound()
@@ -163,6 +177,8 @@ export default async function ClaseDetailPage({
 
       <h2 className="mt-8 text-xs uppercase tracking-[0.25em] text-moss">Anotar alumno</h2>
       <EnrollStudentForm classId={classItem.id} students={availableStudents} />
+
+      <CancelOccurrenceForm classId={classItem.id} cancelledDates={cancelledData ?? []} />
     </div>
   )
 }
