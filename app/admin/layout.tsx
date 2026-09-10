@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { daysUntilNextBirthday } from '@/lib/birthdays'
 import { Sidebar } from './sidebar'
 import { TopNav } from './top-nav'
+import { getNotificationInbox } from './notification-counts'
 
 export default async function AdminLayout({
   children,
@@ -63,6 +64,8 @@ export default async function AdminLayout({
     (p) => p.birth_date && daysUntilNextBirthday(p.birth_date) <= 5
   ).length
 
+  const { items: notifications } = await getNotificationInbox()
+
   return (
     <div className="flex min-h-screen flex-col bg-linen md:flex-row">
       <TopNav
@@ -70,6 +73,7 @@ export default async function AdminLayout({
         pendingCount={pendingCount}
         birthdaysToday={birthdaysToday}
         pendingSignups={pendingSignups ?? 0}
+        notifications={notifications}
       />
       <div className="hidden md:block">
         <Sidebar
@@ -78,6 +82,7 @@ export default async function AdminLayout({
           birthdaysToday={birthdaysToday}
           pendingSignups={pendingSignups ?? 0}
           isDeveloper={isDeveloper}
+          notifications={notifications}
         />
       </div>
       <main className="flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-8 md:px-10 md:py-10 lg:px-14">

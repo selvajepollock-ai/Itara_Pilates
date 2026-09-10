@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, formatTime } from '@/lib/day-names'
 import { formatARS } from '@/lib/currency'
 import { ReportExportButtons } from './report-export-buttons'
+import { BackupButton } from './backup-button'
 
 function getMonthRange(monthParam?: string) {
   const now = new Date()
@@ -255,6 +256,8 @@ export default async function ReportesPage({
           ausentismo real completo — se apoya también en los avisos tardíos de cancelación.
         </p>
       </div>
+
+      <BackupButton />
     </div>
   )
 }

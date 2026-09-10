@@ -7,6 +7,8 @@ import { LayoutDashboard, Users, UserCog, CalendarDays, CreditCard, Wallet, Bell
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { getNotificationCounts } from './notification-counts'
+import { NotificationBell } from './notification-bell'
+import type { InboxItem } from './notification-types'
 
 export function Sidebar({
   fullName,
@@ -14,12 +16,14 @@ export function Sidebar({
   birthdaysToday: initialBirthdaysToday = 0,
   pendingSignups: initialPendingSignups = 0,
   isDeveloper = false,
+  notifications = [],
 }: {
   fullName: string
   pendingCount?: number
   birthdaysToday?: number
   pendingSignups?: number
   isDeveloper?: boolean
+  notifications?: InboxItem[]
 }) {
   const pathname = usePathname()
   const router = useRouter()
@@ -58,13 +62,16 @@ export function Sidebar({
 
   return (
     <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-sand bg-white">
-      <div className="flex items-center gap-3 px-6 py-6">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo-emblem.png" alt="Itara Pilates" className="h-10 w-10 object-contain" />
-        <div>
-          <p className="font-display text-lg italic leading-tight text-ink">Itara</p>
-          <p className="text-[11px] uppercase tracking-[0.2em] text-ink/40">Pilates</p>
+      <div className="flex items-center justify-between px-6 py-6">
+        <div className="flex items-center gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-emblem.png" alt="Itara Pilates" className="h-10 w-10 object-contain" />
+          <div>
+            <p className="font-display text-lg italic leading-tight text-ink">Itara</p>
+            <p className="text-[11px] uppercase tracking-[0.2em] text-ink/40">Pilates</p>
+          </div>
         </div>
+        <NotificationBell initialItems={notifications} />
       </div>
 
       <nav className="flex-1 space-y-1 px-3">

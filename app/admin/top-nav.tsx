@@ -17,17 +17,21 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { getNotificationCounts } from './notification-counts'
+import { NotificationBell } from './notification-bell'
+import type { InboxItem } from './notification-types'
 
 export function TopNav({
   fullName,
   pendingCount: initialPendingCount = 0,
   birthdaysToday: initialBirthdaysToday = 0,
   pendingSignups: initialPendingSignups = 0,
+  notifications = [],
 }: {
   fullName: string
   pendingCount?: number
   birthdaysToday?: number
   pendingSignups?: number
+  notifications?: InboxItem[]
 }) {
   const pathname = usePathname()
   const router = useRouter()
@@ -75,12 +79,15 @@ export function TopNav({
             <p className="max-w-[140px] truncate text-[11px] text-ink/40">{fullName}</p>
           </div>
         </Link>
-        <button
-          onClick={handleLogout}
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-sand text-ink/50 hover:border-clay hover:text-clay"
-        >
-          <LogOut size={15} />
-        </button>
+        <div className="flex items-center gap-2">
+          <NotificationBell initialItems={notifications} />
+          <button
+            onClick={handleLogout}
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-sand text-ink/50 hover:border-clay hover:text-clay"
+          >
+            <LogOut size={15} />
+          </button>
+        </div>
       </div>
 
       <nav className="flex gap-1 overflow-x-auto px-3 pb-3">
