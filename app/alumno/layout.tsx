@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Instagram } from 'lucide-react'
+import { Instagram, ArrowLeft } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { LogoutButton } from '@/lib/supabase/logout-button'
@@ -16,6 +16,13 @@ export default async function AlumnoLayout({
 
   if (!user) redirect('/login')
 
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('roles')
+    .eq('id', user.id)
+    .single()
+  const isAdmin = profile?.roles?.includes('admin') ?? false
+
   return (
     <div className="min-h-screen bg-linen">
       <header className="border-b border-sand bg-white/70 px-6 py-5 backdrop-blur-sm sm:px-10">
@@ -29,6 +36,15 @@ export default async function AlumnoLayout({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="flex items-center gap-1.5 rounded-full border border-sand px-4 py-1.5 text-xs font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+              >
+                <ArrowLeft size={13} />
+                Volver al panel
+              </Link>
+            )}
             <a
               href="https://www.instagram.com/itara_estudio_de_pilates/"
               target="_blank"

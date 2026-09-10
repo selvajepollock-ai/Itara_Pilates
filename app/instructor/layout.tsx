@@ -1,3 +1,5 @@
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { LogoutButton } from '@/lib/supabase/logout-button'
@@ -37,7 +39,18 @@ export default async function InstructorLayout({
               <p className="mt-0.5 font-display text-xl italic text-ink">{profile?.full_name}</p>
             </div>
           </div>
-          <LogoutButton />
+          <div className="flex items-center gap-2">
+            {roles.includes('admin') && (
+              <Link
+                href="/admin"
+                className="flex items-center gap-1.5 rounded-full border border-sand px-4 py-1.5 text-xs font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+              >
+                <ArrowLeft size={13} />
+                Volver al panel
+              </Link>
+            )}
+            <LogoutButton />
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-6 py-10 sm:px-10">{children}</main>
