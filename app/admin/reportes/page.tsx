@@ -2,26 +2,29 @@ import { TrendingUp, Users, AlertTriangle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, formatTime } from '@/lib/day-names'
 import { formatARS } from '@/lib/currency'
-import { ReportExportButtons } from './report-export-buttons'
+import { PeriodReport } from './period-report'
 import { BackupButton } from './backup-button'
 
-function getMonthRange(monthParam?: string) {
+function iso(d: Date) {
+  return d.toISOString().slice(0, 10)
+}
+
+function getRange(fromParam?: string, toParam?: string) {
   const now = new Date()
-  const [year, month] = (monthParam ?? `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`)
-    .split('-')
-    .map(Number)
-  const start = new Date(year, month - 1, 1)
-  const end = new Date(year, month, 1)
-  return { start, end, label: `${year}-${String(month).padStart(2, '0')}` }
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+  const from = fromParam || iso(monthStart)
+  const to = toParam || iso(monthEnd)
+  return { from, to, startTs: `${from}T00:00:00`, endTs: `${to}T23:59:59` }
 }
 
 export default async function ReportesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ month?: string }>
+  searchParams: Promise<{ from?: string; to?: string }>
 }) {
-  const { month } = await searchParams
-  const { start, end, label } = getMonthRange(month)
+  const { from, to } = await searchParams
+  const { from: rFrom, to: rTo, startTs, endTs } = getRange(from, to)
   const supabase = await createClient()
 
   const [
@@ -36,14 +39,15 @@ export default async function ReportesPage({
       .from('payments')
       .select('amount, paid_at, subscriptions(plan_id, plans(name))')
       .is('voided_at', null)
-      .gte('paid_at', start.toISOString())
-      .lt('paid_at', end.toISOString()),
+      .gte('paid_at', startTs)
+      .lte('paid_at', endTs),
     supabase
       .from('extra_charges')
       .select('amount, paid_at')
       .eq('paid', true)
-      .gte('paid_at', start.toISOString())
-      .lt('paid_at', end.toISOString()),
+      .eq('comp', false)
+      .gte('paid_at', startTs)
+      .lte('paid_at', endTs),
     supabase
       .from('classes')
       .select('id, day_of_week, start_time, room, capacity, class_types(name)')
@@ -53,14 +57,14 @@ export default async function ReportesPage({
       .from('session_cancellations')
       .select('student_id, profiles(full_name)')
       .eq('within_deadline', false)
-      .gte('session_date', start.toISOString().slice(0, 10))
-      .lt('session_date', end.toISOString().slice(0, 10)),
+      .gte('session_date', rFrom)
+      .lte('session_date', rTo),
     supabase
       .from('attendance')
       .select('student_id, profiles(full_name)')
       .eq('status', 'absent')
-      .gte('session_date', start.toISOString().slice(0, 10))
-      .lt('session_date', end.toISOString().slice(0, 10)),
+      .gte('session_date', rFrom)
+      .lte('session_date', rTo),
   ])
 
   // Ingresos
@@ -116,30 +120,44 @@ export default async function ReportesPage({
           <p className="text-xs uppercase tracking-[0.25em] text-moss">Estudio</p>
           <h1 className="mt-2 font-display text-3xl italic text-ink">Reportes</h1>
         </div>
-        <div className="flex items-center gap-3">
-          <ReportExportButtons
-            month={label}
-            totalIncome={totalIncome}
-            dropInIncome={dropInIncome}
-            incomeByPlan={Array.from(incomeByPlan.entries())}
-            classRows={classRows}
-            absenceRanking={absenceRanking}
-          />
-          <form action="/admin/reportes" method="GET">
-            <input
-              type="month"
-              name="month"
-              defaultValue={label}
-              className="rounded-full border border-sand px-4 py-2 text-sm text-ink/70 outline-none focus:border-moss"
-            />
-          </form>
-        </div>
+        <PeriodReport from={rFrom} to={rTo} />
       </div>
+
+      <form
+        action="/admin/reportes"
+        method="GET"
+        className="mt-5 flex flex-wrap items-end gap-3 rounded-2xl border border-sand bg-white p-4"
+      >
+        <label className="text-xs text-ink/50">
+          Desde
+          <input
+            type="date"
+            name="from"
+            defaultValue={rFrom}
+            className="mt-1 block rounded-lg border border-sand bg-white px-3 py-2 text-sm text-ink outline-none focus:border-moss"
+          />
+        </label>
+        <label className="text-xs text-ink/50">
+          Hasta
+          <input
+            type="date"
+            name="to"
+            defaultValue={rTo}
+            className="mt-1 block rounded-lg border border-sand bg-white px-3 py-2 text-sm text-ink outline-none focus:border-moss"
+          />
+        </label>
+        <button
+          type="submit"
+          className="rounded-full bg-moss px-5 py-2 text-xs font-medium text-white hover:bg-moss-dark"
+        >
+          Aplicar
+        </button>
+      </form>
 
       <div className="mt-8 rounded-2xl border border-sand bg-white p-6">
         <div className="flex items-center gap-2">
           <TrendingUp size={16} className="text-moss" />
-          <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Ingresos del mes</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Ingresos del período</p>
         </div>
         <p className="mt-2 font-display text-4xl italic text-ink">{formatARS(grandTotalIncome)}</p>
 
@@ -168,7 +186,7 @@ export default async function ReportesPage({
           </ul>
         )}
         {grandTotalIncome === 0 && (
-          <p className="mt-3 text-sm text-ink/40">Sin ingresos registrados este mes.</p>
+          <p className="mt-3 text-sm text-ink/40">Sin ingresos en el período.</p>
         )}
       </div>
 
@@ -234,11 +252,11 @@ export default async function ReportesPage({
         <div className="flex items-center gap-2">
           <AlertTriangle size={16} className="text-clay" />
           <p className="text-xs uppercase tracking-[0.2em] text-ink/40">
-            Ausentismo del mes (avisos tardíos + faltas marcadas)
+            Ausentismo del período (avisos tardíos + faltas marcadas)
           </p>
         </div>
         {absenceRanking.length === 0 ? (
-          <p className="mt-3 text-sm text-ink/40">Sin ausencias registradas este mes.</p>
+          <p className="mt-3 text-sm text-ink/40">Sin ausencias registradas en el período.</p>
         ) : (
           <ul className="mt-3 divide-y divide-sand/60">
             {absenceRanking.map((a) => (
