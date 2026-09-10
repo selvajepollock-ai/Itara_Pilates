@@ -289,7 +289,7 @@ export default async function HorariosPage({
               return (
                 <Link
                   key={c.id}
-                  href={`/admin/horarios/${c.id}`}
+                  href={`/admin/horarios/${c.id}${week ? `?week=${week}` : ''}`}
                   className={`relative m-0.5 overflow-hidden rounded-lg border-2 border-t-4 border-t-clay/60 px-1.5 py-1 text-[10px] leading-tight transition hover:-translate-y-px hover:shadow-md ${fuerzaClasses}`}
                   style={{
                     gridColumn: col,
@@ -308,7 +308,7 @@ export default async function HorariosPage({
             return (
               <Link
                 key={c.id}
-                href={`/admin/horarios/${c.id}`}
+                href={`/admin/horarios/${c.id}${week ? `?week=${week}` : ''}`}
                 className={`relative m-0.5 overflow-hidden rounded-lg border px-1.5 py-1 text-[10px] leading-tight transition hover:-translate-y-px hover:shadow-md ${reformerClasses}`}
                 style={{
                   gridColumn: col,

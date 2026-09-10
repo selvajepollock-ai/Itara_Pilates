@@ -29,10 +29,13 @@ export default async function EditarAlumnoPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ week?: string }>
+  searchParams: Promise<{ week?: string; back?: string }>
 }) {
   const { id } = await params
-  const { week } = await searchParams
+  const { week, back } = await searchParams
+  // Volver a donde vino (p.ej. la ficha de una clase), si es una ruta interna.
+  const backHref = back && back.startsWith('/admin/') ? back : '/admin/alumnos'
+  const backLabel = backHref.startsWith('/admin/alumnos') ? '← Volver a alumnos' : '← Volver'
   const weekOffset = week ? parseInt(week, 10) || 0 : 0
   const supabase = await createClient()
 
@@ -75,8 +78,8 @@ export default async function EditarAlumnoPage({
 
   return (
     <div>
-      <Link href="/admin/alumnos" className="text-sm text-moss hover:text-moss-dark">
-        ← Volver a alumnos
+      <Link href={backHref} className="text-sm text-moss hover:text-moss-dark">
+        {backLabel}
       </Link>
 
       <div className="mt-4 flex items-center justify-between">
