@@ -244,43 +244,47 @@ export default async function AvisosPage() {
         </div>
       )}
 
-      {nuevos.length > 0 && (
+      <p className="mt-8 text-xs uppercase tracking-wide text-ink/40">Actividad reciente</p>
+
+      {feed.length === 0 ? (
+        <p className="mt-3 rounded-2xl border border-sand bg-white px-5 py-12 text-center text-sm text-ink/40">
+          Sin movimientos en los últimos {FEED_DAYS} días.
+        </p>
+      ) : nuevos.length > 0 ? (
         <>
-          <p className="mt-8 flex items-center gap-2 text-xs uppercase tracking-wide text-moss">
-            {lastSeenAt ? 'Nuevo desde tu última visita' : 'Actividad reciente'}
-            <span className="rounded-full bg-moss/10 px-2 py-0.5 text-[10px] font-medium text-moss">
+          <p className="mt-2 flex items-center gap-2 text-xs font-medium text-moss">
+            {lastSeenAt ? 'Nuevo desde tu última visita' : 'Sin ver'}
+            <span className="rounded-full bg-moss/10 px-2 py-0.5 text-[10px] font-semibold text-moss">
               {nuevos.length}
             </span>
           </p>
-          <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
+          <ul className="mt-2 divide-y divide-sand/60 rounded-2xl border border-moss/40 bg-white">
             {nuevos.map((item) => (
               <FeedRow key={`${item.kind}-${item.row.id}`} item={item} />
             ))}
           </ul>
         </>
+      ) : (
+        <p className="mt-2 rounded-2xl border border-sand bg-white px-5 py-6 text-center text-sm text-ink/45">
+          Nada nuevo — ya miraste todo ✨
+        </p>
       )}
 
       {vistos.length > 0 && (
-        <>
-          <p className="mt-8 text-xs uppercase tracking-wide text-ink/40">Ya visto</p>
-          <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
+        <details className="group mt-3">
+          <summary className="flex cursor-pointer list-none items-center gap-1.5 text-xs text-ink/40 hover:text-ink/70">
+            <span className="transition group-open:rotate-90">▸</span>
+            Ver actividad anterior ({vistos.length})
+          </summary>
+          <ul className="mt-2 divide-y divide-sand/50 rounded-2xl border border-sand bg-linen/30">
             {vistos.map((item) => (
               <FeedRow key={`${item.kind}-${item.row.id}`} item={item} dimmed />
             ))}
           </ul>
-        </>
+        </details>
       )}
 
-      {feed.length === 0 && (
-        <>
-          <p className="mt-8 text-xs uppercase tracking-wide text-ink/40">Actividad reciente</p>
-          <p className="mt-3 rounded-2xl border border-sand bg-white px-5 py-14 text-center text-sm text-ink/40">
-            Sin movimientos en los últimos {FEED_DAYS} días.
-          </p>
-        </>
-      )}
-
-      <p className="mt-4 text-xs text-ink/30">
+      <p className="mt-6 text-xs text-ink/30">
         La actividad de más de {FEED_DAYS} días se oculta sola. Las solicitudes que necesitan tu
         respuesta aparecen arriba, en "Requiere tu atención".
       </p>

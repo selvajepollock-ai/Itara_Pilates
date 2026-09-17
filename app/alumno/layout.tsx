@@ -26,16 +26,16 @@ export default async function AlumnoLayout({
   return (
     <div className="min-h-screen bg-linen">
       <header className="border-b border-sand bg-white/70 px-6 py-5 backdrop-blur-sm sm:px-10">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-3 gap-y-2">
+          <div className="flex min-w-0 items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-emblem.png" alt="Itara Pilates" className="h-9 w-9 object-contain" />
-            <div>
+            <img src="/logo-emblem.png" alt="Itara Pilates" className="h-9 w-9 shrink-0 object-contain" />
+            <div className="min-w-0">
               <p className="text-xs uppercase tracking-[0.25em] text-moss">Estudio</p>
-              <p className="mt-0.5 font-display text-xl italic text-ink">Itara Pilates</p>
+              <p className="mt-0.5 truncate font-display text-xl italic text-ink">Itara Pilates</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             {isAdmin && (
               <Link
                 href="/admin"
