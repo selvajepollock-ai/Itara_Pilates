@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { Users, UserCog, CalendarDays, ArrowUpRight, Cake, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { daysUntilNextBirthday, formatBirthday } from '@/lib/birthdays'
-import { suggestNextDueDate } from '@/lib/billing'
+import { suggestNextDueDate, getPaymentStatus } from '@/lib/billing'
 import { DAY_NAMES } from '@/lib/day-names'
 import { QuickPayment } from './quick-payment'
 
@@ -50,8 +50,10 @@ export default async function AdminDashboard() {
   const studentsCount = studentsData?.length ?? 0
   const classesCount = classesData?.length ?? 0
 
-  const today = new Date().toISOString().slice(0, 10)
-  const overdueCount = (subscriptionsData ?? []).filter((s) => !s.comp && s.end_date < today).length
+  const graceDay = settings?.payment_due_day ?? 10
+  const overdueCount = (subscriptionsData ?? []).filter(
+    (s) => !s.comp && getPaymentStatus(s.end_date, undefined, graceDay) === 'vencido'
+  ).length
 
   const stats = [
     { label: 'Alumnos activos', value: studentsCount, icon: Users, href: '/admin/alumnos' },
