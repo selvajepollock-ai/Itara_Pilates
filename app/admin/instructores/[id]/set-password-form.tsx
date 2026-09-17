@@ -45,7 +45,7 @@ export function SetInstructorPasswordForm({ instructorId }: { instructorId: stri
       <button
         type="submit"
         disabled={isPending}
-        className="btn-danger"
+        className="btn-primary"
       >
         {isPending ? 'Cambiando...' : 'Restablecer'}
       </button>

@@ -321,7 +321,7 @@ export default async function AlumnoDashboard() {
                     </span>
                     <Link
                       href={`/alumno/recuperar/${c.id}`}
-                      className="btn-danger-sm whitespace-nowrap"
+                      className="btn-primary-sm whitespace-nowrap"
                     >
                       Elegir clase
                     </Link>

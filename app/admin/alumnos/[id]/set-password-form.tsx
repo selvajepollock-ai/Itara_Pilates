@@ -45,7 +45,7 @@ export function SetPasswordForm({ studentId }: { studentId: string }) {
       <button
         type="submit"
         disabled={isPending}
-        className="btn-danger"
+        className="btn-primary"
       >
         {isPending ? 'Cambiando...' : 'Restablecer'}
       </button>

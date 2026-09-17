@@ -120,7 +120,7 @@ export function SearchAndLink({
                 <button
                   onClick={() => handleLink(r.id)}
                   disabled={isLinking}
-                  className="btn-danger-sm shrink-0"
+                  className="btn-primary-sm shrink-0"
                 >
                   <UserCheck size={13} strokeWidth={2} />
                   {isLinking && linkingId === r.id ? 'Vinculando...' : 'Vincular'}

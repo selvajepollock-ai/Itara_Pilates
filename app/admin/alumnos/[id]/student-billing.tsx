@@ -151,7 +151,7 @@ export async function StudentBilling({ studentId, studentName }: { studentId: st
         </div>
       )}
 
-      {payments && payments.length > 0 && (
+      {subscription && (
         <div className="mt-5 border-t border-sand pt-4">
           <div className="flex items-center justify-between">
             <p className="section-title">Últimos pagos</p>
@@ -173,7 +173,14 @@ export async function StudentBilling({ studentId, studentName }: { studentId: st
                 </tr>
               </thead>
               <tbody>
-                {payments.map((p) => {
+                {(!payments || payments.length === 0) && (
+                  <tr>
+                    <td colSpan={4} className="px-3 py-6 text-center text-xs text-ink/40">
+                      Todavía no se registró ningún pago.
+                    </td>
+                  </tr>
+                )}
+                {(payments ?? []).map((p) => {
                   const voided = Boolean(p.voided_at)
                   return (
                     <tr key={p.id} className={`border-b border-sand/50 last:border-0 ${voided ? 'text-ink/35' : 'text-ink/70'}`}>
