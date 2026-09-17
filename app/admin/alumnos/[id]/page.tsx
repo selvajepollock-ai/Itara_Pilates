@@ -107,7 +107,7 @@ export default async function EditarAlumnoPage({
             </div>
           )}
 
-          <StudentBilling studentId={student.id} />
+          <StudentBilling studentId={student.id} studentName={student.full_name} />
           <ExtraChargesSection studentId={student.id} />
 
           <div>

@@ -7,11 +7,13 @@ import {
   applyLateSurcharge,
 } from '@/lib/billing'
 import { formatARS } from '@/lib/currency'
+import Link from 'next/link'
 import { AssignPlanForm } from './assign-plan-form'
 import { RegisterPaymentForm } from './register-payment-form'
 import { PlanSectionToggle } from './plan-section-toggle'
+import { PaymentRowActions } from '../../pagos/cuotas/payment-row-actions'
 
-export async function StudentBilling({ studentId }: { studentId: string }) {
+export async function StudentBilling({ studentId, studentName }: { studentId: string; studentName: string }) {
   const supabase = await createClient()
 
   const [{ data: plans }, { data: subscription }, { data: settings }] = await Promise.all([
@@ -28,7 +30,7 @@ export async function StudentBilling({ studentId }: { studentId: string }) {
   const { data: payments } = subscription
     ? await supabase
         .from('payments')
-        .select('id, amount, paid_at, notes')
+        .select('id, amount, paid_at, notes, voided_at, voided_reason')
         .eq('subscription_id', subscription.id)
         .order('paid_at', { ascending: false })
         .limit(5)
@@ -131,9 +133,7 @@ export async function StudentBilling({ studentId }: { studentId: string }) {
 
       {subscription && !isComp && (
         <div className="mt-5 border-t border-sand pt-5">
-          <p className="text-xs font-medium uppercase tracking-wide text-ink/40">
-            Registrar pago
-          </p>
+          <p className="section-title">Registrar pago</p>
           <p className="mt-0.5 text-xs text-ink/40">
             Extiende la cobertura hasta{' '}
             {new Date(`${suggestedNextDate}T00:00:00`).toLocaleDateString('es-AR', {
@@ -153,17 +153,56 @@ export async function StudentBilling({ studentId }: { studentId: string }) {
 
       {payments && payments.length > 0 && (
         <div className="mt-5 border-t border-sand pt-4">
-          <p className="text-xs font-medium uppercase tracking-wide text-ink/40">Últimos pagos</p>
-          <ul className="mt-2 space-y-1.5 text-sm">
-            {payments.map((p) => (
-              <li key={p.id} className="flex justify-between text-ink/60">
-                <span>
-                  {new Date(p.paid_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
-                </span>
-                <span>{formatARS(p.amount)}</span>
-              </li>
-            ))}
-          </ul>
+          <div className="flex items-center justify-between">
+            <p className="section-title">Últimos pagos</p>
+            <Link
+              href={`/admin/pagos/cuotas?q=${encodeURIComponent(studentName)}&anuladas=1`}
+              className="text-xs font-medium text-moss hover:text-moss-dark"
+            >
+              Ver todos →
+            </Link>
+          </div>
+          <div className="mt-2 overflow-hidden rounded-xl border border-sand">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-sand bg-linen/40 text-left text-[11px] uppercase tracking-wide text-ink/40">
+                  <th className="px-3 py-2 font-medium">Fecha</th>
+                  <th className="px-3 py-2 font-medium text-right">Monto</th>
+                  <th className="px-3 py-2 font-medium">Nota</th>
+                  <th className="px-3 py-2" />
+                </tr>
+              </thead>
+              <tbody>
+                {payments.map((p) => {
+                  const voided = Boolean(p.voided_at)
+                  return (
+                    <tr key={p.id} className={`border-b border-sand/50 last:border-0 ${voided ? 'text-ink/35' : 'text-ink/70'}`}>
+                      <td className="whitespace-nowrap px-3 py-2">
+                        {new Date(p.paid_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
+                      </td>
+                      <td className={`whitespace-nowrap px-3 py-2 text-right ${voided ? 'line-through' : 'font-medium text-ink'}`}>
+                        {formatARS(p.amount)}
+                      </td>
+                      <td className="max-w-[140px] truncate px-3 py-2 text-xs">
+                        {voided ? (
+                          <span className="italic text-clay">Anulado — {p.voided_reason}</span>
+                        ) : (
+                          p.notes || '—'
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        {!voided && <PaymentRowActions paymentId={p.id} amount={Number(p.amount)} notes={p.notes ?? ''} />}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-1.5 text-[11px] text-ink/40">
+            "Anular" no borra el pago, lo marca como inválido con un motivo — es la forma de revertir un pago
+            cargado por error.
+          </p>
         </div>
       )}
     </div>
