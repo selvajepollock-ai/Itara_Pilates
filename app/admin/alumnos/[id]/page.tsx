@@ -13,6 +13,7 @@ import { DeleteStudentButton } from './delete-student-button'
 import { ToggleStudentActiveButton } from './toggle-active-button'
 import { isNoAccessEmail } from '@/lib/auth-username'
 import { DAY_ORDER } from '@/lib/day-names'
+import { InfoHint } from '@/app/components/info-hint'
 
 type ClassOption = {
   id: string
@@ -52,6 +53,8 @@ export default async function EditarAlumnoPage({
     ])
 
   if (!student) notFound()
+
+  const hasAccess = !isNoAccessEmail(student.email)
 
   const classes = (classesData ?? []) as unknown as ClassOption[]
   const enrollmentIdByClass = new Map((myEnrollments ?? []).map((e) => [e.class_id, e.id]))
@@ -97,15 +100,30 @@ export default async function EditarAlumnoPage({
         <div className="max-w-md space-y-6">
           <EditStudentForm student={student} />
 
-          {isNoAccessEmail(student.email) && (
-            <div className="rounded-2xl border border-clay/30 bg-clay/5 p-6">
-              <p className="text-sm font-medium text-ink">Sin acceso a la app todavía</p>
-              <p className="mt-0.5 text-xs text-ink/50">
-                Cargá su email real para darle acceso — le va a llegar un mail para crear su contraseña.
-              </p>
-              <GrantAccessForm studentId={student.id} defaultEmail={student.contact_email ?? ''} />
+          <div className="rounded-2xl border border-sand bg-white p-6">
+            <div className="flex items-center justify-between">
+              <h2 className="section-title flex items-center gap-1.5">
+                Acceso a la app
+                <InfoHint
+                  align="left"
+                  text={
+                    hasAccess
+                      ? 'El alumno ya puede entrar a la app con su email y contraseña. Si la olvidó, le podés poner una nueva acá.'
+                      : 'Todavía no puede entrar a la app (no tiene un email real cargado). Cargalo para darle acceso — le va a llegar un mail para crear su contraseña.'
+                  }
+                />
+              </h2>
+              <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${hasAccess ? 'bg-moss/10 text-moss-dark' : 'bg-clay/10 text-clay'}`}>
+                {hasAccess ? 'Con acceso' : 'Sin acceso'}
+              </span>
             </div>
-          )}
+
+            {hasAccess ? (
+              <SetPasswordForm studentId={student.id} />
+            ) : (
+              <GrantAccessForm studentId={student.id} defaultEmail={student.contact_email ?? ''} />
+            )}
+          </div>
 
           <StudentBilling studentId={student.id} studentName={student.full_name} />
           <ExtraChargesSection studentId={student.id} />
@@ -115,19 +133,12 @@ export default async function EditarAlumnoPage({
           <MonthSessions studentId={student.id} weekOffset={weekOffset} />
 
           <PlanEditorToggle>
-            <p className="mb-2 text-xs text-ink/50">
-              Esto cambia el plan de base — afecta todas las semanas futuras, no solo una fecha puntual.
+            <p className="mb-2 flex items-center gap-1.5 text-xs text-ink/50">
+              Cambiar plan fijo
+              <InfoHint text="Esto cambia el plan de base — afecta todas las semanas futuras, no solo una fecha puntual." />
             </p>
             <StudentScheduleForm studentId={student.id} classOptions={classOptions} />
           </PlanEditorToggle>
-
-          <div className="rounded-2xl border border-sand bg-white p-6">
-            <h2 className="section-title">Restablecer contraseña</h2>
-            <p className="mt-1 text-sm text-ink/50">
-              Por si el alumno perdió el acceso. Le vas a tener que avisar la contraseña nueva.
-            </p>
-            <SetPasswordForm studentId={student.id} />
-          </div>
         </div>
       </div>
     </div>

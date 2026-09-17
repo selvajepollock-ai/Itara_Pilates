@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { CalendarOff, RotateCcw } from 'lucide-react'
 import { cancelClassOccurrence, uncancelClassOccurrence } from '@/app/actions/recovery'
+import { InfoHint } from '@/app/components/info-hint'
 
 type CancelledDate = {
   session_date: string
@@ -63,11 +64,8 @@ export function CancelOccurrenceForm({
       <h2 className="section-title flex items-center gap-1.5">
         <CalendarOff size={14} strokeWidth={2} />
         Cancelar una fecha puntual
+        <InfoHint text="Cancela esta clase para un día específico (ej: no hay instructor). No afecta las demás semanas. Los anotados reciben aviso y recuperación automática." />
       </h2>
-      <p className="mt-1 text-xs text-ink/50">
-        Cancela esta clase para un día específico (ej: no hay instructor). No afecta las demás semanas.
-        Los anotados reciben aviso y recuperación automática.
-      </p>
 
       <form onSubmit={handleCancel} className="mt-3 flex flex-wrap items-end gap-2">
         <div>

@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { assignPlan } from '../../pagos/actions'
 import { formatARS } from '@/lib/currency'
+import { InfoHint } from '@/app/components/info-hint'
 
 type Plan = { id: string; name: string; price: number }
 
@@ -72,21 +73,18 @@ export function AssignPlanForm({
         </select>
       </div>
 
-      <label className="flex items-start gap-2 rounded-lg border border-sand bg-linen/30 px-3 py-2.5">
-        <input
-          type="checkbox"
-          name="comp"
-          checked={comp}
-          onChange={(e) => setComp(e.target.checked)}
-          className="mt-0.5"
-        />
-        <span className="text-sm text-ink/80">
-          Sin cargo (bonificado)
-          <span className="block text-xs text-ink/45">
-            Ocupa lugar pero no se le cobra ni cuenta como deuda. Queda así hasta que lo desmarques.
-          </span>
-        </span>
-      </label>
+      <div className="flex items-center gap-2 rounded-lg border border-sand bg-linen/30 px-3 py-2.5">
+        <label className="flex flex-1 items-center gap-2">
+          <input
+            type="checkbox"
+            name="comp"
+            checked={comp}
+            onChange={(e) => setComp(e.target.checked)}
+          />
+          <span className="text-sm text-ink/80">Sin cargo (bonificado)</span>
+        </label>
+        <InfoHint text="Ocupa lugar pero no se le cobra ni cuenta como deuda. Queda así hasta que lo desmarques." />
+      </div>
 
       {comp ? (
         <div>

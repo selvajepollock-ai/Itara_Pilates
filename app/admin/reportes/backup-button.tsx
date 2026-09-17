@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { DatabaseBackup } from 'lucide-react'
 import { exportWorkbook } from '@/lib/export'
 import { exportFullBackup } from './backup-actions'
+import { InfoHint } from '@/app/components/info-hint'
 
 export function BackupButton() {
   const [isPending, startTransition] = useTransition()
@@ -27,20 +28,15 @@ export function BackupButton() {
 
   return (
     <div className="mt-6 rounded-2xl border border-sand bg-white p-6">
-      <div className="flex items-center gap-2 text-ink/40">
+      <div className="flex items-center gap-1.5 text-ink/40">
         <DatabaseBackup size={16} className="text-moss" />
         <p className="text-xs uppercase tracking-[0.2em]">Copia de seguridad</p>
+        <InfoHint
+          align="left"
+          text="Descarga un único archivo Excel con todo: alumnos, planes, suscripciones, pagos, clases sueltas, asistencia, cancelaciones y créditos. Guardalo cada tanto en tu Drive o disco como respaldo aparte de Supabase."
+        />
       </div>
-      <p className="mt-2 max-w-lg text-sm text-ink/60">
-        Descarga un único archivo Excel con todo: alumnos, planes, suscripciones, pagos, clases
-        sueltas, asistencia, cancelaciones y créditos. Guardalo cada tanto en tu Drive o disco como
-        respaldo aparte de Supabase.
-      </p>
-      <button
-        onClick={handleClick}
-        disabled={isPending}
-        className="btn-primary mt-4"
-      >
+      <button onClick={handleClick} disabled={isPending} className="btn-primary mt-4">
         <DatabaseBackup size={15} />
         {isPending ? 'Generando...' : 'Descargar copia (.xlsx)'}
       </button>

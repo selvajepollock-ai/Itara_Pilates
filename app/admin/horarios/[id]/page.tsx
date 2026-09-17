@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { notFound } from 'next/navigation'
+import { InfoHint } from '@/app/components/info-hint'
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
 import { EnrollStudentForm } from './enroll-student-form'
@@ -153,11 +154,10 @@ export default async function ClaseDetailPage({
         Ver agenda y asistencia →
       </Link>
 
-      <h2 className="mt-8 section-title">Alumnos anotados</h2>
-      <p className="mt-1 text-xs text-ink/40">
-        "Sacar del horario fijo" quita al alumno de esta clase en todas las semanas. Para una falta de
-        un día puntual, entrá a la ficha del alumno y cancelá esa fecha.
-      </p>
+      <h2 className="mt-8 section-title flex items-center gap-1.5">
+        Alumnos anotados
+        <InfoHint text={'"Sacar del horario fijo" quita al alumno de esta clase en todas las semanas. Para una falta de un día puntual, entrá a la ficha del alumno y cancelá esa fecha.'} />
+      </h2>
       <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
         {enrollments.map((e) => (
           <li key={e.id} className="flex items-center justify-between px-5 py-3">
