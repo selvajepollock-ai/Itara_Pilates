@@ -148,6 +148,13 @@ export async function removeEnrollment(enrollmentId: string, classId: string) {
 
     const creditIds = (credits ?? []).map((c) => c.id)
     if (creditIds.length > 0) {
+      // session_cancellations y recovery_credits se referencian mutuamente
+      // (recovery_credit_id / source_cancellation_id) — hay que romper ese
+      // círculo antes de poder borrar cualquiera de las dos.
+      await supabase
+        .from('session_cancellations')
+        .update({ recovery_credit_id: null })
+        .in('recovery_credit_id', creditIds)
       await supabase.from('attendance').delete().in('recovery_credit_id', creditIds)
       await supabase.from('recovery_credits').delete().in('id', creditIds)
     }
