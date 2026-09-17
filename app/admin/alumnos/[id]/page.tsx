@@ -110,10 +110,8 @@ export default async function EditarAlumnoPage({
           <StudentBilling studentId={student.id} studentName={student.full_name} />
           <ExtraChargesSection studentId={student.id} />
 
-          <div>
-            <h2 className="eyebrow">
-              Restablecer contraseña
-            </h2>
+          <div className="rounded-2xl border border-sand bg-white p-6">
+            <h2 className="section-title">Restablecer contraseña</h2>
             <p className="mt-1 text-sm text-ink/50">
               Por si el alumno perdió el acceso. Le vas a tener que avisar la contraseña nueva.
             </p>
