@@ -133,7 +133,7 @@ export function QuickPayment({ students }: { students: StudentBilling[] }) {
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full rounded-full bg-moss px-4 py-2.5 text-sm font-medium text-white hover:bg-moss-dark disabled:opacity-50"
+                className="btn-primary w-full"
               >
                 {isPending ? 'Registrando...' : 'Marcar como pagado'}
               </button>

@@ -129,7 +129,7 @@ export default async function CuotasPage({
         </label>
         <button
           type="submit"
-          className="rounded-full bg-moss px-5 py-2 text-xs font-medium text-white hover:bg-moss-dark"
+          className="btn-primary-sm"
         >
           Filtrar
         </button>

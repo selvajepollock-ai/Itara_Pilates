@@ -33,19 +33,11 @@ export function ExportButton({
 
   return (
     <div className="flex gap-2">
-      <button
-        onClick={handleExcel}
-        disabled={rows.length === 0}
-        className="flex items-center gap-1.5 rounded-full border border-sand px-4 py-2 text-xs font-medium text-ink/70 transition hover:border-moss hover:text-moss disabled:opacity-40"
-      >
+      <button onClick={handleExcel} disabled={rows.length === 0} className="btn-secondary-sm">
         <FileSpreadsheet size={14} />
         Excel
       </button>
-      <button
-        onClick={handlePDF}
-        disabled={rows.length === 0}
-        className="flex items-center gap-1.5 rounded-full border border-sand px-4 py-2 text-xs font-medium text-ink/70 transition hover:border-moss hover:text-moss disabled:opacity-40"
-      >
+      <button onClick={handlePDF} disabled={rows.length === 0} className="btn-secondary-sm">
         <FileText size={14} />
         PDF
       </button>

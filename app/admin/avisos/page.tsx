@@ -1,4 +1,4 @@
-import { CalendarX, RefreshCw, Repeat, Clock, Bell } from 'lucide-react'
+import { CalendarX, RefreshCw, Repeat, Clock, Bell, ChevronRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, formatTime } from '@/lib/day-names'
 import { formatARS } from '@/lib/currency'
@@ -149,15 +149,15 @@ export default async function AvisosPage() {
 
   return (
     <div className="max-w-2xl">
-      <p className="text-xs uppercase tracking-[0.25em] text-moss">Estudio</p>
-      <h1 className="mt-2 font-display text-3xl italic text-ink">Avisos</h1>
+      <p className="eyebrow">Estudio</p>
+      <h1 className="mt-2 page-title">Avisos</h1>
       <p className="mt-2 text-sm text-ink/60">
         Quién avisó que no venía y quién se anotó a recuperar.
       </p>
 
       {pendingActionCount > 0 && (
         <div className="mt-8">
-          <p className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-clay">
+          <p className="section-title flex items-center gap-1.5 text-clay">
             <Bell size={13} />
             Requiere tu atención ({pendingActionCount})
           </p>
@@ -244,7 +244,7 @@ export default async function AvisosPage() {
         </div>
       )}
 
-      <p className="mt-8 text-xs uppercase tracking-wide text-ink/40">Actividad reciente</p>
+      <p className="mt-8 section-title">Actividad reciente</p>
 
       {feed.length === 0 ? (
         <p className="mt-3 rounded-2xl border border-sand bg-white px-5 py-12 text-center text-sm text-ink/40">
@@ -273,7 +273,7 @@ export default async function AvisosPage() {
       {vistos.length > 0 && (
         <details className="group mt-3">
           <summary className="flex cursor-pointer list-none items-center gap-1.5 text-xs text-ink/40 hover:text-ink/70">
-            <span className="transition group-open:rotate-90">▸</span>
+            <ChevronRight size={13} className="transition group-open:rotate-90" />
             Ver actividad anterior ({vistos.length})
           </summary>
           <ul className="mt-2 divide-y divide-sand/50 rounded-2xl border border-sand bg-linen/30">

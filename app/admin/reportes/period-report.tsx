@@ -38,7 +38,7 @@ export function PeriodReport({ from, to }: { from: string; to: string }) {
         <button
           onClick={() => generate('excel')}
           disabled={isPending}
-          className="flex items-center gap-1.5 rounded-full bg-moss px-4 py-2 text-xs font-medium text-white transition hover:bg-moss-dark disabled:opacity-50"
+          className="btn-primary-sm"
         >
           <FileSpreadsheet size={14} />
           {isPending ? 'Generando...' : 'Reporte completo (Excel)'}
@@ -46,7 +46,7 @@ export function PeriodReport({ from, to }: { from: string; to: string }) {
         <button
           onClick={() => generate('pdf')}
           disabled={isPending}
-          className="flex items-center gap-1.5 rounded-full border border-sand px-4 py-2 text-xs font-medium text-ink/70 transition hover:border-moss hover:text-moss disabled:opacity-50"
+          className="btn-secondary-sm"
         >
           <FileText size={14} />
           Resumen (PDF)

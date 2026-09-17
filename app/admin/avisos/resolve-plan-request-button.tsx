@@ -16,7 +16,7 @@ export function ResolvePlanRequestButton({ requestId }: { requestId: string }) {
     <button
       onClick={handleResolve}
       disabled={isPending}
-      className="whitespace-nowrap rounded-full border border-clay px-3 py-1.5 text-xs font-medium text-clay hover:bg-clay hover:text-white disabled:opacity-50"
+      className="btn-danger-outline whitespace-nowrap"
     >
       {isPending ? '...' : 'Marcar resuelto'}
     </button>

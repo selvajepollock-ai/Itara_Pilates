@@ -31,7 +31,7 @@ export function RemoveEnrollmentButton({
     <button
       onClick={handleRemove}
       disabled={isPending}
-      className="whitespace-nowrap text-xs font-medium text-clay hover:text-clay/70 disabled:opacity-50"
+      className="btn-link-danger whitespace-nowrap"
     >
       {isPending ? '...' : 'Sacar del horario fijo'}
     </button>

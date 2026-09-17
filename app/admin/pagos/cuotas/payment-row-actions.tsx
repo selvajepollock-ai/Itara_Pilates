@@ -104,13 +104,13 @@ export function PaymentRowActions({
                   />
                 </div>
                 <div className="flex justify-end gap-2 pt-1">
-                  <button type="button" onClick={close} className="rounded-full px-4 py-2 text-xs text-ink/50 hover:text-ink">
+                  <button type="button" onClick={close} className="btn-ghost-sm">
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     disabled={isPending}
-                    className="rounded-full bg-moss px-5 py-2 text-xs font-medium text-white hover:bg-moss-dark disabled:opacity-50"
+                    className="btn-primary-sm"
                   >
                     {isPending ? 'Guardando...' : 'Guardar'}
                   </button>
@@ -135,13 +135,13 @@ export function PaymentRowActions({
                   />
                 </div>
                 <div className="flex justify-end gap-2 pt-1">
-                  <button type="button" onClick={close} className="rounded-full px-4 py-2 text-xs text-ink/50 hover:text-ink">
+                  <button type="button" onClick={close} className="btn-ghost-sm">
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     disabled={isPending}
-                    className="rounded-full bg-clay px-5 py-2 text-xs font-medium text-white hover:opacity-90 disabled:opacity-50"
+                    className="btn-danger-sm"
                   >
                     {isPending ? 'Anulando...' : 'Anular pago'}
                   </button>

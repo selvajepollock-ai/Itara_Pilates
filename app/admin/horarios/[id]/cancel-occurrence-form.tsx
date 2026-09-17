@@ -60,7 +60,7 @@ export function CancelOccurrenceForm({
 
   return (
     <div className="mt-8 rounded-2xl border border-sand bg-white p-5">
-      <h2 className="flex items-center gap-1.5 text-xs uppercase tracking-[0.25em] text-moss">
+      <h2 className="section-title flex items-center gap-1.5">
         <CalendarOff size={14} strokeWidth={2} />
         Cancelar una fecha puntual
       </h2>
@@ -92,7 +92,7 @@ export function CancelOccurrenceForm({
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-full bg-clay px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+          className="btn-danger"
         >
           {isPending ? 'Cancelando...' : 'Cancelar esa fecha'}
         </button>

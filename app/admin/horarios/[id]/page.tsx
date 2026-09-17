@@ -153,7 +153,7 @@ export default async function ClaseDetailPage({
         Ver agenda y asistencia →
       </Link>
 
-      <h2 className="mt-8 text-xs uppercase tracking-[0.25em] text-moss">Alumnos anotados</h2>
+      <h2 className="mt-8 section-title">Alumnos anotados</h2>
       <p className="mt-1 text-xs text-ink/40">
         "Sacar del horario fijo" quita al alumno de esta clase en todas las semanas. Para una falta de
         un día puntual, entrá a la ficha del alumno y cancelá esa fecha.
@@ -184,7 +184,7 @@ export default async function ClaseDetailPage({
         )}
       </ul>
 
-      <h2 className="mt-8 text-xs uppercase tracking-[0.25em] text-moss">Anotar alumno</h2>
+      <h2 className="mt-8 section-title">Anotar alumno</h2>
       <EnrollStudentForm classId={classItem.id} students={availableStudents} />
 
       <CancelOccurrenceForm classId={classItem.id} cancelledDates={cancelledData ?? []} />

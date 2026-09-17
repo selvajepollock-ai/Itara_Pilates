@@ -11,12 +11,10 @@ export function PlanSectionToggle({ children }: { children: React.ReactNode }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between rounded-xl border border-sand bg-white px-3.5 py-3 text-left shadow-sm transition hover:border-moss hover:shadow-md"
+        className="disclosure-toggle"
       >
         <span className="text-sm font-semibold text-ink/80">Cambiar plan / ajustar fecha manual</span>
-        <span
-          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-moss/10 text-moss transition ${open ? 'rotate-180' : ''}`}
-        >
+        <span className={`disclosure-chevron ${open ? 'rotate-180' : ''}`}>
           <ChevronDown size={16} strokeWidth={2.5} />
         </span>
       </button>

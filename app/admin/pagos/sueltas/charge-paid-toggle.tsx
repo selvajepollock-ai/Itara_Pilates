@@ -24,9 +24,8 @@ export function ChargePaidToggle({
     })
   }
 
-  const pill = 'whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium disabled:opacity-50'
-  const outline = `${pill} border border-sand text-ink/50 hover:border-clay hover:text-clay`
-  const solid = `${pill} bg-moss text-white hover:bg-moss-dark`
+  const outline = 'btn-secondary-sm whitespace-nowrap'
+  const solid = 'btn-primary-sm whitespace-nowrap'
 
   if (comp) {
     return (

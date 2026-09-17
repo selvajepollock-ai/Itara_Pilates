@@ -6,3 +6,73 @@
 .border-sand.bg-white {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Sistema de botones y texto — mismo estilo según la FUNCIÓN, no la pantalla.
+ * Antes de escribir un className a mano para un botón o un título, usar una
+ * de estas clases. Si hace falta una variante nueva, agregarla acá, no
+ * inventar un className suelto en el componente.
+ * ───────────────────────────────────────────────────────────────────────── */
+@layer components {
+  /* Acción principal del bloque: Guardar, Registrar, Aplicar, Asignar... */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-full bg-moss px-5 py-2.5 text-sm font-medium text-white transition hover:bg-moss-dark disabled:opacity-50;
+  }
+  .btn-primary-sm {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-full bg-moss px-3.5 py-1.5 text-xs font-medium text-white transition hover:bg-moss-dark disabled:opacity-50;
+  }
+
+  /* Acción neutra: Cancelar, Filtrar, Editar, Exportar... */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-full border border-sand bg-white px-5 py-2.5 text-sm font-medium text-ink/70 transition hover:border-moss hover:text-moss disabled:opacity-50;
+  }
+  .btn-secondary-sm {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-full border border-sand bg-white px-3.5 py-1.5 text-xs font-medium text-ink/70 transition hover:border-moss hover:text-moss disabled:opacity-50;
+  }
+
+  /* Acción destructiva o de riesgo: Anular, Rechazar, Eliminar... */
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-full bg-clay px-5 py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50;
+  }
+  .btn-danger-sm {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-full bg-clay px-3.5 py-1.5 text-xs font-medium text-white transition hover:opacity-90 disabled:opacity-50;
+  }
+  .btn-danger-outline {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-full border border-clay px-3.5 py-1.5 text-xs font-medium text-clay transition hover:bg-clay hover:text-white disabled:opacity-50;
+  }
+  /* Texto-link liviano dentro de una fila (sin fondo ni borde): Quitar, Marcar pendiente */
+  .btn-link-danger {
+    @apply text-xs font-medium text-clay transition hover:text-clay/70 disabled:opacity-50;
+  }
+  /* Descartar sin marcar: el "Cancelar" de un modal, al lado del botón que sí confirma */
+  .btn-ghost-sm {
+    @apply rounded-full px-4 py-2 text-xs text-ink/50 transition hover:text-ink disabled:opacity-50;
+  }
+
+  /* Desplegable / acordeón: siempre la misma tarjeta con flecha en círculo */
+  .disclosure-toggle {
+    @apply flex w-full items-center justify-between rounded-xl border border-sand bg-white px-3.5 py-3 text-left shadow-sm transition hover:border-moss hover:shadow-md;
+  }
+  .disclosure-chevron {
+    @apply flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-moss/10 text-moss transition;
+  }
+
+  /* Jerarquía de texto dentro de una pantalla */
+  .eyebrow {
+    /* categoría de la app, arriba del título de página (Estudio, Panel general...) */
+    @apply text-xs uppercase tracking-[0.25em] text-moss;
+  }
+  .page-title {
+    /* título principal de la pantalla */
+    @apply font-display text-3xl italic text-ink;
+  }
+  .section-title {
+    /* subtítulo de un bloque dentro de la pantalla (Alumnos anotados, Últimos pagos...) —
+       más peso que el texto normal, pero claramente por debajo del título de página */
+    @apply text-xs font-semibold uppercase tracking-[0.15em] text-ink/60;
+  }
+  .section-hint {
+    /* aclaración chica debajo de un section-title */
+    @apply text-xs text-ink/40;
+  }
+}

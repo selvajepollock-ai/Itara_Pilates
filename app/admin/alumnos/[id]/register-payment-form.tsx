@@ -63,7 +63,7 @@ export function RegisterPaymentForm({
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-full bg-moss px-5 py-2.5 text-xs font-medium text-white hover:bg-moss-dark disabled:opacity-50"
+        className="btn-primary-sm"
       >
         {isPending ? 'Registrando...' : 'Marcar como pagado'}
       </button>

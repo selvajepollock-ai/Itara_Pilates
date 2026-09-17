@@ -42,14 +42,14 @@ export function RecoveryRequestActions({ creditId }: { creditId: string }) {
         <button
           onClick={handleApprove}
           disabled={isPending}
-          className="whitespace-nowrap rounded-full bg-moss px-3 py-1.5 text-xs font-medium text-white hover:bg-moss-dark disabled:opacity-50"
+          className="btn-primary-sm whitespace-nowrap"
         >
           {isPending ? '...' : 'Aprobar'}
         </button>
         <button
           onClick={handleReject}
           disabled={isPending}
-          className="whitespace-nowrap rounded-full border border-clay px-3 py-1.5 text-xs font-medium text-clay hover:bg-clay hover:text-white disabled:opacity-50"
+          className="btn-danger-outline whitespace-nowrap"
         >
           Rechazar
         </button>
