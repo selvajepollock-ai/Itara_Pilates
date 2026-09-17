@@ -109,17 +109,9 @@ export default async function EditarAlumnoPage({
 
           <StudentBilling studentId={student.id} studentName={student.full_name} />
           <ExtraChargesSection studentId={student.id} />
-
-          <div className="rounded-2xl border border-sand bg-white p-6">
-            <h2 className="section-title">Restablecer contraseña</h2>
-            <p className="mt-1 text-sm text-ink/50">
-              Por si el alumno perdió el acceso. Le vas a tener que avisar la contraseña nueva.
-            </p>
-            <SetPasswordForm studentId={student.id} />
-          </div>
         </div>
 
-        <div>
+        <div className="space-y-6">
           <MonthSessions studentId={student.id} weekOffset={weekOffset} />
 
           <PlanEditorToggle>
@@ -128,6 +120,14 @@ export default async function EditarAlumnoPage({
             </p>
             <StudentScheduleForm studentId={student.id} classOptions={classOptions} />
           </PlanEditorToggle>
+
+          <div className="rounded-2xl border border-sand bg-white p-6">
+            <h2 className="section-title">Restablecer contraseña</h2>
+            <p className="mt-1 text-sm text-ink/50">
+              Por si el alumno perdió el acceso. Le vas a tener que avisar la contraseña nueva.
+            </p>
+            <SetPasswordForm studentId={student.id} />
+          </div>
         </div>
       </div>
     </div>
