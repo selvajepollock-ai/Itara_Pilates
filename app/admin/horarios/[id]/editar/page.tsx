@@ -23,8 +23,8 @@ export default async function EditarClasePage({ params }: { params: Promise<{ id
 
   return (
     <div className="max-w-md">
-      <p className="text-xs uppercase tracking-[0.25em] text-moss">Horarios</p>
-      <h1 className="mt-2 font-display text-3xl italic text-ink">Editar clase</h1>
+      <p className="eyebrow">Horarios</p>
+      <h1 className="page-title mt-2">Editar clase</h1>
 
       <ClassForm
         classTypes={classTypes ?? []}

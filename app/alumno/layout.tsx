@@ -31,7 +31,7 @@ export default async function AlumnoLayout({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-emblem.png" alt="Itara Pilates" className="h-9 w-9 shrink-0 object-contain" />
             <div className="min-w-0">
-              <p className="text-xs uppercase tracking-[0.25em] text-moss">Estudio</p>
+              <p className="eyebrow">Estudio</p>
               <p className="mt-0.5 truncate font-display text-xl italic text-ink">Itara Pilates</p>
             </div>
           </div>
@@ -39,7 +39,7 @@ export default async function AlumnoLayout({
             {isAdmin && (
               <Link
                 href="/admin"
-                className="flex items-center gap-1.5 rounded-full border border-sand px-4 py-1.5 text-xs font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+                className="btn-secondary-sm"
               >
                 <ArrowLeft size={13} />
                 Volver al panel
@@ -49,19 +49,19 @@ export default async function AlumnoLayout({
               href="https://www.instagram.com/itara_estudio_de_pilates/"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-sand text-ink/50 transition hover:border-moss hover:text-moss"
+              className="icon-btn-sm"
             >
               <Instagram size={15} />
             </a>
             <Link
               href="/alumno"
-              className="rounded-full border border-sand px-4 py-1.5 text-xs font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+              className="btn-secondary-sm"
             >
               Inicio
             </Link>
             <Link
               href="/alumno/perfil"
-              className="rounded-full border border-sand px-4 py-1.5 text-xs font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+              className="btn-secondary-sm"
             >
               Mi perfil
             </Link>

@@ -92,7 +92,7 @@ export function SearchAndLink({
           <button
             onClick={handleSearch}
             disabled={isSearching}
-            className="rounded-full bg-moss px-5 py-2.5 text-sm font-medium text-white hover:bg-moss-dark disabled:opacity-50"
+            className="btn-primary"
           >
             {isSearching ? 'Buscando...' : 'Buscar'}
           </button>
@@ -120,7 +120,7 @@ export function SearchAndLink({
                 <button
                   onClick={() => handleLink(r.id)}
                   disabled={isLinking}
-                  className="flex shrink-0 items-center gap-1.5 rounded-full bg-clay px-4 py-2 text-xs font-medium text-white hover:opacity-90 disabled:opacity-50"
+                  className="btn-danger-sm shrink-0"
                 >
                   <UserCheck size={13} strokeWidth={2} />
                   {isLinking && linkingId === r.id ? 'Vinculando...' : 'Vincular'}

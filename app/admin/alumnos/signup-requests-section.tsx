@@ -71,7 +71,7 @@ export function SignupRequestsSection({ requests }: { requests: SignupRequest[] 
                 <div className="flex shrink-0 gap-2">
                   <Link
                     href={`/admin/alumnos/vincular/${r.id}`}
-                    className="whitespace-nowrap rounded-full bg-moss px-3 py-1.5 text-xs font-medium text-white hover:bg-moss-dark"
+                    className="btn-primary-sm whitespace-nowrap"
                   >
                     Aceptar
                   </Link>

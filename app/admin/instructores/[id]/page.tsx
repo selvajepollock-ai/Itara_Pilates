@@ -25,12 +25,12 @@ export default async function EditarInstructorPage({
         ← Volver al equipo
       </Link>
 
-      <p className="mt-4 text-xs uppercase tracking-[0.25em] text-moss">Equipo</p>
-      <h1 className="mt-2 font-display text-3xl italic text-ink">{instructor.full_name}</h1>
+      <p className="eyebrow mt-4">Equipo</p>
+      <h1 className="page-title mt-2">{instructor.full_name}</h1>
 
       <EditInstructorForm instructor={instructor} />
 
-      <h2 className="mt-10 text-xs uppercase tracking-[0.25em] text-moss">
+      <h2 className="eyebrow mt-10">
         Restablecer contraseña
       </h2>
       <p className="mt-1 text-sm text-ink/50">

@@ -114,7 +114,7 @@ export default async function AdminDashboard() {
 
   return (
     <div>
-      <p className="text-xs uppercase tracking-[0.25em] text-moss">Panel general</p>
+      <p className="eyebrow">Panel general</p>
       <h1 className="mt-2 font-display text-4xl italic text-ink">
         {firstName && firstName !== 'Sin' ? `Hola, ${firstName}` : 'Bienvenido/a al estudio'}
       </h1>

@@ -65,22 +65,22 @@ export default async function PasarListaPage({
   return (
     <div>
       <BackButton />
-      <p className="mt-4 text-xs uppercase tracking-[0.25em] text-moss">
+      <p className="eyebrow mt-4">
         {isAdmin ? 'Estudio' : 'Tu agenda'}
       </p>
-      <h1 className="mt-2 font-display text-3xl italic text-ink">Pasar lista</h1>
+      <h1 className="page-title mt-2">Pasar lista</h1>
 
       <div className="mt-4 flex items-center gap-2">
         <Link
           href={`/instructor/pasar-lista?date=${toISODate(prevDate)}`}
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-sand text-ink/60 hover:border-moss hover:text-moss"
+          className="icon-btn-sm"
         >
           <ChevronLeft size={15} />
         </Link>
         <DateJumpInput defaultValue={selectedISO} />
         <Link
           href={`/instructor/pasar-lista?date=${toISODate(nextDate)}`}
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-sand text-ink/60 hover:border-moss hover:text-moss"
+          className="icon-btn-sm"
         >
           <ChevronRight size={15} />
         </Link>

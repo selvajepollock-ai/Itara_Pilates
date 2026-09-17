@@ -35,8 +35,8 @@ export default async function AlumnosPage() {
     <div>
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.25em] text-moss">Estudio</p>
-          <h1 className="mt-2 font-display text-3xl italic text-ink">Alumnos</h1>
+          <p className="eyebrow">Estudio</p>
+          <h1 className="page-title mt-2">Alumnos</h1>
           <p className="mt-1 text-sm text-ink/50">{students?.length ?? 0} en total</p>
         </div>
         <div className="flex items-center gap-3">
@@ -49,7 +49,7 @@ export default async function AlumnosPage() {
           </Link>
           <Link
             href="/admin/alumnos/nuevo"
-            className="flex items-center gap-1.5 rounded-full bg-moss px-5 py-2.5 text-sm font-medium text-white transition hover:bg-moss-dark"
+            className="btn-primary"
           >
             <Plus size={16} strokeWidth={2.5} />
             Nuevo alumno

@@ -75,7 +75,7 @@ export function InstallPrompt() {
             </div>
             <button
               onClick={handleInstallClick}
-              className="shrink-0 rounded-full bg-moss px-4 py-2 text-xs font-medium text-white hover:bg-moss-dark"
+              className="btn-primary-sm shrink-0"
             >
               Instalar
             </button>
@@ -138,7 +138,7 @@ export function InstallPrompt() {
 
           <button
             onClick={dismiss}
-            className="mt-5 w-full rounded-full border border-sand px-4 py-2.5 text-sm font-medium text-ink/60 hover:border-moss hover:text-moss"
+            className="btn-secondary mt-5 w-full"
           >
             Entendido
           </button>

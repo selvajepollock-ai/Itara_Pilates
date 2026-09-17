@@ -98,8 +98,8 @@ export default function ImportarAlumnosPage() {
 
   return (
     <div className="max-w-2xl">
-      <p className="text-xs uppercase tracking-[0.25em] text-moss">Alumnos</p>
-      <h1 className="mt-2 font-display text-3xl italic text-ink">Importación masiva</h1>
+      <p className="eyebrow">Alumnos</p>
+      <h1 className="page-title mt-2">Importación masiva</h1>
       <p className="mt-2 text-sm text-ink/60">
         Subí el CSV con columnas: <code>full_name,day_of_week,start_time,class_type</code>. Crea
         los alumnos que falten (sin acceso al portal) y los anota en sus clases.
@@ -115,7 +115,7 @@ export default function ImportarAlumnosPage() {
         <button
           onClick={handleImport}
           disabled={!file || running}
-          className="mt-4 w-full rounded-full bg-moss px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50"
+          className="btn-primary mt-4 w-full"
         >
           {running ? `Importando... (${progress}/${total})` : 'Iniciar importación'}
         </button>

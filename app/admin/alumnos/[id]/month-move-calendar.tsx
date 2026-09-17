@@ -164,19 +164,19 @@ export function MonthMoveCalendar({
     <div className="rounded-2xl border border-sand bg-white p-6">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.25em] text-moss">Semana {weekLabel}</p>
+          <p className="eyebrow">Semana {weekLabel}</p>
           <p className="mt-1 font-display text-lg italic text-ink">Calendario del alumno</p>
         </div>
         <div className="flex items-center gap-1.5">
           <Link
             href={`?week=${prevOffset}`}
-            className="flex h-7 w-7 items-center justify-center rounded-full border border-sand text-ink/50 hover:border-moss hover:text-moss"
+            className="icon-btn-sm h-7 w-7"
           >
             <ChevronLeft size={14} />
           </Link>
           <Link
             href={`?week=${nextOffset}`}
-            className="flex h-7 w-7 items-center justify-center rounded-full border border-sand text-ink/50 hover:border-moss hover:text-moss"
+            className="icon-btn-sm h-7 w-7"
           >
             <ChevronRight size={14} />
           </Link>
@@ -373,13 +373,13 @@ export function MonthMoveCalendar({
               <button
                 onClick={() => proceedCancel(pendingConfirm)}
                 disabled={isPending}
-                className="flex-1 rounded-full bg-clay px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+                className="btn-danger flex-1"
               >
                 {isPending ? 'Cancelando...' : 'Sí, cancelar'}
               </button>
               <button
                 onClick={() => setPendingConfirm(null)}
-                className="rounded-full border border-sand px-4 py-2.5 text-sm font-medium text-ink/60 hover:border-moss hover:text-moss"
+                className="btn-secondary"
               >
                 Volver
               </button>

@@ -12,7 +12,7 @@ export default function MantenimientoPage() {
         className="mt-8 h-48 w-auto"
       />
 
-      <h1 className="mt-8 font-display text-3xl italic text-ink">
+      <h1 className="page-title mt-8">
         Estamos preparando algo lindo
       </h1>
       <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink/60">

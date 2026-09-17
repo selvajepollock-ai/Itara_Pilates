@@ -26,8 +26,8 @@ export default function NuevoInstructorPage() {
 
   return (
     <div className="max-w-md">
-      <p className="text-xs uppercase tracking-[0.25em] text-moss">Equipo</p>
-      <h1 className="mt-2 font-display text-3xl italic text-ink">Nuevo instructor</h1>
+      <p className="eyebrow">Equipo</p>
+      <h1 className="page-title mt-2">Nuevo instructor</h1>
       <p className="mt-2 text-sm text-ink/60">
         Solo va a ver su agenda y la lista de alumnos por clase — sin acceso a pagos ni reportes.
       </p>
@@ -121,7 +121,7 @@ export default function NuevoInstructorPage() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full rounded-full bg-moss px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50"
+          className="btn-primary w-full"
         >
           {isPending ? 'Enviando...' : inviteByEmail ? 'Enviar invitación' : 'Crear instructor'}
         </button>

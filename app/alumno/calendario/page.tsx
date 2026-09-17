@@ -84,7 +84,7 @@ export default async function AlumnoCalendarioPage({
 
       <div className="mt-4 flex items-center justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.25em] text-moss">Calendario</p>
+          <p className="eyebrow">Calendario</p>
           <h1 className="mt-2 font-display text-2xl italic capitalize text-ink sm:text-3xl">
             {monthLabel}
           </h1>
@@ -92,19 +92,19 @@ export default async function AlumnoCalendarioPage({
         <div className="flex items-center gap-2">
           <Link
             href={`/alumno/calendario?week=${toISODate(prevWeek)}`}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-sand text-ink/60 hover:border-moss hover:text-moss"
+            className="icon-btn"
           >
             <ChevronLeft size={16} />
           </Link>
           <Link
             href="/alumno/calendario"
-            className="rounded-full border border-sand px-4 py-2 text-sm font-medium text-ink/70 hover:border-moss hover:text-moss"
+            className="btn-secondary"
           >
             Hoy
           </Link>
           <Link
             href={`/alumno/calendario?week=${toISODate(nextWeek)}`}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-sand text-ink/60 hover:border-moss hover:text-moss"
+            className="icon-btn"
           >
             <ChevronRight size={16} />
           </Link>

@@ -30,8 +30,8 @@ export default async function NotificacionesPage() {
 
   return (
     <div className="max-w-2xl">
-      <p className="text-xs uppercase tracking-[0.25em] text-moss">Estudio</p>
-      <h1 className="mt-2 font-display text-3xl italic text-ink">Notificaciones masivas</h1>
+      <p className="eyebrow">Estudio</p>
+      <h1 className="page-title mt-2">Notificaciones masivas</h1>
       <p className="mt-2 text-sm text-ink/60">
         Se muestran como aviso en el panel de todos los alumnos e instructores, o solo a quien elijas.
       </p>

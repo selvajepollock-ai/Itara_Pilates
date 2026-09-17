@@ -139,7 +139,7 @@ export function NewAnnouncementForm({ classOptions }: { classOptions: ClassOptio
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-full bg-moss px-5 py-2.5 text-sm font-medium text-white hover:bg-moss-dark disabled:opacity-50"
+        className="btn-primary"
       >
         {isPending ? 'Enviando...' : 'Enviar'}
       </button>

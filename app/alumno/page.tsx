@@ -173,7 +173,7 @@ export default async function AlumnoDashboard() {
 
   return (
     <div>
-      <p className="text-xs uppercase tracking-[0.25em] text-moss">Mi semana</p>
+      <p className="eyebrow">Mi semana</p>
       <div className="mt-2 flex items-center gap-2">
         <Flower2 size={22} strokeWidth={1.5} className="text-moss" />
         <h1 className="font-display text-3xl italic text-ink sm:text-4xl">
@@ -223,7 +223,7 @@ export default async function AlumnoDashboard() {
       (requestedCredits && requestedCredits.length > 0) ||
       (credits && credits.length > 0) ? (
         <div className="mt-4 rounded-2xl border border-sand bg-white px-5 py-4">
-          <p className="text-xs uppercase tracking-[0.25em] text-moss">Recuperaciones</p>
+          <p className="eyebrow">Recuperaciones</p>
 
           {upcomingRecoveries && upcomingRecoveries.length > 0 && (
             <div className="mt-3">
@@ -321,7 +321,7 @@ export default async function AlumnoDashboard() {
                     </span>
                     <Link
                       href={`/alumno/recuperar/${c.id}`}
-                      className="whitespace-nowrap rounded-full bg-clay px-3 py-1 text-xs font-medium text-white hover:opacity-90"
+                      className="btn-danger-sm whitespace-nowrap"
                     >
                       Elegir clase
                     </Link>

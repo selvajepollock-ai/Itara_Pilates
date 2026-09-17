@@ -24,7 +24,7 @@ export function MarkChargePaidButton({ chargeId, studentId }: { chargeId: string
     <button
       onClick={handleClick}
       disabled={isPending}
-      className="whitespace-nowrap rounded-full bg-moss px-3 py-1 text-xs font-medium text-white hover:bg-moss-dark disabled:opacity-50"
+      className="btn-primary-sm whitespace-nowrap"
     >
       {isPending ? '...' : 'Marcar pagado'}
     </button>

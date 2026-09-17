@@ -45,8 +45,8 @@ export default async function InstructorClassPage({
 
       <div className="mt-4 flex items-center justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.25em] text-moss">{DAY_NAMES[classInfo.day_of_week]}</p>
-          <h1 className="mt-1 font-display text-3xl italic text-ink">{typeName}</h1>
+          <p className="eyebrow">{DAY_NAMES[classInfo.day_of_week]}</p>
+          <h1 className="page-title mt-1">{typeName}</h1>
           <p className="mt-1 text-sm text-ink/50">
             {formatTime(classInfo.start_time)}–{formatTime(classInfo.end_time)} · {classInfo.room}
             {instructorName ? ` · ${instructorName}` : ''}
@@ -57,7 +57,7 @@ export default async function InstructorClassPage({
       <div className="mt-4 flex items-center gap-2">
         <Link
           href={`/instructor/clases/${id}?week=${toISODate(prevWeek)}`}
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-sand text-ink/60 hover:border-moss hover:text-moss"
+          className="icon-btn-sm"
         >
           <ChevronLeft size={15} />
         </Link>
@@ -66,7 +66,7 @@ export default async function InstructorClassPage({
         </span>
         <Link
           href={`/instructor/clases/${id}?week=${toISODate(nextWeek)}`}
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-sand text-ink/60 hover:border-moss hover:text-moss"
+          className="icon-btn-sm"
         >
           <ChevronRight size={15} />
         </Link>

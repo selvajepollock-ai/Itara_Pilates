@@ -39,7 +39,7 @@ export function GrantAccessForm({ studentId, defaultEmail }: { studentId: string
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-full bg-clay px-5 py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+        className="btn-danger"
       >
         {isPending ? 'Enviando...' : 'Dar acceso'}
       </button>

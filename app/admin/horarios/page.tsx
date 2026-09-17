@@ -111,7 +111,7 @@ export default async function HorariosPage({
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.25em] text-moss">Estudio</p>
+          <p className="eyebrow">Estudio</p>
           <h1 className="mt-2 font-display text-3xl italic capitalize text-ink">{monthLabel}</h1>
         </div>
 
@@ -119,19 +119,19 @@ export default async function HorariosPage({
           <WeekJumpInput defaultValue={toISODate(baseMonday)} showFuerza={showFuerza} />
           <Link
             href={`/admin/horarios?week=${toISODate(prevWeek)}${showFuerza ? '&fuerza=1' : ''}`}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-sand text-ink/60 transition hover:border-moss hover:text-moss"
+            className="icon-btn"
           >
             <ChevronLeft size={16} />
           </Link>
           <Link
             href={`/admin/horarios${showFuerza ? '?fuerza=1' : ''}`}
-            className="rounded-full border border-sand px-4 py-2 text-sm font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+            className="btn-secondary"
           >
             Hoy
           </Link>
           <Link
             href={`/admin/horarios?week=${toISODate(nextWeek)}${showFuerza ? '&fuerza=1' : ''}`}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-sand text-ink/60 transition hover:border-moss hover:text-moss"
+            className="icon-btn"
           >
             <ChevronRight size={16} />
           </Link>
@@ -150,33 +150,33 @@ export default async function HorariosPage({
 
           <Link
             href="/instructor/pasar-lista"
-            className="flex items-center gap-1.5 rounded-full border border-sand px-4 py-2 text-sm font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+            className="btn-secondary"
           >
             Pasar lista
           </Link>
           <Link
             href="/admin/horarios/feriados"
-            className="flex items-center gap-1.5 rounded-full border border-sand px-4 py-2 text-sm font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+            className="btn-secondary"
           >
             Feriados
           </Link>
           <Link
             href="/admin/tipos-de-clase"
-            className="flex items-center gap-1.5 rounded-full border border-sand px-4 py-2 text-sm font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+            className="btn-secondary"
           >
             <Settings2 size={15} strokeWidth={2} />
             Tipos
           </Link>
           <Link
             href="/admin/horarios/lista"
-            className="flex items-center gap-1.5 rounded-full border border-sand px-4 py-2 text-sm font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+            className="btn-secondary"
           >
             <List size={15} strokeWidth={2} />
             Lista
           </Link>
           <Link
             href="/admin/horarios/nuevo"
-            className="flex items-center gap-1.5 rounded-full bg-moss px-5 py-2.5 text-sm font-medium text-white transition hover:bg-moss-dark"
+            className="btn-primary"
           >
             <Plus size={16} strokeWidth={2.5} />
             Nueva clase

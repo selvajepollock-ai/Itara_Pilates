@@ -122,8 +122,8 @@ export default async function AdminRecuperarPage({
         ← Volver a {student?.full_name}
       </Link>
 
-      <p className="mt-4 text-xs uppercase tracking-[0.25em] text-moss">Recuperar clase</p>
-      <h1 className="mt-2 font-display text-3xl italic text-ink">{typeName}</h1>
+      <p className="eyebrow mt-4">Recuperar clase</p>
+      <h1 className="page-title mt-2">{typeName}</h1>
 
       <div className="mt-6 space-y-3">
         {optionsByDay.map((d, i) => (

@@ -62,7 +62,7 @@ export function RequestPlanChangeForm({ plans }: { plans: Plan[] }) {
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-full bg-moss px-4 py-1.5 text-xs font-medium text-white hover:bg-moss-dark disabled:opacity-50"
+        className="btn-primary-sm"
       >
         {isPending ? 'Enviando...' : 'Enviar pedido'}
       </button>

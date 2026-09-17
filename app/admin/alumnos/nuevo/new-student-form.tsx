@@ -55,8 +55,8 @@ export function NewStudentForm({
 
   return (
     <div className="max-w-4xl">
-      <p className="text-xs uppercase tracking-[0.25em] text-moss">Alumnos</p>
-      <h1 className="mt-2 font-display text-3xl italic text-ink">Nuevo alumno</h1>
+      <p className="eyebrow">Alumnos</p>
+      <h1 className="page-title mt-2">Nuevo alumno</h1>
 
       <form action={handleSubmit} className="mt-8 grid gap-6 lg:grid-cols-2">
         {requestId && <input type="hidden" name="request_id" value={requestId} />}

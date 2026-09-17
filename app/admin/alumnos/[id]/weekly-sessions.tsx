@@ -80,7 +80,7 @@ export async function WeeklySessions({
     <div className="rounded-2xl border border-sand bg-white p-6">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.25em] text-moss">
+          <p className="eyebrow">
             {weekOffset === 0 ? 'Esta semana' : weekLabel}
           </p>
           <p className="mt-1 font-display text-lg italic text-ink">Cancelar / mover en nombre del alumno</p>
@@ -88,13 +88,13 @@ export async function WeeklySessions({
         <div className="flex items-center gap-1.5">
           <Link
             href={`?week=${prevOffset}`}
-            className="flex h-7 w-7 items-center justify-center rounded-full border border-sand text-ink/50 hover:border-moss hover:text-moss"
+            className="icon-btn-sm h-7 w-7"
           >
             <ChevronLeft size={14} />
           </Link>
           <Link
             href={`?week=${nextOffset}`}
-            className="flex h-7 w-7 items-center justify-center rounded-full border border-sand text-ink/50 hover:border-moss hover:text-moss"
+            className="icon-btn-sm h-7 w-7"
           >
             <ChevronRight size={14} />
           </Link>

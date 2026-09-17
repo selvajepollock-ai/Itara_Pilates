@@ -38,7 +38,7 @@ export default function RegistroPage() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-emblem.png" alt="Itara Pilates" className="mx-auto h-16 w-16 object-contain" />
           <p className="mt-3 text-xs uppercase tracking-[0.3em] text-moss">Sumate al estudio</p>
-          <h1 className="mt-2 font-display text-3xl italic text-ink">Itara Pilates</h1>
+          <h1 className="page-title mt-2">Itara Pilates</h1>
         </div>
 
         <div className="rounded-2xl border border-sand bg-white p-8 shadow-[0_2px_20px_rgba(46,43,38,0.06)]">
@@ -142,7 +142,7 @@ export default function RegistroPage() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full rounded-full bg-moss px-4 py-2.5 text-sm font-medium text-white hover:bg-moss-dark disabled:opacity-50"
+                className="btn-primary w-full"
               >
                 {isPending ? 'Enviando...' : 'Quiero sumarme'}
               </button>

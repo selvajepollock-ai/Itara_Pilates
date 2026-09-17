@@ -49,14 +49,14 @@ export function ScheduleExportButtons({ classes }: { classes: ClassRow[] }) {
     <div className="flex gap-2">
       <button
         onClick={handleExcel}
-        className="flex items-center gap-1.5 rounded-full border border-sand px-4 py-2 text-xs font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+        className="btn-secondary-sm"
       >
         <FileSpreadsheet size={14} />
         Excel
       </button>
       <button
         onClick={handlePDF}
-        className="flex items-center gap-1.5 rounded-full border border-sand px-4 py-2 text-xs font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+        className="btn-secondary-sm"
       >
         <FileText size={14} />
         PDF

@@ -35,7 +35,7 @@ export default async function InstructorLayout({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-emblem.png" alt="Itara Pilates" className="h-9 w-9 shrink-0 object-contain" />
             <div className="min-w-0">
-              <p className="text-xs uppercase tracking-[0.25em] text-moss">Panel instructor</p>
+              <p className="eyebrow">Panel instructor</p>
               <p className="mt-0.5 truncate font-display text-xl italic text-ink">{profile?.full_name}</p>
             </div>
           </div>
@@ -43,7 +43,7 @@ export default async function InstructorLayout({
             {roles.includes('admin') && (
               <Link
                 href="/admin"
-                className="flex items-center gap-1.5 rounded-full border border-sand px-4 py-1.5 text-xs font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+                className="btn-secondary-sm"
               >
                 <ArrowLeft size={13} />
                 Volver al panel

@@ -26,8 +26,8 @@ export default async function VincularPage({
         ← Volver a alumnos
       </Link>
 
-      <p className="mt-4 text-xs uppercase tracking-[0.25em] text-moss">Solicitud de registro</p>
-      <h1 className="mt-2 font-display text-3xl italic text-ink">{fullName}</h1>
+      <p className="eyebrow mt-4">Solicitud de registro</p>
+      <h1 className="page-title mt-2">{fullName}</h1>
       <p className="mt-2 text-sm text-ink/60">
         {request.email}
         {request.phone ? ` · ${request.phone}` : ''}

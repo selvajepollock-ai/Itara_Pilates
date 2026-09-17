@@ -16,8 +16,8 @@ export default async function FeriadosPage() {
         ← Volver al calendario
       </Link>
 
-      <p className="mt-4 text-xs uppercase tracking-[0.25em] text-moss">Horarios</p>
-      <h1 className="mt-2 font-display text-3xl italic text-ink">Feriados y días sin clase</h1>
+      <p className="eyebrow mt-4">Horarios</p>
+      <h1 className="page-title mt-2">Feriados y días sin clase</h1>
       <p className="mt-2 text-sm text-ink/60">
         Ese día, el calendario va a aparecer cerrado (no reemplaza cancelar una clase puntual).
       </p>

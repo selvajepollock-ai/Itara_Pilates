@@ -60,14 +60,14 @@ export function PlanRow({ plan }: { plan: Plan }) {
           <button
             type="submit"
             disabled={isPending}
-            className="rounded-full bg-moss px-4 py-2 text-xs font-medium text-white hover:bg-moss-dark disabled:opacity-50"
+            className="btn-primary-sm"
           >
             Guardar
           </button>
           <button
             type="button"
             onClick={() => setIsEditing(false)}
-            className="rounded-full border border-sand px-4 py-2 text-xs font-medium text-ink/60 hover:border-moss hover:text-moss"
+            className="btn-secondary-sm"
           >
             Cancelar
           </button>

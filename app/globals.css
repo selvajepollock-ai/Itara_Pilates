@@ -49,6 +49,14 @@
     @apply rounded-full px-4 py-2 text-xs text-ink/50 transition hover:text-ink disabled:opacity-50;
   }
 
+  /* Botón circular de un solo ícono: flechas de semana, chevrons de paginado... */
+  .icon-btn {
+    @apply flex h-9 w-9 items-center justify-center rounded-full border border-sand text-ink/60 transition hover:border-moss hover:text-moss disabled:opacity-50;
+  }
+  .icon-btn-sm {
+    @apply flex h-8 w-8 items-center justify-center rounded-full border border-sand text-ink/50 transition hover:border-moss hover:text-moss disabled:opacity-50;
+  }
+
   /* Desplegable / acordeón: siempre la misma tarjeta con flecha en círculo */
   .disclosure-toggle {
     @apply flex w-full items-center justify-between rounded-xl border border-sand bg-white px-3.5 py-3 text-left shadow-sm transition hover:border-moss hover:shadow-md;

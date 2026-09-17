@@ -134,8 +134,8 @@ export default async function RecuperarPage({
         ← Volver a tu horario
       </Link>
 
-      <p className="mt-4 text-xs uppercase tracking-[0.25em] text-moss">Recuperar clase</p>
-      <h1 className="mt-2 font-display text-3xl italic text-ink">{typeName}</h1>
+      <p className="eyebrow mt-4">Recuperar clase</p>
+      <h1 className="page-title mt-2">{typeName}</h1>
       <p className="mt-2 text-sm text-ink/60">
         Elegí un día para ver los horarios, antes del{' '}
         {new Date(`${credit.week_end}T00:00:00`).toLocaleDateString('es-AR', {

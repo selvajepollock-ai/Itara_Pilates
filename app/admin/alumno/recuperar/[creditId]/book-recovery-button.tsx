@@ -39,7 +39,7 @@ export function BookRecoveryButton({
       <button
         onClick={handleBook}
         disabled={isPending}
-        className="rounded-full bg-moss px-4 py-2 text-xs font-medium text-white hover:bg-moss-dark disabled:opacity-50"
+        className="btn-primary-sm"
       >
         {isPending ? 'Anotando...' : 'Anotarme acá'}
       </button>

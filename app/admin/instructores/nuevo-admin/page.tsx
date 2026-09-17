@@ -26,8 +26,8 @@ export default function NuevoAdminPage() {
 
   return (
     <div className="max-w-md">
-      <p className="text-xs uppercase tracking-[0.25em] text-moss">Equipo</p>
-      <h1 className="mt-2 font-display text-3xl italic text-ink">Nuevo administrador</h1>
+      <p className="eyebrow">Equipo</p>
+      <h1 className="page-title mt-2">Nuevo administrador</h1>
       <p className="mt-2 text-sm text-ink/60">
         Control total del sistema: alumnos, pagos, reportes y horarios.
       </p>
@@ -125,7 +125,7 @@ export default function NuevoAdminPage() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full rounded-full bg-moss px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50"
+          className="btn-primary w-full"
         >
           {isPending ? 'Enviando...' : inviteByEmail ? 'Enviar invitación' : 'Crear administrador'}
         </button>

@@ -19,8 +19,8 @@ export default async function PerfilPage() {
   ])
   return (
     <div className="max-w-4xl">
-      <p className="text-xs uppercase tracking-[0.25em] text-moss">Tu cuenta</p>
-      <h1 className="mt-2 font-display text-3xl italic text-ink">Mi perfil</h1>
+      <p className="eyebrow">Tu cuenta</p>
+      <h1 className="page-title mt-2">Mi perfil</h1>
       <p className="mt-2 text-sm text-ink/60">Tus datos y la configuración general del estudio.</p>
       {/* Configuración del estudio — destacada, es lo más importante de esta pantalla */}
       <div className="mt-8 rounded-2xl border-2 border-moss/30 bg-moss/5 p-6">

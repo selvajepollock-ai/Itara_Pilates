@@ -84,7 +84,7 @@ export function ReprogramarButton({
       <button
         type="button"
         onClick={() => setStep('confirm')}
-        className="rounded-full border border-clay px-3 py-1.5 text-xs font-medium text-clay transition hover:bg-clay hover:text-white"
+        className="btn-danger-outline"
       >
         Cancelar clase
       </button>
@@ -126,13 +126,13 @@ export function ReprogramarButton({
                   <button
                     onClick={handleConfirmCancel}
                     disabled={isPending}
-                    className="flex-1 rounded-full bg-clay px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+                    className="btn-danger flex-1"
                   >
                     {isPending ? 'Avisando...' : 'Sí, avisar que no voy'}
                   </button>
                   <button
                     onClick={close}
-                    className="rounded-full border border-sand px-4 py-2.5 text-sm font-medium text-ink/60 hover:border-moss hover:text-moss"
+                    className="btn-secondary"
                   >
                     Volver
                   </button>
@@ -150,13 +150,13 @@ export function ReprogramarButton({
                 <div className="mt-5 flex gap-2">
                   <button
                     onClick={handleGoPickSlot}
-                    className="flex-1 rounded-full bg-moss px-4 py-2.5 text-sm font-medium text-white hover:bg-moss-dark"
+                    className="btn-primary flex-1"
                   >
                     Buscar horario
                   </button>
                   <button
                     onClick={handleSkipForNow}
-                    className="rounded-full border border-sand px-4 py-2.5 text-sm font-medium text-ink/60 hover:border-moss hover:text-moss"
+                    className="btn-secondary"
                   >
                     No por ahora
                   </button>
@@ -176,7 +176,7 @@ export function ReprogramarButton({
                     close()
                     router.refresh()
                   }}
-                  className="mt-5 w-full rounded-full bg-moss px-4 py-2.5 text-sm font-medium text-white hover:bg-moss-dark"
+                  className="btn-primary mt-5 w-full"
                 >
                   Entendido
                 </button>
@@ -188,7 +188,7 @@ export function ReprogramarButton({
                 <p className="mt-3 text-sm text-clay">{error}</p>
                 <button
                   onClick={close}
-                  className="mt-5 w-full rounded-full border border-sand px-4 py-2.5 text-sm font-medium text-ink/60 hover:border-moss hover:text-moss"
+                  className="btn-secondary mt-5 w-full"
                 >
                   Cerrar
                 </button>

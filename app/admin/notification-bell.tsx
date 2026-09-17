@@ -48,7 +48,7 @@ export function NotificationBell({ initialItems }: { initialItems: InboxItem[] }
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="relative flex h-9 w-9 items-center justify-center rounded-full border border-sand text-ink/50 transition hover:border-moss hover:text-moss"
+        className="icon-btn relative"
         aria-label={`Notificaciones${count ? ` (${count})` : ''}`}
       >
         <Bell size={16} />

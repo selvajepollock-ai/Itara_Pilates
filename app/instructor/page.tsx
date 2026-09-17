@@ -48,7 +48,7 @@ export default async function InstructorDashboard() {
   return (
     <div>
       <AnnouncementsBanner />
-      <p className="text-xs uppercase tracking-[0.25em] text-moss">Hoy</p>
+      <p className="eyebrow">Hoy</p>
       <h1 className="mt-2 font-display text-4xl italic text-ink">Tu agenda</h1>
       <p className="mt-3 max-w-md text-sm text-ink/60">
         Tus clases de la semana. Entrá a cada una para ver quién va y, si querés, marcar asistencia.

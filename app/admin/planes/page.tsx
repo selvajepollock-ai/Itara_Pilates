@@ -12,8 +12,8 @@ export default async function PlanesPage() {
 
   return (
     <div>
-      <p className="text-xs uppercase tracking-[0.25em] text-moss">Estudio</p>
-      <h1 className="mt-2 font-display text-3xl italic text-ink">Planes</h1>
+      <p className="eyebrow">Estudio</p>
+      <h1 className="page-title mt-2">Planes</h1>
       <p className="mt-2 text-sm text-ink/60">Los tipos de mensualidad que ofrece el estudio.</p>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -55,7 +55,7 @@ export default function LoginPage() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-emblem.png" alt="Itara Pilates" className="mx-auto h-16 w-16 object-contain" />
           <p className="mt-3 text-xs uppercase tracking-[0.3em] text-moss">Ingresá a tu cuenta</p>
-          <h1 className="mt-2 font-display text-3xl italic text-ink">Itara Pilates</h1>
+          <h1 className="page-title mt-2">Itara Pilates</h1>
         </div>
 
         <form
@@ -95,7 +95,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-full bg-moss px-4 py-2.5 text-sm font-medium text-white transition hover:bg-moss-dark disabled:opacity-50"
+            className="btn-primary w-full"
           >
             {loading ? 'Ingresando...' : 'Ingresar'}
           </button>

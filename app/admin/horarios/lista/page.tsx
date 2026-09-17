@@ -39,27 +39,27 @@ export default async function HorariosPage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-[0.25em] text-moss">Estudio</p>
-          <h1 className="mt-2 font-display text-3xl italic text-ink">Horarios</h1>
+          <p className="eyebrow">Estudio</p>
+          <h1 className="page-title mt-2">Horarios</h1>
         </div>
         <div className="flex gap-3">
           <ScheduleExportButtons classes={classes} />
           <Link
             href="/admin/horarios"
-            className="flex items-center gap-1.5 rounded-full border border-sand px-5 py-2.5 text-sm font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+            className="btn-secondary"
           >
             ← Ver calendario
           </Link>
           <Link
             href="/admin/tipos-de-clase"
-            className="flex items-center gap-1.5 rounded-full border border-sand px-5 py-2.5 text-sm font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+            className="btn-secondary"
           >
             <Settings2 size={15} strokeWidth={2} />
             Tipos de clase
           </Link>
           <Link
             href="/admin/horarios/nuevo"
-            className="flex items-center gap-1.5 rounded-full bg-moss px-5 py-2.5 text-sm font-medium text-white transition hover:bg-moss-dark"
+            className="btn-primary"
           >
             <Plus size={16} strokeWidth={2.5} />
             Nueva clase

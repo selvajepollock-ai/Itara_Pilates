@@ -87,7 +87,7 @@ export function EditMyProfileForm({ profile }: { profile: Profile }) {
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-full bg-moss px-5 py-2.5 text-sm font-medium text-white transition hover:bg-moss-dark disabled:opacity-50"
+        className="btn-primary"
       >
         {isPending ? 'Guardando...' : 'Guardar cambios'}
       </button>

@@ -117,8 +117,8 @@ export default async function ReportesPage({
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.25em] text-moss">Estudio</p>
-          <h1 className="mt-2 font-display text-3xl italic text-ink">Reportes</h1>
+          <p className="eyebrow">Estudio</p>
+          <h1 className="page-title mt-2">Reportes</h1>
         </div>
         <PeriodReport from={rFrom} to={rTo} />
       </div>

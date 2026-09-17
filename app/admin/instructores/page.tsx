@@ -71,20 +71,20 @@ export default async function EquipoPage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-[0.25em] text-moss">Estudio</p>
-          <h1 className="mt-2 font-display text-3xl italic text-ink">Equipo</h1>
+          <p className="eyebrow">Estudio</p>
+          <h1 className="page-title mt-2">Equipo</h1>
         </div>
         <div className="flex gap-3">
           <Link
             href="/admin/instructores/nuevo-admin"
-            className="flex items-center gap-1.5 rounded-full border border-sand px-5 py-2.5 text-sm font-medium text-ink/70 transition hover:border-moss hover:text-moss"
+            className="btn-secondary"
           >
             <Plus size={16} strokeWidth={2.5} />
             Nuevo admin
           </Link>
           <Link
             href="/admin/instructores/nuevo"
-            className="flex items-center gap-1.5 rounded-full bg-moss px-5 py-2.5 text-sm font-medium text-white transition hover:bg-moss-dark"
+            className="btn-primary"
           >
             <Plus size={16} strokeWidth={2.5} />
             Nuevo instructor

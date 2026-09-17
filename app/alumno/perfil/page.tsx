@@ -15,8 +15,8 @@ export default async function AlumnoPerfilPage() {
 
   return (
     <div className="max-w-md">
-      <p className="text-xs uppercase tracking-[0.25em] text-moss">Tu cuenta</p>
-      <h1 className="mt-2 font-display text-3xl italic text-ink">Mi perfil</h1>
+      <p className="eyebrow">Tu cuenta</p>
+      <h1 className="page-title mt-2">Mi perfil</h1>
       <p className="mt-2 text-sm text-ink/60">Tus datos personales.</p>
 
       <EditMyProfileForm

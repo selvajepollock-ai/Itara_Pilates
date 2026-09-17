@@ -56,7 +56,7 @@ export async function StudentBilling({ studentId }: { studentId: string }) {
   return (
     <div className="rounded-2xl border border-sand bg-white p-6">
       <div className="flex items-center justify-between">
-        <p className="text-xs uppercase tracking-[0.25em] text-moss">Cuota</p>
+        <p className="eyebrow">Cuota</p>
         <span className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_CLASSES[status]}`}>
           {STATUS_LABEL[status]}
         </span>

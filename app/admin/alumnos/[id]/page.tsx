@@ -84,8 +84,8 @@ export default async function EditarAlumnoPage({
 
       <div className="mt-4 flex items-center justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.25em] text-moss">Alumnos</p>
-          <h1 className="mt-2 font-display text-3xl italic text-ink">{student.full_name}</h1>
+          <p className="eyebrow">Alumnos</p>
+          <h1 className="page-title mt-2">{student.full_name}</h1>
         </div>
         <div className="flex items-center gap-4">
           <ToggleStudentActiveButton studentId={student.id} active={student.active} />
@@ -111,7 +111,7 @@ export default async function EditarAlumnoPage({
           <ExtraChargesSection studentId={student.id} />
 
           <div>
-            <h2 className="text-xs uppercase tracking-[0.25em] text-moss">
+            <h2 className="eyebrow">
               Restablecer contraseña
             </h2>
             <p className="mt-1 text-sm text-ink/50">
