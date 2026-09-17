@@ -90,8 +90,55 @@ export function StudentsList({ students }: { students: Student[] }) {
         />
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-2xl border border-sand bg-white">
-        <table className="w-full text-sm">
+      {/* Mobile: tarjetas apiladas */}
+      <ul className="mt-4 space-y-2 sm:hidden">
+        {filtered.map((s) => (
+          <li key={s.id}>
+            <Link
+              href={`/admin/alumnos/${s.id}`}
+              className="block rounded-2xl border border-sand bg-white p-4 transition hover:border-moss"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blush text-xs font-medium text-ink">
+                  {s.full_name?.slice(0, 1).toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm text-ink">{s.full_name}</p>
+                  {s.nickname && <p className="truncate text-xs text-ink/40">"{s.nickname}"</p>}
+                </div>
+                <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_CLASSES[s.status]}`}>
+                  {STATUS_LABEL[s.status]}
+                </span>
+              </div>
+              <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-sand/60 pt-2.5 text-xs text-ink/50">
+                <span className="min-w-0 truncate">
+                  {s.hasAccess ? (
+                    s.email
+                  ) : (
+                    <span className="flex items-center gap-1.5">
+                      <span className="rounded-full bg-sand px-2 py-0.5 text-ink/50">Sin acceso</span>
+                      {s.displayEmail && <span className="truncate text-ink/40">{s.displayEmail}</span>}
+                    </span>
+                  )}
+                </span>
+                <span className="flex shrink-0 items-center gap-1 font-medium text-moss">
+                  <Pencil size={13} strokeWidth={2} />
+                  Editar
+                </span>
+              </div>
+            </Link>
+          </li>
+        ))}
+        {filtered.length === 0 && (
+          <li className="rounded-2xl border border-sand bg-white px-5 py-14 text-center text-sm text-ink/40">
+            {students.length === 0 ? 'Todavía no hay alumnos cargados.' : 'No hay resultados.'}
+          </li>
+        )}
+      </ul>
+
+      {/* Tablet / desktop: tabla */}
+      <div className="mt-4 hidden overflow-x-auto rounded-2xl border border-sand bg-white sm:block">
+        <table className="w-full min-w-[560px] text-sm">
           <thead>
             <tr className="border-b border-sand text-left text-xs uppercase tracking-wide text-ink/40">
               <th className="px-5 py-3.5 font-medium">Nombre</th>
