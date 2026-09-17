@@ -71,7 +71,7 @@ export function Sidebar({
             <p className="text-[11px] uppercase tracking-[0.2em] text-ink/40">Pilates</p>
           </div>
         </div>
-        <NotificationBell initialItems={notifications} />
+        <NotificationBell initialItems={notifications} align="left" />
       </div>
 
       <nav className="flex-1 space-y-1 px-3">

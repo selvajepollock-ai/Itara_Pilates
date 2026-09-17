@@ -15,7 +15,16 @@ const ICONS = {
   cancellation: CalendarX,
 } as const
 
-export function NotificationBell({ initialItems }: { initialItems: InboxItem[] }) {
+export function NotificationBell({
+  initialItems,
+  align = 'right',
+}: {
+  initialItems: InboxItem[]
+  /** Hacia qué lado se despliega el panel. "left" para cuando la campanita está
+   * cerca del borde izquierdo de un contenedor angosto (el menú lateral), así
+   * el panel abre hacia el contenido y no se sale de la pantalla. */
+  align?: 'left' | 'right'
+}) {
   const [items, setItems] = useState<InboxItem[]>(initialItems)
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
@@ -60,7 +69,11 @@ export function NotificationBell({ initialItems }: { initialItems: InboxItem[] }
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-[min(88vw,320px)] overflow-hidden rounded-2xl border border-sand bg-white shadow-xl">
+        <div
+          className={`absolute z-50 mt-2 w-[min(88vw,320px)] overflow-hidden rounded-2xl border border-sand bg-white shadow-xl ${
+            align === 'left' ? 'left-0' : 'right-0'
+          }`}
+        >
           <div className="border-b border-sand px-4 py-3">
             <p className="text-xs font-medium uppercase tracking-wide text-ink/50">
               Pendientes ({count})
