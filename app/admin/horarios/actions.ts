@@ -154,6 +154,10 @@ export async function removeEnrollment(enrollmentId: string, classId: string) {
     await supabase.from('session_cancellations').delete().eq('enrollment_id', enrollmentId)
   }
 
+  // La asistencia marcada para clases normales de este horario (no de recuperación)
+  // también apunta a la inscripción — desvincularla para no bloquear el borrado.
+  await supabase.from('attendance').update({ enrollment_id: null }).eq('enrollment_id', enrollmentId)
+
   const { error } = await supabase.from('enrollments').delete().eq('id', enrollmentId)
   if (error) return { error: error.message }
 
