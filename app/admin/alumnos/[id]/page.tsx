@@ -99,7 +99,7 @@ export default async function EditarAlumnoPage({
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[380px_1fr] lg:items-start">
-        <div className="max-w-md space-y-6">
+        <div className="space-y-6 lg:max-w-md">
           <EditStudentForm student={student} />
 
           <div className="rounded-2xl border border-sand bg-white p-6">

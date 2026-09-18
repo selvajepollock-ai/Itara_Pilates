@@ -162,50 +162,86 @@ export async function StudentBilling({ studentId, studentName }: { studentId: st
               Ver todos →
             </Link>
           </div>
-          <div className="mt-2 overflow-hidden rounded-xl border border-sand">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-sand bg-linen/40 text-left text-[11px] uppercase tracking-wide text-ink/40">
-                  <th className="px-3 py-2 font-medium">Fecha</th>
-                  <th className="px-3 py-2 font-medium text-right">Monto</th>
-                  <th className="px-3 py-2 font-medium">Nota</th>
-                  <th className="px-3 py-2" />
-                </tr>
-              </thead>
-              <tbody>
-                {(!payments || payments.length === 0) && (
-                  <tr>
-                    <td colSpan={4} className="px-3 py-6 text-center text-xs text-ink/40">
-                      Todavía no se registró ningún pago.
-                    </td>
-                  </tr>
-                )}
+          {(!payments || payments.length === 0) ? (
+            <p className="mt-2 rounded-xl border border-dashed border-sand px-3 py-6 text-center text-xs text-ink/40">
+              Todavía no se registró ningún pago.
+            </p>
+          ) : (
+            <>
+              {/* Mobile: tarjetas, con la nota completa a la vista (sin truncar). */}
+              <ul className="mt-2 space-y-2 sm:hidden">
                 {(payments ?? []).map((p) => {
                   const voided = Boolean(p.voided_at)
                   return (
-                    <tr key={p.id} className={`border-b border-sand/50 last:border-0 ${voided ? 'text-ink/35' : 'text-ink/70'}`}>
-                      <td className="whitespace-nowrap px-3 py-2">
-                        {new Date(p.paid_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
-                      </td>
-                      <td className={`whitespace-nowrap px-3 py-2 text-right ${voided ? 'line-through' : 'font-medium text-ink'}`}>
-                        {formatARS(p.amount)}
-                      </td>
-                      <td className="max-w-[140px] truncate px-3 py-2 text-xs">
-                        {voided ? (
-                          <span className="italic text-clay">Anulado — {p.voided_reason}</span>
-                        ) : (
-                          p.notes || '—'
+                    <li
+                      key={p.id}
+                      className={`rounded-xl border border-sand px-3 py-2.5 text-sm ${voided ? 'text-ink/35' : 'text-ink/70'}`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="whitespace-nowrap">
+                          {new Date(p.paid_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
+                        </span>
+                        <span className={voided ? 'line-through' : 'font-medium text-ink'}>
+                          {formatARS(p.amount)}
+                        </span>
+                        {!voided && (
+                          <PaymentRowActions paymentId={p.id} amount={Number(p.amount)} notes={p.notes ?? ''} />
                         )}
-                      </td>
-                      <td className="px-3 py-2 text-right">
-                        {!voided && <PaymentRowActions paymentId={p.id} amount={Number(p.amount)} notes={p.notes ?? ''} />}
-                      </td>
-                    </tr>
+                      </div>
+                      {(voided || p.notes) && (
+                        <p className="mt-1 text-xs">
+                          {voided ? (
+                            <span className="italic text-clay">Anulado — {p.voided_reason}</span>
+                          ) : (
+                            p.notes
+                          )}
+                        </p>
+                      )}
+                    </li>
                   )
                 })}
-              </tbody>
-            </table>
-          </div>
+              </ul>
+
+              {/* Desktop/tablet: tabla. */}
+              <div className="mt-2 hidden overflow-x-auto rounded-xl border border-sand sm:block">
+                <table className="w-full min-w-[440px] text-sm">
+                  <thead>
+                    <tr className="border-b border-sand bg-linen/40 text-left text-[11px] uppercase tracking-wide text-ink/40">
+                      <th className="px-3 py-2 font-medium">Fecha</th>
+                      <th className="px-3 py-2 font-medium text-right">Monto</th>
+                      <th className="px-3 py-2 font-medium">Nota</th>
+                      <th className="px-3 py-2" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(payments ?? []).map((p) => {
+                      const voided = Boolean(p.voided_at)
+                      return (
+                        <tr key={p.id} className={`border-b border-sand/50 last:border-0 ${voided ? 'text-ink/35' : 'text-ink/70'}`}>
+                          <td className="whitespace-nowrap px-3 py-2">
+                            {new Date(p.paid_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
+                          </td>
+                          <td className={`whitespace-nowrap px-3 py-2 text-right ${voided ? 'line-through' : 'font-medium text-ink'}`}>
+                            {formatARS(p.amount)}
+                          </td>
+                          <td className="px-3 py-2 text-xs">
+                            {voided ? (
+                              <span className="italic text-clay">Anulado — {p.voided_reason}</span>
+                            ) : (
+                              p.notes || '—'
+                            )}
+                          </td>
+                          <td className="px-3 py-2 text-right">
+                            {!voided && <PaymentRowActions paymentId={p.id} amount={Number(p.amount)} notes={p.notes ?? ''} />}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
           <p className="mt-1.5 text-[11px] text-ink/40">
             "Anular" no borra el pago, lo marca como inválido con un motivo — es la forma de revertir un pago
             cargado por error.
