@@ -101,8 +101,10 @@ export default async function EditarAlumnoPage({
       {/* Datos personales + acceso a la app: mismo recuadro, porque son la misma
           "identidad" del alumno -- una división interna en vez de tarjetas
           sueltas repartidas por la pantalla. */}
-      <div className="mt-6 grid gap-6 rounded-2xl border border-sand bg-white p-6 lg:grid-cols-2 lg:divide-x lg:divide-sand">
-        <EditStudentForm student={student} />
+      <div className="mt-6 grid gap-6 rounded-2xl border border-sand bg-white p-6 lg:grid-cols-3 lg:divide-x lg:divide-sand">
+        <div className="lg:col-span-2">
+          <EditStudentForm student={student} />
+        </div>
 
         <div className="lg:pl-6">
           <div className="flex items-center justify-between">
