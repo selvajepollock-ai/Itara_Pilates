@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { MoreHorizontal } from 'lucide-react'
+import { Pencil, Ban } from 'lucide-react'
 import { formatARS } from '@/lib/currency'
 import { annulPayment, editPayment } from '../actions'
 
@@ -16,7 +16,7 @@ export function PaymentRowActions({
   notes: string
 }) {
   const router = useRouter()
-  const [open, setOpen] = useState<null | 'menu' | 'edit' | 'void'>(null)
+  const [open, setOpen] = useState<null | 'edit' | 'void'>(null)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
@@ -47,34 +47,23 @@ export function PaymentRowActions({
   }
 
   return (
-    <div className="relative inline-block text-left">
+    <div className="inline-flex items-center gap-1">
       <button
-        onClick={() => setOpen(open === 'menu' ? null : 'menu')}
+        onClick={() => setOpen('edit')}
         className="rounded-full p-1.5 text-ink/40 hover:bg-linen hover:text-ink"
-        aria-label="Acciones"
+        aria-label="Editar pago"
+        title="Editar"
       >
-        <MoreHorizontal size={16} />
+        <Pencil size={14} />
       </button>
-
-      {open === 'menu' && (
-        <>
-          <div className="fixed inset-0 z-10" onClick={close} />
-          <div className="absolute right-0 z-20 mt-1 w-36 overflow-hidden rounded-lg border border-sand bg-white text-sm shadow-lg">
-            <button
-              onClick={() => setOpen('edit')}
-              className="block w-full px-3.5 py-2 text-left text-ink/70 hover:bg-linen"
-            >
-              Editar
-            </button>
-            <button
-              onClick={() => setOpen('void')}
-              className="block w-full px-3.5 py-2 text-left text-clay hover:bg-linen"
-            >
-              Anular
-            </button>
-          </div>
-        </>
-      )}
+      <button
+        onClick={() => setOpen('void')}
+        className="rounded-full p-1.5 text-ink/40 hover:bg-clay/10 hover:text-clay"
+        aria-label="Anular pago"
+        title="Anular"
+      >
+        <Ban size={14} />
+      </button>
 
       {(open === 'edit' || open === 'void') && (
         <>

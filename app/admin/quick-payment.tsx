@@ -103,6 +103,20 @@ export function QuickPayment({ students }: { students: StudentBilling[] }) {
               </a>
               .
             </p>
+          ) : success ? (
+            <div className="mt-3 rounded-xl border border-moss/30 bg-moss/5 p-4 text-center">
+              <p className="text-sm font-medium text-moss-dark">Pago registrado ✓</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelected(null)
+                  setSuccess(false)
+                }}
+                className="btn-secondary-sm mt-3"
+              >
+                Registrar otro pago
+              </button>
+            </div>
           ) : (
             <form action={handleSubmit} className="mt-3 space-y-3">
               <div>
@@ -138,7 +152,6 @@ export function QuickPayment({ students }: { students: StudentBilling[] }) {
                 {isPending ? 'Registrando...' : 'Marcar como pagado'}
               </button>
               {error && <p className="text-sm text-clay">{error}</p>}
-              {success && <p className="text-sm text-moss-dark">Pago registrado ✓</p>}
             </form>
           )}
         </div>

@@ -31,6 +31,17 @@ export function RegisterPaymentForm({
     })
   }
 
+  if (success) {
+    return (
+      <div className="mt-2 rounded-xl border border-moss/30 bg-moss/5 p-4 text-center">
+        <p className="text-sm font-medium text-moss-dark">Pago registrado ✓</p>
+        <button type="button" onClick={() => setSuccess(false)} className="btn-secondary-sm mt-3">
+          Cargar otro pago
+        </button>
+      </div>
+    )
+  }
+
   return (
     <form action={handleSubmit} className="mt-2 space-y-3">
       <div>
@@ -68,7 +79,6 @@ export function RegisterPaymentForm({
         {isPending ? 'Registrando...' : 'Marcar como pagado'}
       </button>
       {error && <p className="text-sm text-clay">{error}</p>}
-      {success && <p className="text-sm text-moss-dark">Pago registrado ✓</p>}
     </form>
   )
 }
