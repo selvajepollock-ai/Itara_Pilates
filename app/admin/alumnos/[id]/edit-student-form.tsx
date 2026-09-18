@@ -39,8 +39,9 @@ export function EditStudentForm({ student }: { student: Student }) {
     <form
       action={handleSubmit}
       onChange={() => setDirty(true)}
-      className="space-y-5 rounded-2xl border border-sand bg-white p-6"
+      className="space-y-5"
     >
+      <p className="section-title">Datos personales</p>
       <div>
         <label className="text-xs font-medium uppercase tracking-wide text-ink/60">
           Nombre completo

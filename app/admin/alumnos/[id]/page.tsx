@@ -98,13 +98,13 @@ export default async function EditarAlumnoPage({
         </div>
       </div>
 
-      {/* Fila de tarjetas compactas: en pantallas grandes van una al lado de la
-          otra en vez de apilarse en una sola columna angosta con todo el resto
-          de la pantalla vacío. */}
-      <div className="mt-6 grid items-start gap-6 lg:grid-cols-2 xl:grid-cols-3">
+      {/* Datos personales + acceso a la app: mismo recuadro, porque son la misma
+          "identidad" del alumno -- una división interna en vez de tarjetas
+          sueltas repartidas por la pantalla. */}
+      <div className="mt-6 grid gap-6 rounded-2xl border border-sand bg-white p-6 lg:grid-cols-2 lg:divide-x lg:divide-sand">
         <EditStudentForm student={student} />
 
-        <div className="rounded-2xl border border-sand bg-white p-6">
+        <div className="lg:pl-6">
           <div className="flex items-center justify-between">
             <h2 className="section-title flex items-center gap-1.5">
               Acceso a la app
@@ -128,11 +128,12 @@ export default async function EditarAlumnoPage({
             <GrantAccessForm studentId={student.id} defaultEmail={student.contact_email ?? ''} />
           )}
         </div>
+      </div>
 
-        <div className="space-y-6 lg:col-span-2 xl:col-span-1">
-          <StudentBilling studentId={student.id} studentName={student.full_name} />
-          <ExtraChargesSection studentId={student.id} />
-        </div>
+      {/* Plan y pagos: a todo el ancho, debajo de los datos de la cuenta. */}
+      <div className="mt-6 space-y-6">
+        <StudentBilling studentId={student.id} studentName={student.full_name} />
+        <ExtraChargesSection studentId={student.id} />
       </div>
 
       {/* Calendario y plan fijo: a todo el ancho, que es donde más se aprovecha
