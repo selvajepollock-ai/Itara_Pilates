@@ -3,6 +3,7 @@ import { List, ChevronLeft, ChevronRight, Plus, Settings2, Dumbbell } from 'luci
 import { createClient } from '@/lib/supabase/server'
 import { DAY_ORDER, formatTime } from '@/lib/day-names'
 import { WeekJumpInput } from './week-jump-input'
+import { ActivateAllExtraCapacityButton } from './activate-all-extra-capacity-button'
 
 type ClassRow = {
   id: string
@@ -11,6 +12,7 @@ type ClassRow = {
   start_time: string
   end_time: string
   capacity: number
+  pending_extra_capacity: number
   class_types: { id: string; name: string } | null
   profiles: { full_name: string } | null
 }
@@ -71,7 +73,7 @@ export default async function HorariosPage({
     supabase
       .from('classes')
       .select(
-        'id, room, day_of_week, start_time, end_time, capacity, class_types(id, name), profiles(full_name)'
+        'id, room, day_of_week, start_time, end_time, capacity, pending_extra_capacity, class_types(id, name), profiles(full_name)'
       )
       .eq('active', true),
     supabase.from('enrollments').select('class_id').eq('status', 'active'),
@@ -100,6 +102,7 @@ export default async function HorariosPage({
   const monthLabel = baseMonday.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
 
   const fuerzaCount = allClasses.filter((c) => c.class_types?.name?.toLowerCase().includes('fuerza')).length
+  const pendingExtraCapacityCount = allClasses.filter((c) => c.pending_extra_capacity > 0).length
   const cols = showFuerza ? 14 : 7
 
   const toggleFuerzaHref = `/admin/horarios?${new URLSearchParams({
@@ -114,6 +117,10 @@ export default async function HorariosPage({
           <p className="eyebrow">Estudio</p>
           <h1 className="mt-2 font-display text-3xl italic capitalize text-ink">{monthLabel}</h1>
         </div>
+
+        {pendingExtraCapacityCount > 0 && (
+          <ActivateAllExtraCapacityButton pendingCount={pendingExtraCapacityCount} />
+        )}
 
         <div className="flex flex-wrap items-center gap-2">
           <WeekJumpInput defaultValue={toISODate(baseMonday)} showFuerza={showFuerza} />

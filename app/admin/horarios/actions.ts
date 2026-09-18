@@ -129,6 +129,32 @@ export async function activateExtraCapacity(classId: string) {
   return { success: true }
 }
 
+/** Activa de una sola vez el cupo extra pendiente de todas las clases que lo tengan cargado. */
+export async function activateAllExtraCapacity() {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
+
+  const { data: pendingClasses } = await supabase
+    .from('classes')
+    .select('id, capacity, pending_extra_capacity')
+    .gt('pending_extra_capacity', 0)
+
+  if (!pendingClasses || pendingClasses.length === 0) {
+    return { error: 'No hay clases con cupo extra pendiente.' }
+  }
+
+  for (const c of pendingClasses) {
+    await supabase
+      .from('classes')
+      .update({ capacity: c.capacity + c.pending_extra_capacity, pending_extra_capacity: 0 })
+      .eq('id', c.id)
+  }
+
+  revalidatePath('/admin/horarios')
+  return { success: true, count: pendingClasses.length }
+}
+
 export async function deleteClass(classId: string) {
   const auth = await assertAdmin()
   if (!auth.ok) return { error: auth.error }
