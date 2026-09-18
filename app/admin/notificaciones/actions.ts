@@ -86,3 +86,18 @@ export async function deleteAnnouncement(announcementId: string) {
   revalidatePath('/alumno')
   revalidatePath('/instructor')
 }
+
+/** Reactiva un aviso vencido: le saca la fecha de vencimiento, vuelve a mostrarse como activo. */
+export async function reactivateAnnouncement(announcementId: string) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+  const { error } = await auth.supabase
+    .from('announcements')
+    .update({ expires_at: null })
+    .eq('id', announcementId)
+  if (error) return { error: error.message }
+  revalidatePath('/admin/notificaciones')
+  revalidatePath('/alumno')
+  revalidatePath('/instructor')
+  return { success: true }
+}

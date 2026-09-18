@@ -53,8 +53,13 @@ export async function getNotificationCounts() {
 export async function getNotificationInbox(): Promise<{ items: InboxItem[] }> {
   const supabase = await createClient()
 
-  const [{ data: signups }, { data: recoveries }, { data: planRequests }, { data: cancellations }] =
-    await Promise.all([
+  const [
+    { data: signups },
+    { data: recoveries },
+    { data: planRequests },
+    { data: cancellations },
+    { data: birthdayProfiles },
+  ] = await Promise.all([
       supabase
         .from('signup_requests')
         .select('id, first_name, last_name, created_at')
@@ -75,6 +80,11 @@ export async function getNotificationInbox(): Promise<{ items: InboxItem[] }> {
         .select('id, cancelled_at, profiles(full_name)')
         .eq('acknowledged', false)
         .order('cancelled_at', { ascending: false }),
+      supabase
+        .from('profiles')
+        .select('id, full_name, birth_date')
+        .contains('roles', ['student'])
+        .not('birth_date', 'is', null),
     ])
 
   const name = (r: { profiles: unknown }) =>
@@ -109,6 +119,19 @@ export async function getNotificationInbox(): Promise<{ items: InboxItem[] }> {
       href: '/admin/avisos',
       at: r.cancelled_at as string | null,
     })),
+    ...(birthdayProfiles ?? [])
+      .filter((p) => p.birth_date && daysUntilNextBirthday(p.birth_date) <= 5)
+      .map((p): InboxItem => {
+        const daysUntil = daysUntilNextBirthday(p.birth_date as string)
+        const when = daysUntil === 0 ? 'Hoy' : daysUntil === 1 ? 'Mañana' : `En ${daysUntil} días`
+        return {
+          key: `birthday-${p.id}`,
+          kind: 'birthday',
+          text: `${when}: cumpleaños de ${p.full_name}`,
+          href: `/admin/alumnos/${p.id}`,
+          at: null,
+        }
+      }),
   ].sort((a, b) => (b.at ?? '').localeCompare(a.at ?? ''))
 
   return { items }

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, formatTime } from '@/lib/day-names'
 import { NewAnnouncementForm } from './new-announcement-form'
-import { DeleteAnnouncementButton } from './delete-announcement-button'
+import { AnnouncementActions } from './announcement-actions'
 
 export default async function NotificacionesPage() {
   const supabase = await createClient()
@@ -69,7 +69,7 @@ export default async function NotificacionesPage() {
                   {isExpired && ' · vencido'}
                 </p>
               </div>
-              <DeleteAnnouncementButton announcementId={a.id} />
+              <AnnouncementActions announcementId={a.id} isExpired={isExpired} />
             </li>
           )
         })}

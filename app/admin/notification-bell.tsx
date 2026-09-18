@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Bell, UserPlus, Clock, Repeat, CalendarX } from 'lucide-react'
+import { Bell, UserPlus, Clock, Repeat, CalendarX, Cake } from 'lucide-react'
 import { relativeTime } from '@/lib/relative-time'
 import { getNotificationInbox } from './notification-counts'
 import type { InboxItem } from './notification-types'
@@ -13,6 +13,7 @@ const ICONS = {
   recovery: Clock,
   plan: Repeat,
   cancellation: CalendarX,
+  birthday: Cake,
 } as const
 
 export function NotificationBell({
