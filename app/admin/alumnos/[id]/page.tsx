@@ -98,50 +98,55 @@ export default async function EditarAlumnoPage({
         </div>
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[380px_1fr] lg:items-start">
-        <div className="space-y-6 lg:max-w-md">
-          <EditStudentForm student={student} />
+      {/* Fila de tarjetas compactas: en pantallas grandes van una al lado de la
+          otra en vez de apilarse en una sola columna angosta con todo el resto
+          de la pantalla vacío. */}
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-2 xl:grid-cols-3">
+        <EditStudentForm student={student} />
 
-          <div className="rounded-2xl border border-sand bg-white p-6">
-            <div className="flex items-center justify-between">
-              <h2 className="section-title flex items-center gap-1.5">
-                Acceso a la app
-                <InfoHint
-                  align="left"
-                  text={
-                    hasAccess
-                      ? 'El alumno ya puede entrar a la app con su email y contraseña. Si la olvidó, le podés poner una nueva acá.'
-                      : 'Todavía no puede entrar a la app (no tiene un email real cargado). Cargalo para darle acceso — le va a llegar un mail para crear su contraseña.'
-                  }
-                />
-              </h2>
-              <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${hasAccess ? 'bg-moss/10 text-moss-dark' : 'bg-clay/10 text-clay'}`}>
-                {hasAccess ? 'Con acceso' : 'Sin acceso'}
-              </span>
-            </div>
-
-            {hasAccess ? (
-              <SetPasswordForm studentId={student.id} />
-            ) : (
-              <GrantAccessForm studentId={student.id} defaultEmail={student.contact_email ?? ''} />
-            )}
+        <div className="rounded-2xl border border-sand bg-white p-6">
+          <div className="flex items-center justify-between">
+            <h2 className="section-title flex items-center gap-1.5">
+              Acceso a la app
+              <InfoHint
+                align="left"
+                text={
+                  hasAccess
+                    ? 'El alumno ya puede entrar a la app con su email y contraseña. Si la olvidó, le podés poner una nueva acá.'
+                    : 'Todavía no puede entrar a la app (no tiene un email real cargado). Cargalo para darle acceso — le va a llegar un mail para crear su contraseña.'
+                }
+              />
+            </h2>
+            <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${hasAccess ? 'bg-moss/10 text-moss-dark' : 'bg-clay/10 text-clay'}`}>
+              {hasAccess ? 'Con acceso' : 'Sin acceso'}
+            </span>
           </div>
 
+          {hasAccess ? (
+            <SetPasswordForm studentId={student.id} />
+          ) : (
+            <GrantAccessForm studentId={student.id} defaultEmail={student.contact_email ?? ''} />
+          )}
+        </div>
+
+        <div className="space-y-6 lg:col-span-2 xl:col-span-1">
           <StudentBilling studentId={student.id} studentName={student.full_name} />
           <ExtraChargesSection studentId={student.id} />
         </div>
+      </div>
 
-        <div className="space-y-6">
-          <MonthSessions studentId={student.id} weekOffset={weekOffset} />
+      {/* Calendario y plan fijo: a todo el ancho, que es donde más se aprovecha
+          (una grilla semanal apretada en una columna angosta se lee peor). */}
+      <div className="mt-6 space-y-6">
+        <MonthSessions studentId={student.id} weekOffset={weekOffset} />
 
-          <PlanEditorToggle>
-            <p className="mb-2 flex items-center gap-1.5 text-xs text-ink/50">
-              Cambiar plan fijo
-              <InfoHint text="Esto cambia el plan de base — afecta todas las semanas futuras, no solo una fecha puntual." />
-            </p>
-            <StudentScheduleForm studentId={student.id} classOptions={classOptions} />
-          </PlanEditorToggle>
-        </div>
+        <PlanEditorToggle>
+          <p className="mb-2 flex items-center gap-1.5 text-xs text-ink/50">
+            Cambiar plan fijo
+            <InfoHint text="Esto cambia el plan de base — afecta todas las semanas futuras, no solo una fecha puntual." />
+          </p>
+          <StudentScheduleForm studentId={student.id} classOptions={classOptions} />
+        </PlanEditorToggle>
       </div>
     </div>
   )
