@@ -12,10 +12,15 @@ type ClassOption = {
   startTime: string
   endTime: string
   capacity: number
+  pendingExtraCapacity: number
   room: string
   typeName: string
   enrolled: number
   enrollmentId: string | null
+}
+
+function maxCapacity(option: ClassOption) {
+  return option.capacity + option.pendingExtraCapacity
 }
 
 function TimeGrid({
@@ -66,6 +71,7 @@ function TimeGrid({
               const isChecked = opt.id in pending ? pending[opt.id] : originalChecked
               const isDirty = opt.id in pending && pending[opt.id] !== originalChecked
               const isFull = opt.enrolled >= opt.capacity && !originalChecked
+              const isAtMax = opt.enrolled >= maxCapacity(opt) && !originalChecked
 
               return (
                 <button
@@ -73,9 +79,11 @@ function TimeGrid({
                   type="button"
                   onClick={() => onToggle(opt, !isChecked)}
                   title={
-                    isFull
-                      ? `Completo (${opt.enrolled}/${opt.capacity}) — se puede anotar igual`
-                      : `${opt.enrolled}/${opt.capacity} ocupado`
+                    isAtMax
+                      ? `Al tope de cupo (${opt.enrolled}/${maxCapacity(opt)})`
+                      : isFull
+                        ? `Completo (${opt.enrolled}/${opt.capacity}) — se puede anotar igual`
+                        : `${opt.enrolled}/${opt.capacity} ocupado`
                   }
                   className={`h-8 rounded-md border text-[11px] transition ${
                     isChecked
@@ -126,10 +134,20 @@ export function StudentScheduleForm({
   function handleToggle(option: ClassOption, willBeChecked: boolean) {
     const originalChecked = Boolean(option.enrollmentId)
     const isFull = option.enrolled >= option.capacity && !originalChecked
+    const isAtMax = option.enrolled >= maxCapacity(option) && !originalChecked
+
+    if (willBeChecked && isAtMax) {
+      alert(`Esta clase ya llegó al tope de cupo (${option.enrolled}/${maxCapacity(option)}). No se puede anotar más gente.`)
+      return
+    }
 
     if (willBeChecked && isFull) {
+      const extraNote =
+        option.pendingExtraCapacity > 0
+          ? ` (tiene ${option.pendingExtraCapacity} lugar${option.pendingExtraCapacity === 1 ? '' : 'es'} reservado${option.pendingExtraCapacity === 1 ? '' : 's'} para cuando esté disponible, ej: camas nuevas)`
+          : ''
       const ok = confirm(
-        `Esta clase ya está completa (${option.enrolled}/${option.capacity}). ¿Marcarla igual, por encima del cupo?`
+        `Esta clase ya está completa (${option.enrolled}/${option.capacity})${extraNote}. ¿Marcarla igual, por encima del cupo?`
       )
       if (!ok) return
     }

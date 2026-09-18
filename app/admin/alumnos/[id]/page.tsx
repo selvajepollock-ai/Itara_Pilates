@@ -21,6 +21,7 @@ type ClassOption = {
   start_time: string
   end_time: string
   capacity: number
+  pending_extra_capacity: number
   room: string
   class_types: { name: string } | null
 }
@@ -45,7 +46,7 @@ export default async function EditarAlumnoPage({
       supabase.from('profiles').select('id, full_name, nickname, email, phone, birth_date, health_notes, contact_email, active').eq('id', id).single(),
       supabase
         .from('classes')
-        .select('id, day_of_week, start_time, end_time, capacity, room, class_types(name)')
+        .select('id, day_of_week, start_time, end_time, capacity, pending_extra_capacity, room, class_types(name)')
         .eq('active', true)
         .order('start_time'),
       supabase.from('enrollments').select('id, class_id').eq('student_id', id).eq('status', 'active'),
@@ -72,6 +73,7 @@ export default async function EditarAlumnoPage({
         startTime: c.start_time,
         endTime: c.end_time,
         capacity: c.capacity,
+        pendingExtraCapacity: c.pending_extra_capacity,
         room: c.room,
         typeName: c.class_types?.name ?? 'Clase',
         enrolled: countByClass.get(c.id) ?? 0,

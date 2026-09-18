@@ -174,6 +174,23 @@ export async function enrollStudent(classId: string, formData: FormData) {
   const student_id = String(formData.get('student_id') ?? '')
   if (!student_id) return { error: 'Elegí un alumno.' }
 
+  // Tope duro: capacidad real + cupo extra pendiente (ej: camas nuevas en camino).
+  // Deja reservar por encima de la capacidad actual para ese caso puntual, pero
+  // no de forma ilimitada -- así Vane/Rodri no anotan de más sin darse cuenta.
+  const [{ data: classItem }, { count: enrolledCount }] = await Promise.all([
+    supabase.from('classes').select('capacity, pending_extra_capacity').eq('id', classId).single(),
+    supabase
+      .from('enrollments')
+      .select('id', { count: 'exact', head: true })
+      .eq('class_id', classId)
+      .eq('status', 'active'),
+  ])
+
+  const maxCapacity = (classItem?.capacity ?? 0) + (classItem?.pending_extra_capacity ?? 0)
+  if ((enrolledCount ?? 0) >= maxCapacity) {
+    return { error: `Esta clase ya llegó al tope de cupo (${enrolledCount}/${maxCapacity}).` }
+  }
+
   const { error } = await supabase.from('enrollments').insert({
     student_id,
     class_id: classId,
