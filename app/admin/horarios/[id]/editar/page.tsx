@@ -10,7 +10,7 @@ export default async function EditarClasePage({ params }: { params: Promise<{ id
   const [{ data: classItem }, { data: classTypes }, { data: instructors }] = await Promise.all([
     supabase
       .from('classes')
-      .select('id, class_type_id, instructor_id, room, day_of_week, start_time, end_time, capacity')
+      .select('id, class_type_id, instructor_id, room, day_of_week, start_time, end_time, capacity, pending_extra_capacity')
       .eq('id', id)
       .single(),
     supabase.from('class_types').select('id, name').eq('active', true).order('name'),
@@ -37,6 +37,7 @@ export default async function EditarClasePage({ params }: { params: Promise<{ id
           start_time: classItem.start_time?.slice(0, 5),
           end_time: classItem.end_time?.slice(0, 5),
           capacity: classItem.capacity,
+          pending_extra_capacity: classItem.pending_extra_capacity,
         }}
         submitLabel="Guardar cambios"
         action={updateWithId}

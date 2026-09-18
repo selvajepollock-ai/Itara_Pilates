@@ -7,6 +7,7 @@ import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
 import { EnrollStudentForm } from './enroll-student-form'
 import { RemoveEnrollmentButton } from './remove-enrollment-button'
 import { CancelOccurrenceForm } from './cancel-occurrence-form'
+import { ActivateExtraCapacityButton } from './activate-extra-capacity-button'
 
 type ClassDetail = {
   id: string
@@ -15,6 +16,7 @@ type ClassDetail = {
   start_time: string
   end_time: string
   capacity: number
+  pending_extra_capacity: number
   class_types: { name: string } | null
   profiles: { full_name: string } | null
 }
@@ -56,7 +58,7 @@ export default async function ClaseDetailPage({
       supabase
         .from('classes')
         .select(
-          'id, room, day_of_week, start_time, end_time, capacity, class_types(name), profiles(full_name)'
+          'id, room, day_of_week, start_time, end_time, capacity, pending_extra_capacity, class_types(name), profiles(full_name)'
         )
         .eq('id', id)
         .single(),
@@ -146,6 +148,13 @@ export default async function ClaseDetailPage({
         {classItem.room} · {classItem.profiles?.full_name ?? 'Sin instructor'} · cupo{' '}
         {enrollments.length}/{classItem.capacity}
       </p>
+
+      {classItem.pending_extra_capacity > 0 && (
+        <ActivateExtraCapacityButton
+          classId={classItem.id}
+          pendingExtraCapacity={classItem.pending_extra_capacity}
+        />
+      )}
 
       <Link
         href={`/instructor/clases/${classItem.id}`}

@@ -41,6 +41,7 @@ export async function createClass(formData: FormData) {
   const start_time = String(formData.get('start_time') ?? '')
   const end_time = String(formData.get('end_time') ?? '')
   const capacity = Number(formData.get('capacity') ?? 8)
+  const pending_extra_capacity = Number(formData.get('pending_extra_capacity') ?? 0) || 0
 
   if (!class_type_id || !start_time || !end_time || Number.isNaN(day_of_week)) {
     return { error: 'Completá todos los campos obligatorios.' }
@@ -54,6 +55,7 @@ export async function createClass(formData: FormData) {
     start_time,
     end_time,
     capacity,
+    pending_extra_capacity,
   })
 
   if (error) return { error: error.message }
@@ -74,6 +76,7 @@ export async function updateClass(classId: string, formData: FormData) {
   const start_time = String(formData.get('start_time') ?? '')
   const end_time = String(formData.get('end_time') ?? '')
   const capacity = Number(formData.get('capacity') ?? 8)
+  const pending_extra_capacity = Number(formData.get('pending_extra_capacity') ?? 0) || 0
 
   const { error } = await supabase
     .from('classes')
@@ -85,6 +88,7 @@ export async function updateClass(classId: string, formData: FormData) {
       start_time,
       end_time,
       capacity,
+      pending_extra_capacity,
     })
     .eq('id', classId)
 
@@ -92,6 +96,37 @@ export async function updateClass(classId: string, formData: FormData) {
 
   revalidatePath('/admin/horarios')
   redirect('/admin/horarios')
+}
+
+/** Suma el cupo extra pendiente (ej: camas nuevas) a la capacidad real de la clase. */
+export async function activateExtraCapacity(classId: string) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
+
+  const { data: classItem } = await supabase
+    .from('classes')
+    .select('capacity, pending_extra_capacity')
+    .eq('id', classId)
+    .single()
+
+  if (!classItem || classItem.pending_extra_capacity <= 0) {
+    return { error: 'Esta clase no tiene cupo extra pendiente.' }
+  }
+
+  const { error } = await supabase
+    .from('classes')
+    .update({
+      capacity: classItem.capacity + classItem.pending_extra_capacity,
+      pending_extra_capacity: 0,
+    })
+    .eq('id', classId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath(`/admin/horarios/${classId}`)
+  revalidatePath('/admin/horarios')
+  return { success: true }
 }
 
 export async function deleteClass(classId: string) {

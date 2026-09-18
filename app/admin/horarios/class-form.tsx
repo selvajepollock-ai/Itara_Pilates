@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { DAY_NAMES } from '@/lib/day-names'
+import { InfoHint } from '@/app/components/info-hint'
 
 type ClassType = { id: string; name: string }
 type Instructor = { id: string; full_name: string }
@@ -14,6 +15,7 @@ type ClassFormValues = {
   start_time?: string
   end_time?: string
   capacity?: number
+  pending_extra_capacity?: number
 }
 
 export function ClassForm({
@@ -111,6 +113,20 @@ export function ClassForm({
             className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
           />
         </div>
+      </div>
+
+      <div>
+        <label className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-ink/60">
+          Cupo extra pendiente
+          <InfoHint text="Lugares que todavía no existen (ej: camas nuevas en camino) pero querés dejar cargados. No se pueden ocupar hasta que los actives desde la clase, una vez que estén disponibles de verdad." />
+        </label>
+        <input
+          type="number"
+          name="pending_extra_capacity"
+          min={0}
+          defaultValue={initialValues?.pending_extra_capacity ?? 0}
+          className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
