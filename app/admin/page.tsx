@@ -51,7 +51,14 @@ export default async function AdminDashboard() {
   const classesCount = classesData?.length ?? 0
 
   const graceDay = settings?.payment_due_day ?? 10
-  const overdueCount = (subscriptionsData ?? []).filter(
+  // Un alumno no debería tener más de una suscripción activa, pero por las dudas
+  // (datos viejos, carrera del formulario) contamos una sola vez por alumno.
+  const subsByStudent = new Map<string, NonNullable<typeof subscriptionsData>[number]>()
+  for (const s of subscriptionsData ?? []) {
+    const prev = subsByStudent.get(s.student_id)
+    if (!prev || s.end_date > prev.end_date) subsByStudent.set(s.student_id, s)
+  }
+  const overdueCount = [...subsByStudent.values()].filter(
     (s) => !s.comp && getPaymentStatus(s.end_date, undefined, graceDay) === 'vencido'
   ).length
 
@@ -95,7 +102,7 @@ export default async function AdminDashboard() {
   })
 
   // Datos para el widget de pago rápido
-  const subByStudent = new Map((subscriptionsData ?? []).map((s) => [s.student_id, s]))
+  const subByStudent = subsByStudent
   const dueDay = settings?.payment_due_day ?? 10
   const quickPaymentStudents = (studentsData ?? []).map((s) => {
     const sub = subByStudent.get(s.id)

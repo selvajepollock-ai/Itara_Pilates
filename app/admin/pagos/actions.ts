@@ -46,12 +46,20 @@ export async function assignPlan(studentId: string, formData: FormData) {
   if (!plan_id) return { error: 'Elegí un plan.' }
   if (!comp && !end_date) return { error: 'Elegí hasta cuándo está paga la cuota.' }
 
-  const { data: existing } = await auth.supabase
+  // Puede haber quedado más de una activa por una carrera vieja del formulario;
+  // nos quedamos con la más nueva y las demás las marcamos como reemplazadas.
+  const { data: existingRows } = await auth.supabase
     .from('subscriptions')
     .select('id')
     .eq('student_id', studentId)
     .eq('status', 'active')
-    .maybeSingle()
+    .order('created_at', { ascending: false })
+
+  const existing = existingRows?.[0] ?? null
+  const staleIds = (existingRows ?? []).slice(1).map((r) => r.id)
+  if (staleIds.length > 0) {
+    await auth.supabase.from('subscriptions').update({ status: 'cancelled' }).in('id', staleIds)
+  }
 
   const fields = { plan_id, end_date, comp, comp_reason: comp ? comp_reason : null }
 
