@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { List, ChevronLeft, ChevronRight, Plus, Settings2, Dumbbell } from 'lucide-react'
+import { List, ChevronLeft, ChevronRight, Plus, Settings2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { DAY_ORDER, formatTime } from '@/lib/day-names'
 import { WeekJumpInput } from './week-jump-input'
@@ -49,10 +49,9 @@ function toISODate(date: Date) {
 export default async function HorariosPage({
   searchParams,
 }: {
-  searchParams: Promise<{ week?: string; fuerza?: string }>
+  searchParams: Promise<{ week?: string }>
 }) {
-  const { week, fuerza: showFuerzaParam } = await searchParams
-  const showFuerza = showFuerzaParam === '1'
+  const { week } = await searchParams
   const supabase = await createClient()
 
   const today = new Date()
@@ -86,10 +85,7 @@ export default async function HorariosPage({
 
   const holidayByDate = new Map((holidaysData ?? []).map((h) => [h.date, h.label]))
 
-  const allClasses = (classesData ?? []) as unknown as ClassRow[]
-  const classes = showFuerza
-    ? allClasses
-    : allClasses.filter((c) => !c.class_types?.name?.toLowerCase().includes('fuerza'))
+  const classes = (classesData ?? []) as unknown as ClassRow[]
 
   const enrollments = (enrollmentsData ?? []) as { class_id: string }[]
   const countByClass = new Map<string, number>()
@@ -101,14 +97,7 @@ export default async function HorariosPage({
   const todayISO = toISODate(today)
   const monthLabel = baseMonday.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
 
-  const fuerzaCount = allClasses.filter((c) => c.class_types?.name?.toLowerCase().includes('fuerza')).length
-  const pendingExtraCapacityCount = allClasses.filter((c) => c.pending_extra_capacity > 0).length
-  const cols = showFuerza ? 14 : 7
-
-  const toggleFuerzaHref = `/admin/horarios?${new URLSearchParams({
-    ...(week ? { week } : {}),
-    fuerza: showFuerza ? '0' : '1',
-  }).toString()}`
+  const pendingExtraCapacityCount = classes.filter((c) => c.pending_extra_capacity > 0).length
 
   return (
     <div>
@@ -123,36 +112,15 @@ export default async function HorariosPage({
         )}
 
         <div className="flex flex-wrap items-center gap-2">
-          <WeekJumpInput defaultValue={toISODate(baseMonday)} showFuerza={showFuerza} />
-          <Link
-            href={`/admin/horarios?week=${toISODate(prevWeek)}${showFuerza ? '&fuerza=1' : ''}`}
-            className="icon-btn"
-          >
+          <WeekJumpInput defaultValue={toISODate(baseMonday)} />
+          <Link href={`/admin/horarios?week=${toISODate(prevWeek)}`} className="icon-btn">
             <ChevronLeft size={16} />
           </Link>
-          <Link
-            href={`/admin/horarios${showFuerza ? '?fuerza=1' : ''}`}
-            className="btn-secondary"
-          >
+          <Link href="/admin/horarios" className="btn-secondary">
             Hoy
           </Link>
-          <Link
-            href={`/admin/horarios?week=${toISODate(nextWeek)}${showFuerza ? '&fuerza=1' : ''}`}
-            className="icon-btn"
-          >
+          <Link href={`/admin/horarios?week=${toISODate(nextWeek)}`} className="icon-btn">
             <ChevronRight size={16} />
-          </Link>
-
-          <Link
-            href={toggleFuerzaHref}
-            className={`ml-1 flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition ${
-              showFuerza
-                ? 'border-clay bg-clay/10 text-clay'
-                : 'border-sand text-ink/60 hover:border-clay hover:text-clay'
-            }`}
-          >
-            <Dumbbell size={14} strokeWidth={2} />
-            {showFuerza ? 'Ocultar Fuerza' : `Fuerza (${fuerzaCount})`}
           </Link>
 
           <Link
@@ -195,8 +163,8 @@ export default async function HorariosPage({
         <div
           className="grid"
           style={{
-            minWidth: showFuerza ? '1120px' : '900px',
-            gridTemplateColumns: `56px repeat(${cols}, 1fr)`,
+            minWidth: '900px',
+            gridTemplateColumns: '56px repeat(7, 1fr)',
             gridTemplateRows: `56px repeat(${TOTAL_SLOTS}, ${ROW_HEIGHT}px)`,
           }}
         >
@@ -205,14 +173,13 @@ export default async function HorariosPage({
             const iso = toISODate(date)
             const isToday = iso === todayISO
             const isClosed = dow === 0 || dow === 6 || holidayByDate.has(iso)
-            const span = showFuerza ? 2 : 1
             return (
               <div
                 key={dow}
                 className={`flex flex-col items-center justify-center gap-0.5 border-b pb-2 ${
                   isToday ? 'border-moss' : 'border-sand'
                 }`}
-                style={{ gridColumn: `${i * span + 2} / span ${span}`, gridRow: 1 }}
+                style={{ gridColumn: i + 2, gridRow: 1 }}
               >
                 <span className="text-[10px] uppercase tracking-wide text-ink/40">
                   {date.toLocaleDateString('es-AR', { weekday: 'short' })}
@@ -238,28 +205,24 @@ export default async function HorariosPage({
             </div>
           ))}
           {hourMarks.map((hour) =>
-            weekDates.map(({ dow }, i) => {
-              const span = showFuerza ? 2 : 1
-              return (
-                <div
-                  key={`line-${hour}-${dow}`}
-                  className="border-t border-sand/40"
-                  style={{ gridColumn: `${i * span + 2} / span ${span}`, gridRow: minutesToSlot(hour * 60) + 2 }}
-                />
-              )
-            })
+            weekDates.map(({ dow }, i) => (
+              <div
+                key={`line-${hour}-${dow}`}
+                className="border-t border-sand/40"
+                style={{ gridColumn: i + 2, gridRow: minutesToSlot(hour * 60) + 2 }}
+              />
+            ))
           )}
 
           {weekDates.map(({ dow, date }, i) => {
             const iso = toISODate(date)
             const holidayLabel = holidayByDate.get(iso)
             if (dow !== 0 && dow !== 6 && !holidayLabel) return null
-            const span = showFuerza ? 2 : 1
             return (
               <div
                 key={`closed-${dow}`}
                 className="flex flex-col items-center justify-center gap-0.5 px-2 text-center text-xs text-ink/30"
-                style={{ gridColumn: `${i * span + 2} / span ${span}`, gridRow: `2 / ${TOTAL_SLOTS + 2}` }}
+                style={{ gridColumn: i + 2, gridRow: `2 / ${TOTAL_SLOTS + 2}` }}
               >
                 <span>Cerrado</span>
                 {holidayLabel && <span className="text-[10px] italic text-clay/70">{holidayLabel}</span>}
@@ -277,40 +240,13 @@ export default async function HorariosPage({
             const enrolled = countByClass.get(c.id) ?? 0
             const isFull = enrolled >= c.capacity
             const isEmpty = enrolled === 0
-            const isFuerza = c.class_types?.name?.toLowerCase().includes('fuerza')
-            const span = showFuerza ? 2 : 1
-            const col = showFuerza ? dayIndex * 2 + (isFuerza ? 3 : 2) : dayIndex + 2
+            const col = dayIndex + 2
 
             const reformerClasses = isFull
               ? 'border-clay/40 bg-clay text-white shadow-sm'
               : isEmpty
                 ? 'border-moss/30 bg-moss/50 text-white shadow-sm'
                 : 'border-moss/20 bg-moss text-white shadow-sm'
-
-            if (isFuerza) {
-              const fuerzaClasses = isFull
-                ? 'border-clay/40 bg-clay text-white'
-                : isEmpty
-                  ? 'border-moss/30 bg-moss/50 text-white'
-                  : 'border-moss/20 bg-moss text-white'
-              return (
-                <Link
-                  key={c.id}
-                  href={`/admin/horarios/${c.id}${week ? `?week=${week}` : ''}`}
-                  className={`relative m-0.5 overflow-hidden rounded-lg border-2 border-t-4 border-t-clay/60 px-1.5 py-1 text-[10px] leading-tight transition hover:-translate-y-px hover:shadow-md ${fuerzaClasses}`}
-                  style={{
-                    gridColumn: col,
-                    gridRow: `${startSlot + 2} / ${endSlot + 2}`,
-                  }}
-                >
-                  <p className="truncate font-display italic text-white">Fuerza</p>
-                  <p className="truncate text-white/80">{formatTime(c.start_time)}</p>
-                  <p className="truncate font-semibold text-white">
-                    {isFull ? 'COMPLETO' : `${c.capacity - enrolled} libre${c.capacity - enrolled === 1 ? '' : 's'}`}
-                  </p>
-                </Link>
-              )
-            }
 
             return (
               <Link
@@ -341,12 +277,6 @@ export default async function HorariosPage({
             <span className="h-2.5 w-2.5 rounded bg-clay" />
             Completo
           </span>
-          {showFuerza && (
-            <span className="flex items-center gap-1.5 text-ink/60">
-              <span className="h-2.5 w-2.5 rounded border-t-2 border-t-clay/60 bg-sand" />
-              Fuerza (misma lógica de color, con franja superior)
-            </span>
-          )}
         </div>
       </div>
     </div>

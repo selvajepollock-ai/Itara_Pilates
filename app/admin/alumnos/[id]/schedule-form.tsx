@@ -2,7 +2,6 @@
 
 import { Fragment, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronDown } from 'lucide-react'
 import { enrollStudent, removeEnrollment } from '../../horarios/actions'
 import { DAY_NAMES, formatTime } from '@/lib/day-names'
 
@@ -112,17 +111,12 @@ export function StudentScheduleForm({
   classOptions: ClassOption[]
 }) {
   const router = useRouter()
-  const [showFuerza, setShowFuerza] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   // pending[optionId] = true (debería quedar tildado) | false (debería quedar destildado)
   const [pending, setPending] = useState<Record<string, boolean>>({})
 
-  const reformer = classOptions.filter((o) => !o.typeName.toLowerCase().includes('fuerza'))
-  const fuerza = classOptions.filter((o) => o.typeName.toLowerCase().includes('fuerza'))
-  const fuerzaAssignedCount = fuerza.filter((o) =>
-    o.id in pending ? pending[o.id] : Boolean(o.enrollmentId)
-  ).length
+  const reformer = classOptions
 
   const changedCount = useMemo(() => {
     return classOptions.filter((o) => {
@@ -217,34 +211,6 @@ export function StudentScheduleForm({
           <TimeGrid options={reformer} pending={pending} onToggle={handleToggle} />
         </div>
       </div>
-
-      {fuerza.length > 0 && (
-        <div className="border-t border-sand pt-4">
-          <button
-            type="button"
-            onClick={() => setShowFuerza((v) => !v)}
-            className="flex w-full items-center justify-between text-left"
-          >
-            <span className="text-xs font-medium uppercase tracking-wide text-ink/50">
-              + Agregar clases de Fuerza (opcional)
-              {fuerzaAssignedCount > 0 && (
-                <span className="ml-2 rounded-full bg-clay/10 px-2 py-0.5 text-clay">
-                  {fuerzaAssignedCount} asignada{fuerzaAssignedCount > 1 ? 's' : ''}
-                </span>
-              )}
-            </span>
-            <ChevronDown
-              size={16}
-              className={`text-ink/40 transition ${showFuerza ? 'rotate-180' : ''}`}
-            />
-          </button>
-          {showFuerza && (
-            <div className="mt-3">
-              <TimeGrid options={fuerza} pending={pending} onToggle={handleToggle} />
-            </div>
-          )}
-        </div>
-      )}
 
       {changedCount > 0 && (
         <div className="flex items-center gap-3 border-t border-sand pt-4">

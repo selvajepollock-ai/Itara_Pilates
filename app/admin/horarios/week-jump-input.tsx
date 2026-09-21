@@ -1,6 +1,6 @@
 'use client'
 
-export function WeekJumpInput({ defaultValue, showFuerza }: { defaultValue: string; showFuerza: boolean }) {
+export function WeekJumpInput({ defaultValue }: { defaultValue: string }) {
   return (
     <form action="/admin/horarios" method="GET" className="flex items-center">
       <input
@@ -10,7 +10,6 @@ export function WeekJumpInput({ defaultValue, showFuerza }: { defaultValue: stri
         onChange={(e) => e.currentTarget.form?.requestSubmit()}
         className="rounded-full border border-sand px-3 py-1.5 text-sm text-ink/70 outline-none focus:border-moss"
       />
-      {showFuerza && <input type="hidden" name="fuerza" value="1" />}
     </form>
   )
 }
