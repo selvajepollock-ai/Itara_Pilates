@@ -7,8 +7,13 @@ import { StudentsList } from './students-list'
 import { SignupRequestsSection } from './signup-requests-section'
 export default async function AlumnosPage() {
   const supabase = await createClient()
-  const [{ data: students }, { data: subscriptions }, { data: settings }, { data: signupRequests }] =
-    await Promise.all([
+  const [
+    { data: students },
+    { data: subscriptions },
+    { data: settings },
+    { data: signupRequests },
+    { data: enrollments },
+  ] = await Promise.all([
       supabase
         .from('profiles')
         .select('id, full_name, nickname, email, contact_email, phone, active, created_at')
@@ -21,15 +26,33 @@ export default async function AlumnosPage() {
         .select('id, first_name, last_name, email, phone, created_at')
         .eq('status', 'pending')
         .order('created_at', { ascending: false }),
+      supabase
+        .from('enrollments')
+        .select('student_id, classes(instructor_id, profiles(full_name))')
+        .eq('status', 'active'),
     ])
   const subByStudent = new Map((subscriptions ?? []).map((s) => [s.student_id, s]))
   const reminderDays = settings?.payment_reminder_days_before ?? 3
   const graceDay = settings?.payment_due_day ?? 10
+
+  // Un alumno tiene un solo profesor (regla de negocio): tomamos el primero que
+  // aparezca entre sus clases activas.
+  const instructorByStudent = new Map<string, { id: string; name: string }>()
+  for (const e of enrollments ?? []) {
+    if (instructorByStudent.has(e.student_id)) continue
+    const cls = e.classes as unknown as { instructor_id: string | null; profiles: { full_name: string } | null } | null
+    if (cls?.instructor_id) {
+      instructorByStudent.set(e.student_id, { id: cls.instructor_id, name: cls.profiles?.full_name ?? 'Profesor' })
+    }
+  }
+
   const studentsWithStatus = (students ?? []).map((s) => ({
     ...s,
     hasAccess: !isNoAccessEmail(s.email),
     displayEmail: isNoAccessEmail(s.email) ? s.contact_email ?? null : s.email,
     status: subscriptionStatus(subByStudent.get(s.id) ?? null, reminderDays, graceDay),
+    instructorId: instructorByStudent.get(s.id)?.id ?? null,
+    instructorName: instructorByStudent.get(s.id)?.name ?? null,
   }))
   return (
     <div>

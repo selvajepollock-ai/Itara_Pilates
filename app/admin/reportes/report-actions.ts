@@ -61,7 +61,7 @@ export async function buildPeriodReport({
       .gte('paid_at', fromTs)
       .lte('paid_at', toTs),
     s.from('classes').select('id, day_of_week, start_time, room, capacity, class_types(name)').eq('active', true),
-    s.from('enrollments').select('class_id').eq('status', 'active'),
+    s.from('enrollments').select('student_id, class_id, classes(instructor_id, profiles(full_name))').eq('status', 'active'),
     s
       .from('session_cancellations')
       .select('student_id')
@@ -176,6 +176,79 @@ export async function buildPeriodReport({
     .map(([id, count]) => ({ Alumno: nameById.get(id) ?? '', 'Avisos tardíos + faltas': count }))
     .sort((a, b) => (b['Avisos tardíos + faltas'] as number) - (a['Avisos tardíos + faltas'] as number))
 
+  // ── Comisiones por profesor ──────────────────────────────────────────────
+  // Un alumno pertenece a un solo profesor (regla de negocio). La comision es
+  // el 60% del valor asignado (cuota del plan) + cargos extra del periodo,
+  // solo para instructores que no son admin/dueño (a Rodri no se le calcula).
+  const instructorByStudent = new Map<string, { id: string; name: string }>()
+  for (const e of enrollmentsData ?? []) {
+    if (instructorByStudent.has(e.student_id)) continue
+    const cls = e.classes as unknown as { instructor_id: string | null; profiles: { full_name: string } | null } | null
+    if (cls?.instructor_id) {
+      instructorByStudent.set(e.student_id, { id: cls.instructor_id, name: cls.profiles?.full_name ?? 'Profesor' })
+    }
+  }
+
+  const extraByStudent = new Map<string, number>()
+  for (const c of dropInData ?? []) {
+    extraByStudent.set(c.student_id as string, (extraByStudent.get(c.student_id as string) ?? 0) + Number(c.amount))
+  }
+
+  const nonAdminInstructorIds = new Set(
+    (profilesData ?? [])
+      .filter((p) => (p.roles as string[] | null)?.includes('instructor') && !(p.roles as string[] | null)?.includes('admin'))
+      .map((p) => p.id as string)
+  )
+
+  const COMMISSION_RATE = 0.6
+  const comisionesRows: Row[] = []
+  const totalsByInstructor = new Map<string, { name: string; value: number; commission: number }>()
+
+  for (const id of studentIds) {
+    const instructor = instructorByStudent.get(id)
+    if (!instructor || !nonAdminInstructorIds.has(instructor.id)) continue
+
+    const sub = subByStudent.get(id) ?? null
+    if (sub?.comp) continue // bonificado: no genera comision
+
+    const plan = (sub?.plans as unknown as PlanRef) ?? null
+    const planValue = plan?.price ?? 0
+    const extraValue = extraByStudent.get(id) ?? 0
+    const totalValue = planValue + extraValue
+    if (totalValue <= 0) continue
+
+    const commission = Math.round(totalValue * COMMISSION_RATE * 100) / 100
+
+    comisionesRows.push({
+      Profesor: instructor.name,
+      Alumno: nameById.get(id) ?? '',
+      Plan: plan?.name ?? '',
+      'Valor plan': planValue,
+      'Cargos extra (período)': extraValue,
+      'Valor total': totalValue,
+      'Comisión (60%)': commission,
+    })
+
+    const acc = totalsByInstructor.get(instructor.id) ?? { name: instructor.name, value: 0, commission: 0 }
+    acc.value += totalValue
+    acc.commission += commission
+    totalsByInstructor.set(instructor.id, acc)
+  }
+
+  comisionesRows.sort((a, b) => String(a.Profesor).localeCompare(String(b.Profesor)) || String(a.Alumno).localeCompare(String(b.Alumno)))
+
+  for (const [, acc] of totalsByInstructor) {
+    comisionesRows.push({
+      Profesor: acc.name,
+      Alumno: '',
+      Plan: '',
+      'Valor plan': '',
+      'Cargos extra (período)': '',
+      'Valor total': Math.round(acc.value * 100) / 100,
+      'Comisión (60%)': `TOTAL ${acc.name}: ${Math.round(acc.commission * 100) / 100}`,
+    })
+  }
+
   // ── Resumen ───────────────────────────────────────────────────────────────
   const resumenRows: Row[] = [
     { Concepto: 'Período', Valor: `${from} a ${to}` },
@@ -199,6 +272,7 @@ export async function buildPeriodReport({
       { name: 'Deudores', rows: deudoresRows },
       { name: 'Ocupacion', rows: ocupacionRows },
       { name: 'Ausentismo', rows: ausentismoRows },
+      { name: 'Comisiones', rows: comisionesRows },
     ],
   }
 }
