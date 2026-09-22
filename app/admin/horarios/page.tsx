@@ -68,7 +68,16 @@ export default async function HorariosPage({
   const nextWeek = new Date(baseMonday)
   nextWeek.setDate(nextWeek.getDate() + 7)
 
-  const [{ data: classesData }, { data: enrollmentsData }, { data: holidaysData }] = await Promise.all([
+  const weekStartISO = toISODate(weekDates[0].date)
+  const weekEndISO = toISODate(weekDates[6].date)
+
+  const [
+    { data: classesData },
+    { data: enrollmentsData },
+    { data: holidaysData },
+    { data: weekCancellations },
+    { data: weekRecoveries },
+  ] = await Promise.all([
     supabase
       .from('classes')
       .select(
@@ -81,7 +90,29 @@ export default async function HorariosPage({
       .select('date, label')
       .gte('date', toISODate(weekDates[0].date))
       .lte('date', toISODate(weekDates[6].date)),
+    supabase
+      .from('session_cancellations')
+      .select('class_id, session_date')
+      .gte('session_date', weekStartISO)
+      .lte('session_date', weekEndISO),
+    supabase
+      .from('attendance')
+      .select('class_id, session_date')
+      .not('recovery_credit_id', 'is', null)
+      .gte('session_date', weekStartISO)
+      .lte('session_date', weekEndISO),
   ])
+
+  // Lugares ocupados de esa semana puntual: fijos - los que cancelaron + los que recuperan.
+  const adjustByClassDate = new Map<string, number>()
+  for (const c of weekCancellations ?? []) {
+    const k = `${c.class_id}|${c.session_date}`
+    adjustByClassDate.set(k, (adjustByClassDate.get(k) ?? 0) - 1)
+  }
+  for (const r of weekRecoveries ?? []) {
+    const k = `${r.class_id}|${r.session_date}`
+    adjustByClassDate.set(k, (adjustByClassDate.get(k) ?? 0) + 1)
+  }
 
   const holidayByDate = new Map((holidaysData ?? []).map((h) => [h.date, h.label]))
 
@@ -237,7 +268,9 @@ export default async function HorariosPage({
             if (dateForThisClass && holidayByDate.has(toISODate(dateForThisClass))) return null
             const startSlot = minutesToSlot(timeToMinutes(c.start_time))
             const endSlot = minutesToSlot(timeToMinutes(c.end_time))
-            const enrolled = countByClass.get(c.id) ?? 0
+            const enrolled =
+              (countByClass.get(c.id) ?? 0) +
+              (adjustByClassDate.get(`${c.id}|${toISODate(weekDates[dayIndex].date)}`) ?? 0)
             const isFull = enrolled >= c.capacity
             const isEmpty = enrolled === 0
             const col = dayIndex + 2

@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
 import { EnrollStudentForm } from './enroll-student-form'
 import { RemoveEnrollmentButton } from './remove-enrollment-button'
+import { getMonday, dateForDayOfWeek, toISODate } from '@/lib/sessions'
 import { CancelOccurrenceForm } from './cancel-occurrence-form'
 import { ActivateExtraCapacityButton } from './activate-extra-capacity-button'
 
@@ -84,6 +85,35 @@ export default async function ClaseDetailPage({
 
   const classItem = classData as unknown as ClassDetail
   const enrollments = (enrollmentsData ?? []) as unknown as EnrollmentRow[]
+
+  // La fecha concreta que se está mirando: la de esta clase en la semana elegida.
+  const baseMonday = week ? getMonday(new Date(week)) : getMonday(new Date())
+  const sessionDateObj = dateForDayOfWeek(baseMonday, classItem.day_of_week)
+  const sessionDate = toISODate(sessionDateObj)
+  const prevWeek = new Date(baseMonday)
+  prevWeek.setDate(prevWeek.getDate() - 7)
+  const nextWeek = new Date(baseMonday)
+  nextWeek.setDate(nextWeek.getDate() + 7)
+
+  const [{ data: sessionCancellations }, { data: recoveringRows }] = await Promise.all([
+    supabase
+      .from('session_cancellations')
+      .select('enrollment_id')
+      .eq('class_id', id)
+      .eq('session_date', sessionDate),
+    supabase
+      .from('attendance')
+      .select('student_id, profiles(full_name)')
+      .eq('class_id', id)
+      .eq('session_date', sessionDate)
+      .not('recovery_credit_id', 'is', null),
+  ])
+  const cancelledEnrollmentIds = new Set((sessionCancellations ?? []).map((c) => c.enrollment_id))
+  const recovering = (recoveringRows ?? []) as unknown as {
+    student_id: string
+    profiles: { full_name: string } | null
+  }[]
+  const attendingCount = enrollments.length - cancelledEnrollmentIds.size + recovering.length
   const allStudents = (studentsData ?? []) as { id: string; full_name: string }[]
 
   const enrolledIds = new Set(enrollments.map((e) => e.student_id))
@@ -146,8 +176,20 @@ export default async function ClaseDetailPage({
       </div>
       <p className="mt-1 text-sm text-ink/60">
         {classItem.room} · {classItem.profiles?.full_name ?? 'Sin instructor'} · cupo{' '}
-        {enrollments.length}/{classItem.capacity}
+        {attendingCount}/{classItem.capacity}
       </p>
+
+      <div className="mt-3 flex items-center gap-2">
+        <Link href={`/admin/horarios/${id}?week=${toISODate(prevWeek)}`} className="icon-btn-sm">
+          <ChevronLeft size={15} />
+        </Link>
+        <span className="text-sm text-ink/60">
+          Viendo el {sessionDateObj.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
+        </span>
+        <Link href={`/admin/horarios/${id}?week=${toISODate(nextWeek)}`} className="icon-btn-sm">
+          <ChevronRight size={15} />
+        </Link>
+      </div>
 
       {classItem.pending_extra_capacity > 0 && (
         <ActivateExtraCapacityButton
@@ -176,6 +218,11 @@ export default async function ClaseDetailPage({
             >
               <p className="text-sm text-ink group-hover:text-moss group-hover:underline">
                 {e.profiles?.full_name}
+                {cancelledEnrollmentIds.has(e.id) && (
+                  <span className="ml-2 rounded-full bg-clay/10 px-2 py-0.5 text-[11px] font-medium text-clay">
+                    Canceló esta fecha
+                  </span>
+                )}
               </p>
               <p className="text-xs text-ink/50">{e.profiles?.email}</p>
             </Link>
@@ -186,7 +233,22 @@ export default async function ClaseDetailPage({
             />
           </li>
         ))}
-        {enrollments.length === 0 && (
+        {recovering.map((r) => (
+          <li key={`rec-${r.student_id}`} className="flex items-center justify-between px-5 py-3">
+            <Link
+              href={`/admin/alumnos/${r.student_id}?back=${encodeURIComponent(backToClass)}`}
+              className="group -my-1 flex-1 rounded-lg py-1 transition hover:bg-linen/60"
+            >
+              <p className="text-sm text-ink group-hover:text-moss group-hover:underline">
+                {r.profiles?.full_name}
+                <span className="ml-2 rounded-full bg-moss/10 px-2 py-0.5 text-[11px] font-medium text-moss-dark">
+                  Recupera esta fecha
+                </span>
+              </p>
+            </Link>
+          </li>
+        ))}
+        {enrollments.length === 0 && recovering.length === 0 && (
           <li className="px-5 py-8 text-center text-sm text-ink/40">
             Todavía no hay alumnos anotados a esta clase.
           </li>
