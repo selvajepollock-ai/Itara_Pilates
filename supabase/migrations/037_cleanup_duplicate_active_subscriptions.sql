@@ -16,3 +16,4 @@ with ranked as (
 update public.subscriptions
 set status = 'cancelled'
 where id in (select id from ranked where rn > 1);
+t

@@ -34,7 +34,7 @@ export default async function AdminRecuperarPage({
 
   const { data: credit } = await supabase
     .from('recovery_credits')
-    .select('id, student_id, status, class_type_id, week_start, week_end, class_types(name)')
+    .select('id, student_id, status, class_type_id, instructor_id, week_start, week_end, class_types(name), profiles!recovery_credits_instructor_id_fkey(full_name)')
     .eq('id', creditId)
     .maybeSingle()
 
@@ -57,13 +57,16 @@ export default async function AdminRecuperarPage({
     )
   }
 
-  const { data: classesData } = await supabase
+  let classesQuery = supabase
     .from('classes')
     .select('id, day_of_week, start_time, end_time, capacity, room, profiles(full_name)')
     .eq('class_type_id', credit.class_type_id)
     .eq('active', true)
+  if (credit.instructor_id) classesQuery = classesQuery.eq('instructor_id', credit.instructor_id)
+  const { data: classesData } = await classesQuery
 
   const classes = (classesData ?? []) as unknown as ClassOption[]
+  const instructorName = (credit.profiles as unknown as { full_name: string } | null)?.full_name ?? null
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -124,6 +127,14 @@ export default async function AdminRecuperarPage({
 
       <p className="eyebrow mt-4">Recuperar clase</p>
       <h1 className="page-title mt-2">{typeName}</h1>
+      {instructorName && (
+        <p className="mt-1 text-xs text-ink/50">Solo horarios de {instructorName} (mismo profesor de la clase original).</p>
+      )}
+      {optionsByDay.every((d) => d.options.length === 0) && (
+        <p className="mt-4 rounded-2xl border border-dashed border-sand bg-white/50 px-5 py-6 text-center text-sm text-ink/50">
+          Ese profesor no tiene horarios libres esta semana para recuperar.
+        </p>
+      )}
 
       <div className="mt-6 space-y-3">
         {optionsByDay.map((d, i) => (

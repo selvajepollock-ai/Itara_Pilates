@@ -178,7 +178,7 @@ export async function enrollStudent(classId: string, formData: FormData) {
   // Deja reservar por encima de la capacidad actual para ese caso puntual, pero
   // no de forma ilimitada -- así Vane/Rodri no anotan de más sin darse cuenta.
   const [{ data: classItem }, { count: enrolledCount }] = await Promise.all([
-    supabase.from('classes').select('capacity, pending_extra_capacity').eq('id', classId).single(),
+    supabase.from('classes').select('capacity, pending_extra_capacity, instructor_id').eq('id', classId).single(),
     supabase
       .from('enrollments')
       .select('id', { count: 'exact', head: true })
@@ -189,6 +189,27 @@ export async function enrollStudent(classId: string, formData: FormData) {
   const maxCapacity = (classItem?.capacity ?? 0) + (classItem?.pending_extra_capacity ?? 0)
   if ((enrolledCount ?? 0) >= maxCapacity) {
     return { error: `Esta clase ya llegó al tope de cupo (${enrolledCount}/${maxCapacity}).` }
+  }
+
+  // Un alumno solo puede tener clases con un mismo profesor (define de quién es "su"
+  // alumno para el reparto de comisiones). Si ya tiene clases con otro profesor, no
+  // se lo puede anotar acá sin sacarlo antes de esas.
+  if (classItem?.instructor_id) {
+    const { data: otherEnrollments } = await supabase
+      .from('enrollments')
+      .select('classes(instructor_id, profiles(full_name))')
+      .eq('student_id', student_id)
+      .eq('status', 'active')
+
+    const otherInstructor = (otherEnrollments ?? [])
+      .map((e) => e.classes as unknown as { instructor_id: string | null; profiles: { full_name: string } | null } | null)
+      .find((c) => c?.instructor_id && c.instructor_id !== classItem.instructor_id)
+
+    if (otherInstructor) {
+      return {
+        error: `Este alumno ya tiene clases con ${otherInstructor.profiles?.full_name ?? 'otro profesor'}. Un alumno solo puede tener clases con un mismo profesor.`,
+      }
+    }
   }
 
   const { error } = await supabase.from('enrollments').insert({

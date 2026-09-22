@@ -53,7 +53,7 @@ export async function cancelSession({
 
   const { data: classInfo } = await supabase
     .from('classes')
-    .select('start_time, class_type_id')
+    .select('start_time, class_type_id, instructor_id')
     .eq('id', classId)
     .maybeSingle()
 
@@ -112,6 +112,7 @@ export async function cancelSession({
         student_id: studentId,
         source_cancellation_id: cancellation.id,
         class_type_id: classInfo.class_type_id,
+        instructor_id: classInfo.instructor_id,
         week_start: toISODate(monday),
         week_end: toISODate(sunday),
         status: 'available',
@@ -154,7 +155,7 @@ export async function bookRecovery({
 
   const { data: credit } = await supabase
     .from('recovery_credits')
-    .select('id, status, class_type_id, week_end, student_id')
+    .select('id, status, class_type_id, instructor_id, week_end, student_id')
     .eq('id', creditId)
     .maybeSingle()
 
@@ -170,13 +171,16 @@ export async function bookRecovery({
 
   const { data: targetClass } = await supabase
     .from('classes')
-    .select('id, class_type_id, capacity')
+    .select('id, class_type_id, instructor_id, capacity')
     .eq('id', classId)
     .maybeSingle()
 
   if (!targetClass) return { error: 'La clase no existe.' }
   if (targetClass.class_type_id !== credit.class_type_id) {
     return { error: 'Esa clase es de otro tipo, no coincide con lo que tenés para recuperar.' }
+  }
+  if (credit.instructor_id && targetClass.instructor_id !== credit.instructor_id) {
+    return { error: 'Solo podés recuperar con el mismo profesor que te dio la clase original.' }
   }
 
   const admin = createAdminClient()
@@ -484,7 +488,7 @@ export async function cancelClassOccurrence({
 
   const { data: classInfo } = await supabase
     .from('classes')
-    .select('id, class_type_id, class_types(name)')
+    .select('id, class_type_id, instructor_id, class_types(name)')
     .eq('id', classId)
     .maybeSingle()
 
@@ -541,6 +545,7 @@ export async function cancelClassOccurrence({
         student_id: e.student_id,
         source_cancellation_id: sc.id,
         class_type_id: classInfo.class_type_id,
+        instructor_id: classInfo.instructor_id,
         week_start: toISODate(monday),
         week_end: toISODate(sunday),
         status: 'available',
