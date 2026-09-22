@@ -75,7 +75,6 @@ export function EditInstructorForm({ instructor }: { instructor: Instructor }) {
         <input
           type="email"
           name="email"
-          required
           defaultValue={currentEmail}
           placeholder="para poder recuperar la contraseña"
           className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-moss focus:bg-white"

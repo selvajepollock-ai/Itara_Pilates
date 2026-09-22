@@ -5,6 +5,7 @@ import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { siteUrlForHost } from '@/lib/site-url'
+import { generateNoAccessEmail } from '@/lib/auth-username'
 
 export async function deleteTeamMember(personId: string) {
   const supabase = await createClient()
@@ -135,11 +136,13 @@ export async function createInstructor(formData: FormData) {
   const phone = String(formData.get('phone') ?? '').trim()
   const alsoAdmin = formData.get('also_admin') === 'on'
   const inviteByEmail = formData.get('invite_by_email') === 'on'
+  // Sin mail: se crea sin acceso a la app, para darle el alta después (como con alumnos).
+  const noAccess = !email
 
-  if (!fullName || !username || !email) {
-    return { error: 'Nombre, usuario y email son obligatorios.' }
+  if (!fullName || !username) {
+    return { error: 'Nombre y usuario son obligatorios.' }
   }
-  if (!inviteByEmail && !password) {
+  if (!noAccess && !inviteByEmail && !password) {
     return { error: 'Ingresá una contraseña, o tildá "Enviar invitación por mail".' }
   }
   if (password && password.length < 6) {
@@ -170,7 +173,21 @@ export async function createInstructor(formData: FormData) {
   const roles = alsoAdmin ? ['instructor', 'admin'] : ['instructor']
   let newUserId: string | undefined
 
-  if (inviteByEmail) {
+  if (noAccess) {
+    const { data: created, error: createError } = await admin.auth.admin.createUser({
+      email: generateNoAccessEmail(fullName),
+      password: crypto.randomUUID(),
+      email_confirm: true,
+      user_metadata: { full_name: fullName, username, roles },
+    })
+    if (createError) {
+      if (createError.message.toLowerCase().includes('already registered')) {
+        return { error: 'Ese usuario ya existe.' }
+      }
+      return { error: createError.message }
+    }
+    newUserId = created.user?.id
+  } else if (inviteByEmail) {
     const headersList = await headers()
     const siteUrl = siteUrlForHost(headersList.get('host'))
 

@@ -3,6 +3,9 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { headers } from 'next/headers'
+import { siteUrlForHost } from '@/lib/site-url'
+import { isNoAccessEmail } from '@/lib/auth-username'
 
 async function assertAdmin() {
   const supabase = await createClient()
@@ -29,16 +32,19 @@ export async function updateInstructor(instructorId: string, formData: FormData)
   const birthDateRaw = String(formData.get('birth_date') ?? '').trim()
   const alsoAdmin = formData.get('also_admin') === 'on'
 
-  if (!fullName || !username || !email) return { error: 'Nombre, usuario y email son obligatorios.' }
+  if (!fullName || !username) return { error: 'Nombre y usuario son obligatorios.' }
   if (/\s/.test(username)) return { error: 'El usuario no puede tener espacios.' }
 
   const admin = createAdminClient()
 
-  const { error: authError } = await admin.auth.admin.updateUserById(instructorId, {
-    email,
-    email_confirm: true,
-  })
-  if (authError) return { error: authError.message }
+  // Sin mail cargado: no toca el acceso, se da después con "Dar acceso".
+  if (email) {
+    const { error: authError } = await admin.auth.admin.updateUserById(instructorId, {
+      email,
+      email_confirm: true,
+    })
+    if (authError) return { error: authError.message }
+  }
 
   const roles = alsoAdmin ? ['instructor', 'admin'] : ['instructor']
 
@@ -47,7 +53,7 @@ export async function updateInstructor(instructorId: string, formData: FormData)
     .update({
       full_name: fullName,
       username,
-      email,
+      ...(email ? { email } : {}),
       phone: phone || null,
       birth_date: birthDateRaw || null,
       roles,
@@ -58,6 +64,36 @@ export async function updateInstructor(instructorId: string, formData: FormData)
 
   revalidatePath('/admin/instructores')
   revalidatePath(`/admin/instructores/${instructorId}`)
+  return { success: true }
+}
+
+export async function grantInstructorAccess(instructorId: string, formData: FormData) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+
+  const email = String(formData.get('email') ?? '').trim().toLowerCase()
+  if (!email) return { error: 'Ingresá un email.' }
+
+  const admin = createAdminClient()
+  const { error: authError } = await admin.auth.admin.updateUserById(instructorId, {
+    email,
+    email_confirm: true,
+  })
+  if (authError) return { error: authError.message }
+
+  await admin.from('profiles').update({ email }).eq('id', instructorId)
+
+  const headersList = await headers()
+  const siteUrl = siteUrlForHost(headersList.get('host'))
+
+  const supabase = await createClient()
+  const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${siteUrl}/auth/confirm?next=/auth/set-password`,
+  })
+  if (resetError) return { error: resetError.message }
+
+  revalidatePath(`/admin/instructores/${instructorId}`)
+  revalidatePath('/admin/instructores')
   return { success: true }
 }
 
