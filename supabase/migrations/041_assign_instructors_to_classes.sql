@@ -3,10 +3,9 @@
 -- Rodri: lunes a jueves 8-10hs y 16-20hs, viernes 8-9hs y 17-19hs
 -- Fabi: lunes, martes y jueves 15hs
 --
--- Reemplazar los uuid de mas abajo por los ids reales antes de correr.
 -- Rodrigo Schulz: b423ad06-07b3-4937-9d9d-6eced4637fda
 -- Yanina Cervino: fb798a2c-28a9-4f81-bed2-d4a0a8759601
--- Fabi: <ID_DE_FABI>  (crearla primero en Equipo > Nuevo instructor)
+-- Fabi: e76fccce-2637-482d-8d42-978c74251af5
 
 update public.classes
 set instructor_id = 'fb798a2c-28a9-4f81-bed2-d4a0a8759601' -- Yani
@@ -25,7 +24,7 @@ where active = true
   );
 
 update public.classes
-set instructor_id = '<ID_DE_FABI>' -- Fabi
+set instructor_id = 'e76fccce-2637-482d-8d42-978c74251af5' -- Fabi
 where active = true
   and day_of_week in (1,2,4)
   and start_time = '15:00:00';
