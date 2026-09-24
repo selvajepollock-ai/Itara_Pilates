@@ -114,6 +114,10 @@ export default async function ClaseDetailPage({
     profiles: { full_name: string } | null
   }[]
   const attendingCount = enrollments.length - cancelledEnrollmentIds.size + recovering.length
+  const cancelledNames = enrollments
+    .filter((e) => cancelledEnrollmentIds.has(e.id))
+    .map((e) => ({ id: e.id, name: e.profiles?.full_name ?? 'Alumno' }))
+  const freedSpots = Math.max(cancelledNames.length - recovering.length, 0)
   const allStudents = (studentsData ?? []) as { id: string; full_name: string }[]
 
   const enrolledIds = new Set(enrollments.map((e) => e.student_id))
@@ -175,21 +179,9 @@ export default async function ClaseDetailPage({
         )}
       </div>
       <p className="mt-1 text-sm text-ink/60">
-        {classItem.room} · {classItem.profiles?.full_name ?? 'Sin instructor'} · cupo{' '}
-        {attendingCount}/{classItem.capacity}
+        {classItem.room} · {classItem.profiles?.full_name ?? 'Sin instructor'} · cupo fijo{' '}
+        {enrollments.length}/{classItem.capacity}
       </p>
-
-      <div className="mt-3 flex items-center gap-2">
-        <Link href={`/admin/horarios/${id}?week=${toISODate(prevWeek)}`} className="icon-btn-sm">
-          <ChevronLeft size={15} />
-        </Link>
-        <span className="text-sm text-ink/60">
-          Viendo el {sessionDateObj.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
-        </span>
-        <Link href={`/admin/horarios/${id}?week=${toISODate(nextWeek)}`} className="icon-btn-sm">
-          <ChevronRight size={15} />
-        </Link>
-      </div>
 
       {classItem.pending_extra_capacity > 0 && (
         <ActivateExtraCapacityButton
@@ -206,9 +198,15 @@ export default async function ClaseDetailPage({
       </Link>
 
       <h2 className="mt-8 section-title flex items-center gap-1.5">
-        Alumnos anotados
-        <InfoHint text={'"Sacar del horario fijo" quita al alumno de esta clase en todas las semanas. Para una falta de un día puntual, entrá a la ficha del alumno y cancelá esa fecha.'} />
+        Horario fijo · {enrollments.length}/{classItem.capacity}
+        <InfoHint text={'Los alumnos que vienen todas las semanas a esta clase. "Sacar del horario fijo" los quita de todas las semanas. Para una falta de un día puntual, mirá "Esta fecha" más abajo o la ficha del alumno.'} />
       </h2>
+      <p className="mt-1 text-xs text-ink/50">
+        {Math.max(classItem.capacity - enrollments.length, 0)} lugar
+        {classItem.capacity - enrollments.length === 1 ? '' : 'es'} fijo
+        {classItem.capacity - enrollments.length === 1 ? '' : 's'} libre
+        {classItem.capacity - enrollments.length === 1 ? '' : 's'} para anotar de forma permanente.
+      </p>
       <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
         {enrollments.map((e) => (
           <li key={e.id} className="flex items-center justify-between px-5 py-3">
@@ -218,11 +216,6 @@ export default async function ClaseDetailPage({
             >
               <p className="text-sm text-ink group-hover:text-moss group-hover:underline">
                 {e.profiles?.full_name}
-                {cancelledEnrollmentIds.has(e.id) && (
-                  <span className="ml-2 rounded-full bg-clay/10 px-2 py-0.5 text-[11px] font-medium text-clay">
-                    Canceló esta fecha
-                  </span>
-                )}
               </p>
               <p className="text-xs text-ink/50">{e.profiles?.email}</p>
             </Link>
@@ -233,30 +226,84 @@ export default async function ClaseDetailPage({
             />
           </li>
         ))}
-        {recovering.map((r) => (
-          <li key={`rec-${r.student_id}`} className="flex items-center justify-between px-5 py-3">
-            <Link
-              href={`/admin/alumnos/${r.student_id}?back=${encodeURIComponent(backToClass)}`}
-              className="group -my-1 flex-1 rounded-lg py-1 transition hover:bg-linen/60"
-            >
-              <p className="text-sm text-ink group-hover:text-moss group-hover:underline">
-                {r.profiles?.full_name}
-                <span className="ml-2 rounded-full bg-moss/10 px-2 py-0.5 text-[11px] font-medium text-moss-dark">
-                  Recupera esta fecha
-                </span>
-              </p>
-            </Link>
-          </li>
-        ))}
-        {enrollments.length === 0 && recovering.length === 0 && (
+        {enrollments.length === 0 && (
           <li className="px-5 py-8 text-center text-sm text-ink/40">
-            Todavía no hay alumnos anotados a esta clase.
+            Todavía no hay alumnos con horario fijo en esta clase.
           </li>
         )}
       </ul>
 
-      <h2 className="mt-8 section-title">Anotar alumno</h2>
+      <h2 className="mt-8 section-title">Anotar alumno en el horario fijo</h2>
       <EnrollStudentForm classId={classItem.id} students={availableStudents} />
+
+      {/* Lo puntual de UNA fecha: separado del horario fijo, para no mezclar lugares
+          permanentes con los que se liberan solo ese día. */}
+      <div className="mt-10 rounded-2xl border border-amber-300/60 bg-amber-50/50 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="section-title">Esta fecha</h2>
+          <div className="flex items-center gap-2">
+            <Link href={`/admin/horarios/${id}?week=${toISODate(prevWeek)}`} className="icon-btn-sm">
+              <ChevronLeft size={15} />
+            </Link>
+            <span className="text-sm text-ink/70 first-letter:uppercase">
+              {sessionDateObj.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </span>
+            <Link href={`/admin/horarios/${id}?week=${toISODate(nextWeek)}`} className="icon-btn-sm">
+              <ChevronRight size={15} />
+            </Link>
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <span className="rounded-full bg-amber-300 px-3 py-1 text-sm font-bold text-ink">+{freedSpots}</span>
+          <span className="text-sm text-ink/70">
+            lugar{freedSpots === 1 ? '' : 'es'} liberado{freedSpots === 1 ? '' : 's'} por cancelación. Sirve
+            para recuperar clases, no para anotar de forma permanente.
+          </span>
+        </div>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-ink/50">
+              Cancelaron ({cancelledNames.length})
+            </p>
+            {cancelledNames.length === 0 ? (
+              <p className="mt-1 text-sm text-ink/40">Nadie avisó que no viene.</p>
+            ) : (
+              <ul className="mt-1 space-y-0.5 text-sm text-ink/70">
+                {cancelledNames.map((n) => (
+                  <li key={n.id}>{n.name}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-ink/50">
+              Recuperan ({recovering.length})
+            </p>
+            {recovering.length === 0 ? (
+              <p className="mt-1 text-sm text-ink/40">Nadie viene a recuperar.</p>
+            ) : (
+              <ul className="mt-1 space-y-0.5 text-sm text-ink/70">
+                {recovering.map((r) => (
+                  <li key={r.student_id}>
+                    <Link
+                      href={`/admin/alumnos/${r.student_id}?back=${encodeURIComponent(backToClass)}`}
+                      className="hover:text-moss hover:underline"
+                    >
+                      {r.profiles?.full_name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+
+        <p className="mt-4 text-xs text-ink/50">
+          Vienen ese día: {attendingCount} de {classItem.capacity}.
+        </p>
+      </div>
 
       <CancelOccurrenceForm classId={classItem.id} cancelledDates={cancelledData ?? []} />
     </div>

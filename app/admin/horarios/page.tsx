@@ -77,6 +77,7 @@ export default async function HorariosPage({
     { data: holidaysData },
     { data: weekCancellations },
     { data: weekRecoveries },
+    { data: wholeCancellations },
   ] = await Promise.all([
     supabase
       .from('classes')
@@ -101,18 +102,26 @@ export default async function HorariosPage({
       .not('recovery_credit_id', 'is', null)
       .gte('session_date', weekStartISO)
       .lte('session_date', weekEndISO),
+    supabase
+      .from('class_cancellations')
+      .select('class_id, session_date')
+      .gte('session_date', weekStartISO)
+      .lte('session_date', weekEndISO),
   ])
 
-  // Lugares ocupados de esa semana puntual: fijos - los que cancelaron + los que recuperan.
-  const adjustByClassDate = new Map<string, number>()
+  // Lugares liberados de UNA fecha puntual: los que avisaron que no vienen menos los que
+  // ya vinieron a recuperar ahi. Es aparte del cupo fijo (que no cambia de semana a semana).
+  const cancelledCount = new Map<string, number>()
   for (const c of weekCancellations ?? []) {
     const k = `${c.class_id}|${c.session_date}`
-    adjustByClassDate.set(k, (adjustByClassDate.get(k) ?? 0) - 1)
+    cancelledCount.set(k, (cancelledCount.get(k) ?? 0) + 1)
   }
+  const recoveringCount = new Map<string, number>()
   for (const r of weekRecoveries ?? []) {
     const k = `${r.class_id}|${r.session_date}`
-    adjustByClassDate.set(k, (adjustByClassDate.get(k) ?? 0) + 1)
+    recoveringCount.set(k, (recoveringCount.get(k) ?? 0) + 1)
   }
+  const wholeCancelled = new Set((wholeCancellations ?? []).map((c) => `${c.class_id}|${c.session_date}`))
 
   const holidayByDate = new Map((holidaysData ?? []).map((h) => [h.date, h.label]))
 
@@ -122,6 +131,20 @@ export default async function HorariosPage({
   const countByClass = new Map<string, number>()
   for (const e of enrollments) {
     countByClass.set(e.class_id, (countByClass.get(e.class_id) ?? 0) + 1)
+  }
+
+  // Resumen de la semana: lugares fijos libres (para anotar) y liberados por cancelaciones.
+  let totalFixedFree = 0
+  let totalFreed = 0
+  for (const c of classes) {
+    const dayIndex = DAY_ORDER.indexOf(c.day_of_week)
+    if (dayIndex === -1) continue
+    const iso = toISODate(weekDates[dayIndex].date)
+    if (holidayByDate.has(iso)) continue
+    const key = `${c.id}|${iso}`
+    if (wholeCancelled.has(key)) continue
+    totalFixedFree += Math.max(c.capacity - (countByClass.get(c.id) ?? 0), 0)
+    totalFreed += Math.max((cancelledCount.get(key) ?? 0) - (recoveringCount.get(key) ?? 0), 0)
   }
 
   const hourMarks = Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => START_HOUR + i)
@@ -190,7 +213,17 @@ export default async function HorariosPage({
         </div>
       </div>
 
-      <div className="mt-8 overflow-x-auto rounded-2xl border border-sand bg-white p-4">
+      <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ink/60">
+        <span>
+          <span className="font-display text-xl italic text-ink">{totalFixedFree}</span> lugares fijos libres
+        </span>
+        <span className="flex items-center gap-2">
+          <span className="rounded-full bg-amber-300 px-2 py-0.5 text-xs font-bold text-ink">+{totalFreed}</span>
+          liberados por cancelaciones esta semana
+        </span>
+      </div>
+
+      <div className="mt-3 overflow-x-auto rounded-2xl border border-sand bg-white p-4">
         <div
           className="grid"
           style={{
@@ -268,34 +301,49 @@ export default async function HorariosPage({
             if (dateForThisClass && holidayByDate.has(toISODate(dateForThisClass))) return null
             const startSlot = minutesToSlot(timeToMinutes(c.start_time))
             const endSlot = minutesToSlot(timeToMinutes(c.end_time))
-            const enrolled =
-              (countByClass.get(c.id) ?? 0) +
-              (adjustByClassDate.get(`${c.id}|${toISODate(weekDates[dayIndex].date)}`) ?? 0)
-            const isFull = enrolled >= c.capacity
+            const dateKey = `${c.id}|${toISODate(weekDates[dayIndex].date)}`
+            const enrolled = countByClass.get(c.id) ?? 0 // solo horario fijo
+            const fixedFree = Math.max(c.capacity - enrolled, 0)
+            const isFull = fixedFree === 0
             const isEmpty = enrolled === 0
+            const isCancelled = wholeCancelled.has(dateKey)
+            const freed = isCancelled ? 0 : Math.max((cancelledCount.get(dateKey) ?? 0) - (recoveringCount.get(dateKey) ?? 0), 0)
             const col = dayIndex + 2
 
-            const reformerClasses = isFull
-              ? 'border-clay/40 bg-clay text-white shadow-sm'
-              : isEmpty
-                ? 'border-moss/30 bg-moss/50 text-white shadow-sm'
-                : 'border-moss/20 bg-moss text-white shadow-sm'
+            const reformerClasses = isCancelled
+              ? 'border-sand bg-sand/60 text-ink/40'
+              : isFull
+                ? 'border-clay/40 bg-clay text-white shadow-sm'
+                : isEmpty
+                  ? 'border-moss/30 bg-moss/50 text-white shadow-sm'
+                  : 'border-moss/20 bg-moss text-white shadow-sm'
 
             return (
               <Link
                 key={c.id}
                 href={`/admin/horarios/${c.id}${week ? `?week=${week}` : ''}`}
+                title={
+                  isCancelled
+                    ? 'Clase cancelada ese día'
+                    : `${fixedFree} lugar${fixedFree === 1 ? '' : 'es'} fijo${fixedFree === 1 ? '' : 's'} libre${fixedFree === 1 ? '' : 's'}` +
+                      (freed > 0 ? ` · +${freed} liberado${freed === 1 ? '' : 's'} por cancelación (solo para recuperar)` : '')
+                }
                 className={`relative m-0.5 overflow-hidden rounded-lg border px-1.5 py-1 text-[10px] leading-tight transition hover:-translate-y-px hover:shadow-md ${reformerClasses}`}
                 style={{
                   gridColumn: col,
                   gridRow: `${startSlot + 2} / ${endSlot + 2}`,
                 }}
               >
-                <p className="truncate font-display italic text-white">{c.class_types?.name}</p>
-                <p className="truncate text-white/80">{formatTime(c.start_time)}</p>
-                <p className="truncate font-semibold text-white">
-                  {isFull ? 'COMPLETO' : `${c.capacity - enrolled} libre${c.capacity - enrolled === 1 ? '' : 's'}`}
+                <p className={`truncate font-display italic ${isCancelled ? 'line-through' : 'text-white'}`}>{c.class_types?.name}</p>
+                <p className={`truncate ${isCancelled ? '' : 'text-white/80'}`}>{formatTime(c.start_time)}</p>
+                <p className={`truncate font-semibold ${isCancelled ? '' : 'text-white'}`}>
+                  {isCancelled ? 'CANCELADA' : isFull ? 'COMPLETO' : `${fixedFree} libre${fixedFree === 1 ? '' : 's'}`}
                 </p>
+                {freed > 0 && (
+                  <span className="absolute right-1 top-1 rounded-full bg-amber-300 px-1.5 py-px text-[10px] font-bold text-ink shadow">
+                    +{freed}
+                  </span>
+                )}
               </Link>
             )
           })}
@@ -304,11 +352,19 @@ export default async function HorariosPage({
         <div className="mt-4 flex flex-wrap gap-4 border-t border-sand pt-4 text-xs">
           <span className="flex items-center gap-1.5 text-ink/60">
             <span className="h-2.5 w-2.5 rounded bg-moss" />
-            Con lugar
+            Con lugar fijo (se puede anotar a alguien de forma permanente)
           </span>
           <span className="flex items-center gap-1.5 text-ink/60">
             <span className="h-2.5 w-2.5 rounded bg-clay" />
             Completo
+          </span>
+          <span className="flex items-center gap-1.5 text-ink/60">
+            <span className="rounded-full bg-amber-300 px-1.5 text-[10px] font-bold text-ink">+N</span>
+            Liberados por cancelación esa fecha (solo para recuperar, no para anotar fijo)
+          </span>
+          <span className="flex items-center gap-1.5 text-ink/60">
+            <span className="h-2.5 w-2.5 rounded bg-sand" />
+            Clase cancelada
           </span>
         </div>
       </div>
