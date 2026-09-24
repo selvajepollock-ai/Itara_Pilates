@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { InfoHint } from '@/app/components/info-hint'
 import { createClient } from '@/lib/supabase/server'
@@ -141,48 +141,66 @@ export default async function ClaseDetailPage({
 
   const backToClass = `/admin/horarios/${id}${weekQS}`
 
+  const fixedFree = Math.max(classItem.capacity - enrollments.length, 0)
+  const dayLabel = sessionDateObj.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
+
+  // Quiénes vienen ESE día: recuperan (resaltados), fijos, y los que avisaron que no.
+  type DayRow = { key: string; studentId: string; name: string; kind: 'recupera' | 'fijo' | 'cancelo' }
+  const dayRows: DayRow[] = [
+    ...recovering.map((r): DayRow => ({ key: `r-${r.student_id}`, studentId: r.student_id, name: r.profiles?.full_name ?? 'Alumno', kind: 'recupera' })),
+    ...enrollments
+      .filter((e) => !cancelledEnrollmentIds.has(e.id))
+      .map((e): DayRow => ({ key: `f-${e.id}`, studentId: e.student_id, name: e.profiles?.full_name ?? 'Alumno', kind: 'fijo' })),
+    ...enrollments
+      .filter((e) => cancelledEnrollmentIds.has(e.id))
+      .map((e): DayRow => ({ key: `c-${e.id}`, studentId: e.student_id, name: e.profiles?.full_name ?? 'Alumno', kind: 'cancelo' })),
+  ]
+
+  const stats: { label: string; value: string; tone: string; hint: string }[] = [
+    { label: 'Vienen ese día', value: `${attendingCount}/${classItem.capacity}`, tone: attendingCount > classItem.capacity ? 'text-clay' : 'text-ink', hint: 'fijos + recuperan − cancelaron' },
+    { label: 'Lugares fijos libres', value: String(fixedFree), tone: fixedFree === 0 ? 'text-clay' : 'text-moss-dark', hint: 'para anotar de forma permanente' },
+    { label: 'Liberados', value: `+${freedSpots}`, tone: 'text-amber-600', hint: 'por cancelación, solo para recuperar' },
+    { label: 'Cancelaron', value: String(cancelledNames.length), tone: 'text-ink', hint: 'esa fecha' },
+    { label: 'Recuperan', value: String(recovering.length), tone: 'text-sky-600', hint: 'vienen a recuperar' },
+  ]
+
   return (
     <div className="max-w-6xl">
       <Link href={`/admin/horarios${weekQS}`} className="text-sm text-moss hover:text-moss-dark">
         ← Volver a horarios
       </Link>
 
-      <div className="mt-4 flex items-baseline gap-3">
-        <h1 className="font-display text-3xl italic text-ink">{classItem.class_types?.name}</h1>
-        <span className="text-sm text-ink/50">
-          {DAY_NAMES[classItem.day_of_week]} · {formatTime(classItem.start_time)}–
-          {formatTime(classItem.end_time)}
-        </span>
-      </div>
-
-      <div className="mt-3 flex max-w-xl items-center justify-between gap-2 rounded-xl border border-sand bg-white px-2 py-1.5">
-        {prevClass ? (
-          <Link
-            href={`/admin/horarios/${prevClass.id}${weekQS}`}
-            className="flex min-w-0 items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-ink/60 transition hover:bg-linen hover:text-moss"
-          >
-            <ChevronLeft size={14} className="shrink-0" />
-            <span className="truncate">{neighbourLabel(prevClass)}</span>
+      {/* Encabezado: qué clase es + acciones + moverse entre clases */}
+      <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <div className="flex flex-wrap items-baseline gap-x-3">
+            <h1 className="font-display text-3xl italic text-ink">{classItem.class_types?.name}</h1>
+            <span className="text-sm text-ink/50">
+              {DAY_NAMES[classItem.day_of_week]} · {formatTime(classItem.start_time)}–{formatTime(classItem.end_time)}
+            </span>
+          </div>
+          <p className="mt-1 text-sm text-ink/60">
+            {classItem.room} · Prof. {classItem.profiles?.full_name ?? 'sin asignar'}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {prevClass ? (
+            <Link href={`/admin/horarios/${prevClass.id}${weekQS}`} className="btn-secondary-sm" title={neighbourLabel(prevClass)}>
+              <ChevronLeft size={14} />
+              Clase anterior
+            </Link>
+          ) : null}
+          {nextClass ? (
+            <Link href={`/admin/horarios/${nextClass.id}${weekQS}`} className="btn-secondary-sm" title={neighbourLabel(nextClass)}>
+              Clase siguiente
+              <ChevronRight size={14} />
+            </Link>
+          ) : null}
+          <Link href={`/instructor/clases/${classItem.id}`} className="btn-secondary-sm">
+            Agenda y asistencia
           </Link>
-        ) : (
-          <span className="px-2 py-1 text-xs text-ink/25">— sin anterior</span>
-        )}
-        {nextClass ? (
-          <Link
-            href={`/admin/horarios/${nextClass.id}${weekQS}`}
-            className="flex min-w-0 items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-ink/60 transition hover:bg-linen hover:text-moss"
-          >
-            <span className="truncate">{neighbourLabel(nextClass)}</span>
-            <ChevronRight size={14} className="shrink-0" />
-          </Link>
-        ) : (
-          <span className="px-2 py-1 text-xs text-ink/25">sin siguiente —</span>
-        )}
+        </div>
       </div>
-      <p className="mt-1 text-sm text-ink/60">
-        {classItem.room} · {classItem.profiles?.full_name ?? 'Sin instructor'} · cupo fijo{' '}
-        {enrollments.length}/{classItem.capacity}
-      </p>
 
       {classItem.pending_extra_capacity > 0 && (
         <ActivateExtraCapacityButton
@@ -191,132 +209,136 @@ export default async function ClaseDetailPage({
         />
       )}
 
-      <Link
-        href={`/instructor/clases/${classItem.id}`}
-        className="mt-4 inline-block text-sm text-moss hover:text-moss-dark"
-      >
-        Ver agenda y asistencia →
-      </Link>
-
-      <div className="mt-8 grid items-start gap-8 lg:grid-cols-2">
-      <div>
-      <h2 className="section-title flex items-center gap-1.5">
-        Horario fijo · {enrollments.length}/{classItem.capacity}
-        <InfoHint text={'Los alumnos que vienen todas las semanas a esta clase. "Sacar del horario fijo" los quita de todas las semanas. Para una falta de un día puntual, mirá "Esta fecha" más abajo o la ficha del alumno.'} />
-      </h2>
-      <p className="mt-1 text-xs text-ink/50">
-        {Math.max(classItem.capacity - enrollments.length, 0)} lugar
-        {classItem.capacity - enrollments.length === 1 ? '' : 'es'} fijo
-        {classItem.capacity - enrollments.length === 1 ? '' : 's'} libre
-        {classItem.capacity - enrollments.length === 1 ? '' : 's'} para anotar de forma permanente.
-      </p>
-      <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
-        {enrollments.map((e) => (
-          <li key={e.id} className="flex items-center justify-between px-5 py-3">
-            <Link
-              href={`/admin/alumnos/${e.student_id}?back=${encodeURIComponent(backToClass)}`}
-              className="group -my-1 flex-1 rounded-lg py-1 transition hover:bg-linen/60"
-            >
-              <p className="text-sm text-ink group-hover:text-moss group-hover:underline">
-                {e.profiles?.full_name}
-                {cancelledEnrollmentIds.has(e.id) && (
-                  <span className="ml-2 rounded-full bg-clay/10 px-2 py-0.5 text-[11px] font-medium text-clay">
-                    Canceló esta fecha
-                  </span>
-                )}
-              </p>
-              {e.profiles?.email && !isNoAccessEmail(e.profiles.email) && <p className="text-xs text-ink/50">{e.profiles.email}</p>}
-            </Link>
-            <RemoveEnrollmentButton
-              enrollmentId={e.id}
-              classId={classItem.id}
-              studentName={e.profiles?.full_name}
-            />
-          </li>
-        ))}
-        {enrollments.length === 0 && (
-          <li className="px-5 py-8 text-center text-sm text-ink/40">
-            Todavía no hay alumnos con horario fijo en esta clase.
-          </li>
-        )}
-      </ul>
-
-      <h2 className="mt-8 section-title">Anotar alumno en el horario fijo</h2>
-      <EnrollStudentForm classId={classItem.id} students={availableStudents} />
-      </div>
-
-      {/* Lo puntual de UNA fecha: separado del horario fijo, para no mezclar lugares
-          permanentes con los que se liberan solo ese día. */}
-      <div>
-      <div className="rounded-2xl border border-amber-300/60 bg-amber-50/50 p-5">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="section-title">Esta fecha</h2>
+      {/* Fecha que se está mirando + indicadores del día, todos en una misma línea */}
+      <div className="mt-6 rounded-2xl border border-sand bg-white p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Link href={`/admin/horarios/${id}?week=${toISODate(prevWeek)}`} className="icon-btn-sm">
+            <Link href={`/admin/horarios/${id}?week=${toISODate(prevWeek)}`} className="icon-btn-sm" aria-label="Semana anterior">
               <ChevronLeft size={15} />
             </Link>
-            <span className="text-sm text-ink/70 first-letter:uppercase">
-              {sessionDateObj.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
-            </span>
-            <Link href={`/admin/horarios/${id}?week=${toISODate(nextWeek)}`} className="icon-btn-sm">
+            <p className="font-display text-xl italic text-ink first-letter:uppercase">{dayLabel}</p>
+            <Link href={`/admin/horarios/${id}?week=${toISODate(nextWeek)}`} className="icon-btn-sm" aria-label="Semana siguiente">
               <ChevronRight size={15} />
             </Link>
           </div>
+          <p className="text-xs text-ink/40">Los números de abajo son de esta fecha, salvo el cupo fijo.</p>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <span className="rounded-full bg-amber-300 px-3 py-1 text-sm font-bold text-ink">+{freedSpots}</span>
-          <span className="text-sm text-ink/70">
-            lugar{freedSpots === 1 ? '' : 'es'} liberado{freedSpots === 1 ? '' : 's'} por cancelación. Sirve
-            para recuperar clases, no para anotar de forma permanente.
-          </span>
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {stats.map((s) => (
+            <div key={s.label} className="rounded-xl border border-sand/70 bg-linen/40 px-4 py-3">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-ink/45">{s.label}</p>
+              <p className={`mt-1 font-display text-2xl italic ${s.tone}`}>{s.value}</p>
+              <p className="mt-0.5 text-[11px] text-ink/40">{s.hint}</p>
+            </div>
+          ))}
         </div>
-
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-ink/50">
-              Cancelaron ({cancelledNames.length})
-            </p>
-            {cancelledNames.length === 0 ? (
-              <p className="mt-1 text-sm text-ink/40">Nadie avisó que no viene.</p>
-            ) : (
-              <ul className="mt-1 space-y-0.5 text-sm text-ink/70">
-                {cancelledNames.map((n) => (
-                  <li key={n.id}>{n.name}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-ink/50">
-              Recuperan ({recovering.length})
-            </p>
-            {recovering.length === 0 ? (
-              <p className="mt-1 text-sm text-ink/40">Nadie viene a recuperar.</p>
-            ) : (
-              <ul className="mt-1 space-y-0.5 text-sm text-ink/70">
-                {recovering.map((r) => (
-                  <li key={r.student_id}>
-                    <Link
-                      href={`/admin/alumnos/${r.student_id}?back=${encodeURIComponent(backToClass)}`}
-                      className="hover:text-moss hover:underline"
-                    >
-                      {r.profiles?.full_name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-
-        <p className="mt-4 text-xs text-ink/50">
-          Vienen ese día: {attendingCount} de {classItem.capacity}.
-        </p>
       </div>
 
-      <CancelOccurrenceForm classId={classItem.id} cancelledDates={cancelledData ?? []} />
-      </div>
+      {/* Dos tarjetas parejas: administrar el horario fijo | ver y gestionar la fecha */}
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
+        <section className="rounded-2xl border border-sand bg-white p-5">
+          <h2 className="section-title flex items-center gap-1.5">
+            Horario fijo
+            <InfoHint text={'Los alumnos que vienen todas las semanas a esta clase. "Sacar del horario fijo" los quita de todas las semanas. Para una falta de un día puntual, usá la tarjeta "Esta fecha".'} />
+          </h2>
+          <p className="mt-0.5 text-xs text-ink/50">
+            {enrollments.length} de {classItem.capacity} lugares · {fixedFree} libre{fixedFree === 1 ? '' : 's'}
+          </p>
+
+          <ul className="mt-4 divide-y divide-sand/60 rounded-xl border border-sand/70">
+            {enrollments.map((e) => (
+              <li key={e.id} className="flex items-center justify-between gap-3 px-4 py-2.5">
+                <Link
+                  href={`/admin/alumnos/${e.student_id}?back=${encodeURIComponent(backToClass)}`}
+                  className="group min-w-0 flex-1"
+                >
+                  <p className="truncate text-sm text-ink group-hover:text-moss group-hover:underline">
+                    {e.profiles?.full_name}
+                    {cancelledEnrollmentIds.has(e.id) && (
+                      <span className="ml-2 rounded-full bg-clay/10 px-2 py-0.5 text-[11px] font-medium text-clay">
+                        Canceló esta fecha
+                      </span>
+                    )}
+                  </p>
+                  {e.profiles?.email && !isNoAccessEmail(e.profiles.email) && (
+                    <p className="truncate text-xs text-ink/45">{e.profiles.email}</p>
+                  )}
+                </Link>
+                <RemoveEnrollmentButton
+                  enrollmentId={e.id}
+                  classId={classItem.id}
+                  studentName={e.profiles?.full_name}
+                />
+              </li>
+            ))}
+            {enrollments.length === 0 && (
+              <li className="px-4 py-8 text-center text-sm text-ink/40">
+                Todavía no hay alumnos con horario fijo en esta clase.
+              </li>
+            )}
+          </ul>
+
+          <div className="mt-5 border-t border-sand pt-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-ink/50">Anotar alumno en el horario fijo</p>
+            <div className="mt-2">
+              <EnrollStudentForm classId={classItem.id} students={availableStudents} />
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-sand bg-white p-5">
+          <h2 className="section-title">Esta fecha</h2>
+          <p className="mt-0.5 text-xs text-ink/50 first-letter:uppercase">{dayLabel} · quiénes vienen ese día</p>
+
+          <ul className="mt-4 divide-y divide-sand/60 rounded-xl border border-sand/70">
+            {dayRows.map((r) => (
+              <li
+                key={r.key}
+                className={`flex items-center justify-between gap-3 px-4 py-2.5 ${r.kind === 'recupera' ? 'bg-sky-50' : ''}`}
+              >
+                <Link
+                  href={`/admin/alumnos/${r.studentId}?back=${encodeURIComponent(backToClass)}`}
+                  className={`min-w-0 flex-1 truncate text-sm hover:text-moss hover:underline ${
+                    r.kind === 'cancelo' ? 'text-ink/40 line-through' : 'text-ink'
+                  }`}
+                >
+                  {r.name}
+                </Link>
+                {r.kind === 'recupera' && (
+                  <span className="flex shrink-0 items-center gap-1 rounded-full bg-sky-500 px-2.5 py-0.5 text-[11px] font-semibold text-white">
+                    <RotateCcw size={10} strokeWidth={3} />
+                    Recupera
+                  </span>
+                )}
+                {r.kind === 'fijo' && <span className="shrink-0 text-[11px] text-ink/40">Fijo</span>}
+                {r.kind === 'cancelo' && (
+                  <span className="shrink-0 rounded-full bg-clay/10 px-2.5 py-0.5 text-[11px] font-medium text-clay">
+                    Canceló
+                  </span>
+                )}
+              </li>
+            ))}
+            {dayRows.length === 0 && (
+              <li className="px-4 py-8 text-center text-sm text-ink/40">No hay nadie anotado para esta fecha.</li>
+            )}
+          </ul>
+
+          {freedSpots > 0 && (
+            <p className="mt-3 flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-xs text-ink/70">
+              <span className="rounded-full bg-amber-300 px-2 py-0.5 font-bold text-ink">+{freedSpots}</span>
+              lugar{freedSpots === 1 ? '' : 'es'} liberado{freedSpots === 1 ? '' : 's'} por cancelación: sirve para
+              recuperar, no para anotar fijo.
+            </p>
+          )}
+
+          <CancelOccurrenceForm
+            key={sessionDate}
+            classId={classItem.id}
+            cancelledDates={cancelledData ?? []}
+            defaultDate={sessionDate}
+          />
+        </section>
       </div>
     </div>
   )

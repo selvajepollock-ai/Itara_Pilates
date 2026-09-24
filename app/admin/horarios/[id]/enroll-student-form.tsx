@@ -28,7 +28,7 @@ export function EnrollStudentForm({
 
   if (students.length === 0) {
     return (
-      <p className="mt-3 rounded-2xl border border-dashed border-sand bg-white/50 px-5 py-6 text-center text-sm text-ink/50">
+      <p className="rounded-xl border border-dashed border-sand bg-white/50 px-5 py-4 text-center text-sm text-ink/50">
         Todos los alumnos ya están anotados, o todavía no hay alumnos cargados.
       </p>
     )
@@ -38,7 +38,7 @@ export function EnrollStudentForm({
     <form
       ref={formRef}
       action={handleSubmit}
-      className="mt-3 flex flex-wrap items-end gap-3 rounded-2xl border border-sand bg-white p-5"
+      className="flex flex-wrap items-end gap-3"
     >
       <div className="flex-1">
         <label className="text-xs font-medium uppercase tracking-wide text-ink/60">Alumno</label>

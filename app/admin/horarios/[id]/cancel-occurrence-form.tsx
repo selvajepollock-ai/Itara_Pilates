@@ -14,15 +14,17 @@ type CancelledDate = {
 export function CancelOccurrenceForm({
   classId,
   cancelledDates,
+  defaultDate = "",
 }: {
   classId: string
   cancelledDates: CancelledDate[]
+  defaultDate?: string
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [date, setDate] = useState('')
+  const [date, setDate] = useState(defaultDate)
   const [reason, setReason] = useState('')
 
   function handleCancel(e: React.FormEvent) {
@@ -60,7 +62,7 @@ export function CancelOccurrenceForm({
   }
 
   return (
-    <div className="mt-6 rounded-2xl border border-sand bg-white p-5">
+    <div className="mt-6 border-t border-sand pt-5">
       <h2 className="section-title flex items-center gap-1.5">
         <CalendarOff size={14} strokeWidth={2} />
         Cancelar una fecha puntual
