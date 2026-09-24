@@ -120,10 +120,12 @@ export async function editPayment(paymentId: string, formData: FormData) {
     paymentId,
     amount: Number(formData.get('amount') ?? 0),
     notes: String(formData.get('notes') ?? ''),
+    paidDate: String(formData.get('paid_date') ?? '') || null,
   })
   if (result.error) return { error: result.error }
 
   revalidatePayments()
+  revalidatePath('/admin/pagos/liquidacion')
   return { success: true }
 }
 

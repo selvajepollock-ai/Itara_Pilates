@@ -92,20 +92,29 @@ export type UpdatePaymentInput = {
   paymentId: string
   amount: number
   notes?: string | null
+  /** Fecha real del pago (YYYY-MM-DD). Si viene, corrige paid_at. */
+  paidDate?: string | null
 }
 
-/** Corrige el monto / la nota de un pago ya registrado (no anulado). */
+/** Corrige el monto, la fecha o la nota de un pago ya registrado (no anulado). */
 export async function updatePayment({
   supabase,
   paymentId,
   amount,
   notes,
+  paidDate,
 }: UpdatePaymentInput): Promise<Result> {
   if (!Number.isFinite(amount) || amount < 0) return { error: 'Monto inválido.' }
+  if (paidDate && !/^\d{4}-\d{2}-\d{2}$/.test(paidDate)) return { error: 'Fecha inválida.' }
 
+  // Mediodía de Argentina (UTC-3) para que la fecha no se corra de día por la zona horaria.
   const { error } = await supabase
     .from('payments')
-    .update({ amount, notes: notes?.trim() || null })
+    .update({
+      amount,
+      notes: notes?.trim() || null,
+      ...(paidDate ? { paid_at: `${paidDate}T12:00:00-03:00` } : {}),
+    })
     .eq('id', paymentId)
     .is('voided_at', null)
   if (error) return { error: error.message }

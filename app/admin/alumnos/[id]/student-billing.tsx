@@ -185,7 +185,7 @@ export async function StudentBilling({ studentId, studentName }: { studentId: st
                           {formatARS(p.amount)}
                         </span>
                         {!voided && (
-                          <PaymentRowActions paymentId={p.id} amount={Number(p.amount)} notes={p.notes ?? ''} />
+                          <PaymentRowActions paymentId={p.id} amount={Number(p.amount)} notes={p.notes ?? ''} paidAt={p.paid_at} />
                         )}
                       </div>
                       {(voided || p.notes) && (
@@ -232,7 +232,7 @@ export async function StudentBilling({ studentId, studentName }: { studentId: st
                             )}
                           </td>
                           <td className="px-3 py-2 text-right">
-                            {!voided && <PaymentRowActions paymentId={p.id} amount={Number(p.amount)} notes={p.notes ?? ''} />}
+                            {!voided && <PaymentRowActions paymentId={p.id} amount={Number(p.amount)} notes={p.notes ?? ''} paidAt={p.paid_at} />}
                           </td>
                         </tr>
                       )

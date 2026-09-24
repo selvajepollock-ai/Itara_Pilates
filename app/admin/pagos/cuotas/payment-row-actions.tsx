@@ -10,11 +10,16 @@ export function PaymentRowActions({
   paymentId,
   amount,
   notes,
+  paidAt,
 }: {
   paymentId: string
   amount: number
   notes: string
+  paidAt?: string
 }) {
+  const paidDate = paidAt
+    ? new Date(paidAt).toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
+    : ''
   const router = useRouter()
   const [open, setOpen] = useState<null | 'edit' | 'void'>(null)
   const [isPending, startTransition] = useTransition()
@@ -83,6 +88,21 @@ export function PaymentRowActions({
                     className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm outline-none focus:border-moss focus:bg-white"
                   />
                 </div>
+                {paidDate && (
+                  <div>
+                    <label className="text-xs font-medium uppercase tracking-wide text-ink/60">Fecha del pago</label>
+                    <input
+                      type="date"
+                      name="paid_date"
+                      required
+                      defaultValue={paidDate}
+                      className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm outline-none focus:border-moss focus:bg-white"
+                    />
+                    <p className="mt-1 text-xs text-ink/40">
+                      Define en qué mes cuenta el pago. No cambia el "pagado hasta" del alumno.
+                    </p>
+                  </div>
+                )}
                 <div>
                   <label className="text-xs font-medium uppercase tracking-wide text-ink/60">Nota</label>
                   <input

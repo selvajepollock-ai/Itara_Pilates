@@ -192,7 +192,7 @@ export default async function CuotasPage({
                 <td className="px-4 py-3 text-xs">{r.recordedByName}</td>
                 <td className="px-4 py-3 text-right">
                   {!r.voidedAt && (
-                    <PaymentRowActions paymentId={r.id} amount={r.amount} notes={r.notes} />
+                    <PaymentRowActions paymentId={r.id} amount={r.amount} notes={r.notes} paidAt={r.paidAt} />
                   )}
                 </td>
               </tr>
