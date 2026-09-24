@@ -92,7 +92,7 @@ export async function grantInstructorAccess(instructorId: string, formData: Form
   })
   if (resetError) return { error: resetError.message }
 
-  revalidatePath(`/admin/instructores/${instructorId}`)
+  // Sin revalidar la ficha: así el aviso de "invitación enviada" queda visible.
   revalidatePath('/admin/instructores')
   return { success: true }
 }

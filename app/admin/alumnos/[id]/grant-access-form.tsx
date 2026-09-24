@@ -6,22 +6,31 @@ import { grantStudentAccess } from './actions'
 export function GrantAccessForm({ studentId, defaultEmail }: { studentId: string; defaultEmail: string }) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+  const [sentTo, setSentTo] = useState<string | null>(null)
 
   function handleSubmit(formData: FormData) {
     setError(null)
+    const email = String(formData.get('email') ?? '')
     startTransition(async () => {
       const result = await grantStudentAccess(studentId, formData)
       if (result?.error) {
         setError(result.error)
         return
       }
-      setSuccess(true)
+      setSentTo(email)
     })
   }
 
-  if (success) {
-    return <p className="mt-3 text-sm text-moss-dark">Acceso enviado ✓ — le llegó un mail para crear su contraseña.</p>
+  if (sentTo) {
+    return (
+      <div className="mt-3 rounded-xl border border-moss/30 bg-moss/5 p-4">
+        <p className="text-sm font-medium text-moss-dark">Invitación enviada ✓</p>
+        <p className="mt-1 text-xs text-ink/60">
+          Le mandamos un mail a <span className="font-medium">{sentTo}</span> para que cree su contraseña.
+          Recargá la página para ver el estado actualizado.
+        </p>
+      </div>
+    )
   }
 
   return (

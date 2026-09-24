@@ -82,7 +82,8 @@ export async function grantStudentAccess(studentId: string, formData: FormData) 
   })
   if (resetError) return { error: resetError.message }
 
-  revalidatePath(`/admin/alumnos/${studentId}`)
+  // No se revalida la ficha a propósito: si se refrescara, el formulario "Dar acceso"
+  // se reemplazaría por el de contraseña y el aviso de "invitación enviada" nunca se vería.
   revalidatePath('/admin/alumnos')
   return { success: true }
 }
