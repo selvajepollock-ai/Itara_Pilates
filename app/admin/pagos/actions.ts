@@ -185,7 +185,7 @@ export async function recordInstructorPayout(formData: FormData) {
   })
   if (error) return { error: error.message }
 
-  revalidatePath('/admin/pagos/reparto')
+  revalidatePath('/admin/pagos/liquidacion')
   return { success: true }
 }
 
@@ -196,6 +196,6 @@ export async function deleteInstructorPayout(payoutId: string) {
   const { error } = await auth.supabase.from('instructor_payouts').delete().eq('id', payoutId)
   if (error) return { error: error.message }
 
-  revalidatePath('/admin/pagos/reparto')
+  revalidatePath('/admin/pagos/liquidacion')
   return { success: true }
 }

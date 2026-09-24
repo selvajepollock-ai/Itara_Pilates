@@ -192,7 +192,7 @@ export async function enrollStudent(classId: string, formData: FormData) {
   }
 
   // Un alumno solo puede tener clases con un mismo profesor (define de quién es "su"
-  // alumno para el reparto de comisiones). Si ya tiene clases con otro profesor, no
+  // alumno para la liquidacion de comisiones). Si ya tiene clases con otro profesor, no
   // se lo puede anotar acá sin sacarlo antes de esas.
   if (classItem?.instructor_id) {
     const { data: otherEnrollments } = await supabase

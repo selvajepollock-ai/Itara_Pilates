@@ -11,7 +11,7 @@ function currentMonth() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
 }
 
-export default async function RepartoPage({ searchParams }: { searchParams: Promise<{ month?: string }> }) {
+export default async function LiquidacionPage({ searchParams }: { searchParams: Promise<{ month?: string }> }) {
   const { month: monthParam } = await searchParams
   const month = /^\d{4}-\d{2}$/.test(monthParam ?? '') ? (monthParam as string) : currentMonth()
   const supabase = await createClient()
@@ -49,7 +49,7 @@ export default async function RepartoPage({ searchParams }: { searchParams: Prom
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-ink/50 first-letter:uppercase">{monthName}</p>
         <div className="flex flex-wrap items-center gap-3">
-          <form action="/admin/pagos/reparto" method="GET">
+          <form action="/admin/pagos/liquidacion" method="GET">
             <input
               type="month"
               name="month"
@@ -57,7 +57,7 @@ export default async function RepartoPage({ searchParams }: { searchParams: Prom
               className="rounded-full border border-sand px-4 py-2 text-sm text-ink/70 outline-none focus:border-moss"
             />
           </form>
-          <ExportButton filename={`reparto-${month}`} sheetName="Reparto" title={`Reparto ${month}`} rows={exportRows} />
+          <ExportButton filename={`liquidacion-${month}`} sheetName="Liquidacion" title={`Liquidación ${month}`} rows={exportRows} />
         </div>
       </div>
 
