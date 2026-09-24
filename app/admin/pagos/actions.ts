@@ -160,3 +160,42 @@ export async function setExtraChargeComp(chargeId: string, comp: boolean) {
   revalidatePath('/admin/alumnos')
   return { success: true }
 }
+
+/** Registra lo que se le pagó a un profesor por un mes. */
+export async function recordInstructorPayout(formData: FormData) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+
+  const instructorId = String(formData.get('instructor_id') ?? '')
+  const month = String(formData.get('month') ?? '')
+  const amount = Number(formData.get('amount'))
+  const paidAt = String(formData.get('paid_at') ?? '')
+  const notes = String(formData.get('notes') ?? '').trim() || null
+
+  if (!instructorId || !/^\d{4}-\d{2}$/.test(month)) return { error: 'Faltan datos del pago.' }
+  if (!Number.isFinite(amount) || amount <= 0) return { error: 'Ingresá un monto mayor a 0.' }
+
+  const { error } = await auth.supabase.from('instructor_payouts').insert({
+    instructor_id: instructorId,
+    month,
+    amount,
+    paid_at: paidAt || new Date().toISOString().slice(0, 10),
+    notes,
+    created_by: auth.userId,
+  })
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/pagos/reparto')
+  return { success: true }
+}
+
+export async function deleteInstructorPayout(payoutId: string) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+
+  const { error } = await auth.supabase.from('instructor_payouts').delete().eq('id', payoutId)
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/pagos/reparto')
+  return { success: true }
+}

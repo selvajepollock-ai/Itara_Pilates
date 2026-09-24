@@ -7,6 +7,7 @@ const TABS = [
   { href: '/admin/pagos', label: 'Resumen', exact: true },
   { href: '/admin/pagos/cuotas', label: 'Cuotas', exact: false },
   { href: '/admin/pagos/sueltas', label: 'Clases sueltas', exact: false },
+  { href: '/admin/pagos/reparto', label: 'Reparto', exact: false },
 ]
 
 export function PagosNav() {
