@@ -115,18 +115,40 @@ export async function deleteStudent(studentId: string) {
 
   const admin = createAdminClient()
 
-  // Borrar en orden por las relaciones (de lo más dependiente a lo menos)
+  // Borrar en orden por las relaciones (de lo más dependiente a lo menos).
+  // Cada paso se chequea: antes los errores se ignoraban y el borrado final
+  // fallaba sin decir por qué.
+  const steps: { label: string; run: () => PromiseLike<{ error: { message: string } | null }> }[] = []
   const { data: subs } = await admin.from('subscriptions').select('id').eq('student_id', studentId)
   const subIds = (subs ?? []).map((s) => s.id)
   if (subIds.length > 0) {
-    await admin.from('payments').delete().in('subscription_id', subIds)
+    steps.push({ label: 'pagos', run: () => admin.from('payments').delete().in('subscription_id', subIds) })
   }
-  await admin.from('recovery_credits').delete().eq('student_id', studentId)
-  await admin.from('attendance').delete().eq('student_id', studentId)
-  await admin.from('session_cancellations').delete().eq('student_id', studentId)
-  await admin.from('subscriptions').delete().eq('student_id', studentId)
-  await admin.from('enrollments').delete().eq('student_id', studentId)
-  await admin.from('plan_change_requests').delete().eq('student_id', studentId)
+  steps.push(
+    // recovery_credits y session_cancellations se referencian mutuamente: romper el círculo.
+    {
+      label: 'cancelaciones',
+      run: () => admin.from('session_cancellations').update({ recovery_credit_id: null }).eq('student_id', studentId),
+    },
+    { label: 'asistencia', run: () => admin.from('attendance').delete().eq('student_id', studentId) },
+    { label: 'cargos extra', run: () => admin.from('extra_charges').delete().eq('student_id', studentId) },
+    { label: 'recuperaciones', run: () => admin.from('recovery_credits').delete().eq('student_id', studentId) },
+    { label: 'cancelaciones', run: () => admin.from('session_cancellations').delete().eq('student_id', studentId) },
+    { label: 'lista de espera', run: () => admin.from('waitlist').delete().eq('student_id', studentId) },
+    { label: 'suscripciones', run: () => admin.from('subscriptions').delete().eq('student_id', studentId) },
+    { label: 'horario fijo', run: () => admin.from('enrollments').delete().eq('student_id', studentId) },
+    { label: 'pedidos de plan', run: () => admin.from('plan_change_requests').delete().eq('student_id', studentId) },
+    { label: 'notificaciones', run: () => admin.from('notifications_log').delete().eq('user_id', studentId) },
+    {
+      label: 'solicitudes de registro',
+      run: () => admin.from('signup_requests').update({ accepted_student_id: null }).eq('accepted_student_id', studentId),
+    }
+  )
+
+  for (const step of steps) {
+    const { error: stepError } = await step.run()
+    if (stepError) return { error: `No se pudo borrar (${step.label}): ${stepError.message}` }
+  }
 
   const { error } = await admin.auth.admin.deleteUser(studentId)
   if (error) return { error: error.message }
