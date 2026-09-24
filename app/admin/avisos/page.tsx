@@ -63,7 +63,7 @@ export default async function AvisosPage() {
       supabase
         .from('attendance')
         .select(
-          'id, session_date, created_at, profiles(full_name), classes(day_of_week, start_time, class_types(name))'
+          'id, session_date, created_at, profiles!attendance_student_id_fkey(full_name), classes(day_of_week, start_time, class_types(name))'
         )
         .not('recovery_credit_id', 'is', null)
         .gte('created_at', feedCutoff)

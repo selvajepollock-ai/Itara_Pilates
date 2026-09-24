@@ -7,6 +7,7 @@ import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
 import { EnrollStudentForm } from './enroll-student-form'
 import { RemoveEnrollmentButton } from './remove-enrollment-button'
 import { getMonday, dateForDayOfWeek, toISODate } from '@/lib/sessions'
+import { isNoAccessEmail } from '@/lib/auth-username'
 import { CancelOccurrenceForm } from './cancel-occurrence-form'
 import { ActivateExtraCapacityButton } from './activate-extra-capacity-button'
 
@@ -103,7 +104,7 @@ export default async function ClaseDetailPage({
       .eq('session_date', sessionDate),
     supabase
       .from('attendance')
-      .select('student_id, profiles(full_name)')
+      .select('student_id, profiles!attendance_student_id_fkey(full_name)')
       .eq('class_id', id)
       .eq('session_date', sessionDate)
       .not('recovery_credit_id', 'is', null),
@@ -141,7 +142,7 @@ export default async function ClaseDetailPage({
   const backToClass = `/admin/horarios/${id}${weekQS}`
 
   return (
-    <div className="max-w-xl">
+    <div className="max-w-6xl">
       <Link href={`/admin/horarios${weekQS}`} className="text-sm text-moss hover:text-moss-dark">
         ← Volver a horarios
       </Link>
@@ -154,7 +155,7 @@ export default async function ClaseDetailPage({
         </span>
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-sand bg-white px-2 py-1.5">
+      <div className="mt-3 flex max-w-xl items-center justify-between gap-2 rounded-xl border border-sand bg-white px-2 py-1.5">
         {prevClass ? (
           <Link
             href={`/admin/horarios/${prevClass.id}${weekQS}`}
@@ -197,7 +198,9 @@ export default async function ClaseDetailPage({
         Ver agenda y asistencia →
       </Link>
 
-      <h2 className="mt-8 section-title flex items-center gap-1.5">
+      <div className="mt-8 grid items-start gap-8 lg:grid-cols-2">
+      <div>
+      <h2 className="section-title flex items-center gap-1.5">
         Horario fijo · {enrollments.length}/{classItem.capacity}
         <InfoHint text={'Los alumnos que vienen todas las semanas a esta clase. "Sacar del horario fijo" los quita de todas las semanas. Para una falta de un día puntual, mirá "Esta fecha" más abajo o la ficha del alumno.'} />
       </h2>
@@ -216,8 +219,13 @@ export default async function ClaseDetailPage({
             >
               <p className="text-sm text-ink group-hover:text-moss group-hover:underline">
                 {e.profiles?.full_name}
+                {cancelledEnrollmentIds.has(e.id) && (
+                  <span className="ml-2 rounded-full bg-clay/10 px-2 py-0.5 text-[11px] font-medium text-clay">
+                    Canceló esta fecha
+                  </span>
+                )}
               </p>
-              <p className="text-xs text-ink/50">{e.profiles?.email}</p>
+              {e.profiles?.email && !isNoAccessEmail(e.profiles.email) && <p className="text-xs text-ink/50">{e.profiles.email}</p>}
             </Link>
             <RemoveEnrollmentButton
               enrollmentId={e.id}
@@ -235,10 +243,12 @@ export default async function ClaseDetailPage({
 
       <h2 className="mt-8 section-title">Anotar alumno en el horario fijo</h2>
       <EnrollStudentForm classId={classItem.id} students={availableStudents} />
+      </div>
 
       {/* Lo puntual de UNA fecha: separado del horario fijo, para no mezclar lugares
           permanentes con los que se liberan solo ese día. */}
-      <div className="mt-10 rounded-2xl border border-amber-300/60 bg-amber-50/50 p-5">
+      <div>
+      <div className="rounded-2xl border border-amber-300/60 bg-amber-50/50 p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="section-title">Esta fecha</h2>
           <div className="flex items-center gap-2">
@@ -306,6 +316,8 @@ export default async function ClaseDetailPage({
       </div>
 
       <CancelOccurrenceForm classId={classItem.id} cancelledDates={cancelledData ?? []} />
+      </div>
+      </div>
     </div>
   )
 }

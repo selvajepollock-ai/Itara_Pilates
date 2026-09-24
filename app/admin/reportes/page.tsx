@@ -55,13 +55,13 @@ export default async function ReportesPage({
     supabase.from('enrollments').select('class_id').eq('status', 'active'),
     supabase
       .from('session_cancellations')
-      .select('student_id, profiles(full_name)')
+      .select('student_id, profiles!attendance_student_id_fkey(full_name)')
       .eq('within_deadline', false)
       .gte('session_date', rFrom)
       .lte('session_date', rTo),
     supabase
       .from('attendance')
-      .select('student_id, profiles(full_name)')
+      .select('student_id, profiles!attendance_student_id_fkey(full_name)')
       .eq('status', 'absent')
       .gte('session_date', rFrom)
       .lte('session_date', rTo),

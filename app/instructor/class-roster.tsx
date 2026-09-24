@@ -27,7 +27,7 @@ export async function ClassRoster({ classId, sessionDate }: { classId: string; s
         .eq('session_date', sessionDate),
       supabase
         .from('attendance')
-        .select('id, student_id, recovery_credit_id, status, profiles(full_name)')
+        .select('id, student_id, recovery_credit_id, status, profiles!attendance_student_id_fkey(full_name)')
         .eq('class_id', classId)
         .eq('session_date', sessionDate)
         .not('recovery_credit_id', 'is', null),

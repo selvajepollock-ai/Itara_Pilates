@@ -60,7 +60,7 @@ export function CancelOccurrenceForm({
   }
 
   return (
-    <div className="mt-8 rounded-2xl border border-sand bg-white p-5">
+    <div className="mt-6 rounded-2xl border border-sand bg-white p-5">
       <h2 className="section-title flex items-center gap-1.5">
         <CalendarOff size={14} strokeWidth={2} />
         Cancelar una fecha puntual
