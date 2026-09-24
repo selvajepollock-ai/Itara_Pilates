@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { List, ChevronLeft, ChevronRight, Plus, Settings2 } from 'lucide-react'
+import { List, ChevronLeft, ChevronRight, Plus, Settings2, RotateCcw } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { DAY_ORDER, formatTime } from '@/lib/day-names'
 import { WeekJumpInput } from './week-jump-input'
@@ -136,6 +136,7 @@ export default async function HorariosPage({
   // Resumen de la semana: lugares fijos libres (para anotar) y liberados por cancelaciones.
   let totalFixedFree = 0
   let totalFreed = 0
+  let totalRecovering = 0
   for (const c of classes) {
     const dayIndex = DAY_ORDER.indexOf(c.day_of_week)
     if (dayIndex === -1) continue
@@ -145,6 +146,7 @@ export default async function HorariosPage({
     if (wholeCancelled.has(key)) continue
     totalFixedFree += Math.max(c.capacity - (countByClass.get(c.id) ?? 0), 0)
     totalFreed += Math.max((cancelledCount.get(key) ?? 0) - (recoveringCount.get(key) ?? 0), 0)
+    totalRecovering += recoveringCount.get(key) ?? 0
   }
 
   const hourMarks = Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => START_HOUR + i)
@@ -220,6 +222,13 @@ export default async function HorariosPage({
         <span className="flex items-center gap-2">
           <span className="rounded-full bg-amber-300 px-2 py-0.5 text-xs font-bold text-ink">+{totalFreed}</span>
           liberados por cancelaciones esta semana
+        </span>
+        <span className="flex items-center gap-2">
+          <span className="flex items-center gap-1 rounded-full bg-sky-500 px-2 py-0.5 text-xs font-bold text-white">
+            <RotateCcw size={11} strokeWidth={3} />
+            {totalRecovering}
+          </span>
+          recuperaciones esta semana
         </span>
       </div>
 
@@ -308,6 +317,7 @@ export default async function HorariosPage({
             const isEmpty = enrolled === 0
             const isCancelled = wholeCancelled.has(dateKey)
             const freed = isCancelled ? 0 : Math.max((cancelledCount.get(dateKey) ?? 0) - (recoveringCount.get(dateKey) ?? 0), 0)
+            const recovering = isCancelled ? 0 : recoveringCount.get(dateKey) ?? 0
             const col = dayIndex + 2
 
             const reformerClasses = isCancelled
@@ -326,7 +336,8 @@ export default async function HorariosPage({
                   isCancelled
                     ? 'Clase cancelada ese día'
                     : `${fixedFree} lugar${fixedFree === 1 ? '' : 'es'} fijo${fixedFree === 1 ? '' : 's'} libre${fixedFree === 1 ? '' : 's'}` +
-                      (freed > 0 ? ` · +${freed} liberado${freed === 1 ? '' : 's'} por cancelación (solo para recuperar)` : '')
+                      (freed > 0 ? ` · +${freed} liberado${freed === 1 ? '' : 's'} por cancelación (solo para recuperar)` : '') +
+                      (recovering > 0 ? ` · ${recovering} recuperando` : '')
                 }
                 className={`relative m-0.5 overflow-hidden rounded-lg border px-1.5 py-1 text-[10px] leading-tight transition hover:-translate-y-px hover:shadow-md ${reformerClasses}`}
                 style={{
@@ -342,6 +353,15 @@ export default async function HorariosPage({
                 {freed > 0 && (
                   <span className="absolute right-1 top-1 rounded-full bg-amber-300 px-1.5 py-px text-[10px] font-bold text-ink shadow">
                     +{freed}
+                  </span>
+                )}
+                {recovering > 0 && (
+                  <span
+                    className="absolute bottom-1 right-1 flex items-center gap-0.5 rounded-full bg-sky-500 px-1.5 py-px text-[10px] font-bold text-white shadow ring-1 ring-white/70"
+                    title={`${recovering} alumno${recovering === 1 ? '' : 's'} viene${recovering === 1 ? '' : 'n'} a recuperar esta fecha`}
+                  >
+                    <RotateCcw size={9} strokeWidth={3} />
+                    {recovering}
                   </span>
                 )}
               </Link>
@@ -361,6 +381,12 @@ export default async function HorariosPage({
           <span className="flex items-center gap-1.5 text-ink/60">
             <span className="rounded-full bg-amber-300 px-1.5 text-[10px] font-bold text-ink">+N</span>
             Liberados por cancelación esa fecha (solo para recuperar, no para anotar fijo)
+          </span>
+          <span className="flex items-center gap-1.5 text-ink/60">
+            <span className="flex items-center gap-0.5 rounded-full bg-sky-500 px-1.5 text-[10px] font-bold text-white">
+              <RotateCcw size={9} strokeWidth={3} />N
+            </span>
+            Alumnos que vienen a recuperar esa fecha
           </span>
           <span className="flex items-center gap-1.5 text-ink/60">
             <span className="h-2.5 w-2.5 rounded bg-sand" />
