@@ -23,7 +23,9 @@ type ClassOption = {
   capacity: number
   pending_extra_capacity: number
   room: string
+  instructor_id: string | null
   class_types: { name: string } | null
+  profiles: { full_name: string } | null
 }
 
 export default async function EditarAlumnoPage({
@@ -46,7 +48,7 @@ export default async function EditarAlumnoPage({
       supabase.from('profiles').select('id, full_name, nickname, email, phone, birth_date, health_notes, contact_email, active').eq('id', id).single(),
       supabase
         .from('classes')
-        .select('id, day_of_week, start_time, end_time, capacity, pending_extra_capacity, room, class_types(name)')
+        .select('id, day_of_week, start_time, end_time, capacity, pending_extra_capacity, room, instructor_id, class_types(name), profiles(full_name)')
         .eq('active', true)
         .order('start_time'),
       supabase.from('enrollments').select('id, class_id').eq('student_id', id).eq('status', 'active'),
@@ -78,8 +80,12 @@ export default async function EditarAlumnoPage({
         typeName: c.class_types?.name ?? 'Clase',
         enrolled: countByClass.get(c.id) ?? 0,
         enrollmentId: enrollmentIdByClass.get(c.id) ?? null,
+        instructorId: c.instructor_id,
+        instructorName: c.profiles?.full_name ?? null,
       }))
   )
+
+  const hasSchedule = (myEnrollments ?? []).length > 0
 
   return (
     <div>
@@ -143,7 +149,14 @@ export default async function EditarAlumnoPage({
       <div className="mt-6 space-y-6">
         <MonthSessions studentId={student.id} weekOffset={weekOffset} />
 
-        <PlanEditorToggle>
+        {!hasSchedule && student.active && (
+          <div className="rounded-2xl border border-clay/30 bg-clay/5 px-5 py-4 text-sm text-ink/70">
+            <span className="font-medium text-clay">Sin profesor asignado.</span> Este alumno todavía no tiene
+            horarios fijos. Tildá sus clases abajo en "Editar plan fijo" y el profesor se asigna solo.
+          </div>
+        )}
+
+        <PlanEditorToggle defaultOpen={!hasSchedule && student.active}>
           <p className="mb-2 flex items-center gap-1.5 text-xs text-ink/50">
             Cambiar plan fijo
             <InfoHint text="Esto cambia el plan de base — afecta todas las semanas futuras, no solo una fecha puntual." />

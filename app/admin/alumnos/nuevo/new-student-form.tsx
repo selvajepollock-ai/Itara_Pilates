@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation'
 import { createStudent } from '../actions'
 import { formatARS } from '@/lib/currency'
 import { PhoneInput } from '@/app/components/phone-input'
+import { TimeGrid, maxCapacity, type ClassOption } from '../[id]/schedule-form'
 
-type Plan = { id: string; name: string; price: number }
+type Plan = { id: string; name: string; price: number; classes_per_week: number | null }
 
 export function NewStudentForm({
   plans,
+  classOptions,
   defaultEndDate,
   requestId,
   defaultFirstName = '',
@@ -20,6 +22,7 @@ export function NewStudentForm({
   defaultBirthDate = '',
 }: {
   plans: Plan[]
+  classOptions: ClassOption[]
   defaultEndDate: string
   requestId?: string
   defaultFirstName?: string
@@ -34,9 +37,46 @@ export function NewStudentForm({
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [grantAccess, setGrantAccess] = useState(true)
+  const [planId, setPlanId] = useState('')
+  const [selected, setSelected] = useState<Record<string, boolean>>({})
+
+  const plan = plans.find((p) => p.id === planId) ?? null
+  const selectedOptions = classOptions.filter((o) => selected[o.id])
+  const instructor = selectedOptions.find((o) => o.instructorId) ?? null
+  const perWeek = plan?.classes_per_week ?? null
+
+  function handleToggle(option: ClassOption, willBeChecked: boolean) {
+    if (willBeChecked) {
+      if (option.enrolled >= maxCapacity(option)) {
+        alert(`Esta clase ya llegó al tope de cupo (${option.enrolled}/${maxCapacity(option)}).`)
+        return
+      }
+      if (instructor && option.instructorId && option.instructorId !== instructor.instructorId) {
+        alert(
+          `Un alumno solo puede tener clases con un mismo profesor. Ya eligió horarios con ${instructor.instructorName}; este es de ${option.instructorName}.`
+        )
+        return
+      }
+      if (option.enrolled >= option.capacity) {
+        if (!confirm(`Esta clase está completa (${option.enrolled}/${option.capacity}). ¿Anotarlo igual, en un lugar reservado?`)) return
+      }
+    }
+    setSelected((prev) => {
+      const next = { ...prev }
+      if (willBeChecked) next[option.id] = true
+      else delete next[option.id]
+      return next
+    })
+  }
 
   function handleSubmit(formData: FormData) {
     setError(null)
+    if (perWeek && selectedOptions.length > 0 && selectedOptions.length !== perWeek) {
+      const ok = confirm(
+        `El plan es de ${perWeek} clase${perWeek === 1 ? '' : 's'} por semana y elegiste ${selectedOptions.length} horario${selectedOptions.length === 1 ? '' : 's'}. ¿Crear el alumno igual?`
+      )
+      if (!ok) return
+    }
     startTransition(async () => {
       const result = await createStudent(formData)
       if (result?.error) {
@@ -144,7 +184,7 @@ export function NewStudentForm({
           <p className="text-sm font-medium text-ink">Plan contratado</p>
           <div className="mt-3">
             <label className={labelClass}>Plan (opcional)</label>
-            <select name="plan_id" defaultValue="" className={inputClass}>
+            <select name="plan_id" value={planId} onChange={(e) => setPlanId(e.target.value)} className={inputClass}>
               <option value="">Sin asignar todavía</option>
               {plans.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -157,6 +197,33 @@ export function NewStudentForm({
             <label className={labelClass}>Pagado hasta</label>
             <input type="date" name="end_date" defaultValue={defaultEndDate} className={inputClass} />
           </div>
+        </div>
+
+        <div className={`${cardClass} lg:col-span-2`}>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm font-medium text-ink">Horarios de clase</p>
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              {instructor && (
+                <span className="rounded-full bg-moss/10 px-2.5 py-1 font-medium text-moss-dark">
+                  Profesor: {instructor.instructorName}
+                </span>
+              )}
+              <span className="rounded-full bg-linen px-2.5 py-1 text-ink/60">
+                {selectedOptions.length} elegido{selectedOptions.length === 1 ? '' : 's'}
+                {perWeek ? ` de ${perWeek} por semana` : ''}
+              </span>
+            </div>
+          </div>
+          <p className="mt-0.5 text-xs text-ink/50">
+            Tildá los días y horarios fijos del alumno. Un alumno solo puede tener clases con un mismo profesor
+            (pasá el mouse sobre un horario para ver quién lo da). Podés dejarlo vacío y anotarlo después.
+          </p>
+          <div className="mt-3">
+            <TimeGrid options={classOptions} pending={selected} onToggle={handleToggle} />
+          </div>
+          {selectedOptions.map((o) => (
+            <input key={o.id} type="hidden" name="class_ids" value={o.id} />
+          ))}
         </div>
 
         <div className="lg:col-span-2">

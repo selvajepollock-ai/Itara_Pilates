@@ -4,8 +4,14 @@ import { useState } from 'react'
 import { ChevronDown, Settings2 } from 'lucide-react'
 import { InfoHint } from '@/app/components/info-hint'
 
-export function PlanEditorToggle({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(false)
+export function PlanEditorToggle({
+  children,
+  defaultOpen = false,
+}: {
+  children: React.ReactNode
+  defaultOpen?: boolean
+}) {
+  const [open, setOpen] = useState(defaultOpen)
 
   return (
     <div className="mt-6">

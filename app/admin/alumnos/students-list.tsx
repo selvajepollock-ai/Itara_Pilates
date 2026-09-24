@@ -52,10 +52,13 @@ export function StudentsList({ students }: { students: Student[] }) {
     return c
   }, [students])
 
+  const noInstructorCount = useMemo(() => students.filter((s) => s.active && !s.instructorId).length, [students])
+
   const filtered = useMemo(() => {
     let list = students
     if (statusFilter) list = list.filter((s) => s.status === statusFilter)
-    if (instructorFilter) list = list.filter((s) => s.instructorId === instructorFilter)
+    if (instructorFilter === '__none') list = list.filter((s) => !s.instructorId)
+    else if (instructorFilter) list = list.filter((s) => s.instructorId === instructorFilter)
     if (query.trim()) {
       const q = query.trim().toLowerCase()
       list = list.filter(
@@ -102,13 +105,14 @@ export function StudentsList({ students }: { students: Student[] }) {
             className="w-full rounded-full border border-sand bg-white py-2.5 pl-10 pr-4 text-sm text-ink outline-none focus:border-moss"
           />
         </div>
-        {instructors.length > 0 && (
+        {(instructors.length > 0 || noInstructorCount > 0) && (
           <select
             value={instructorFilter ?? ''}
             onChange={(e) => setInstructorFilter(e.target.value || null)}
             className="rounded-full border border-sand bg-white py-2.5 px-4 text-sm text-ink outline-none focus:border-moss"
           >
             <option value="">Todos los profesores</option>
+            {noInstructorCount > 0 && <option value="__none">Sin profesor asignado ({noInstructorCount})</option>}
             {instructors.map((i) => (
               <option key={i.id} value={i.id}>
                 {i.name}
@@ -133,7 +137,11 @@ export function StudentsList({ students }: { students: Student[] }) {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm text-ink">{s.full_name}</p>
                   {s.nickname && <p className="truncate text-xs text-ink/40">"{s.nickname}"</p>}
-                  {s.instructorName && <p className="truncate text-xs text-ink/40">Prof. {s.instructorName}</p>}
+                  {s.instructorName ? (
+                    <p className="truncate text-xs text-ink/40">Prof. {s.instructorName}</p>
+                  ) : (
+                    <p className="truncate text-xs text-clay">Sin profesor — asignar horarios</p>
+                  )}
                 </div>
                 <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_CLASSES[s.status]}`}>
                   {STATUS_LABEL[s.status]}
@@ -191,7 +199,16 @@ export function StudentsList({ students }: { students: Student[] }) {
                     </div>
                   </div>
                 </td>
-                <td className="px-5 py-3.5 text-ink/60">{s.instructorName ?? '—'}</td>
+                <td className="px-5 py-3.5 text-ink/60">
+                  {s.instructorName ?? (
+                    <Link
+                      href={`/admin/alumnos/${s.id}`}
+                      className="rounded-full bg-clay/10 px-2.5 py-1 text-xs font-medium text-clay hover:bg-clay/20"
+                    >
+                      Sin profesor · asignar
+                    </Link>
+                  )}
+                </td>
                 <td className="px-5 py-3.5 text-ink/60">
                   {s.hasAccess ? (
                     s.email

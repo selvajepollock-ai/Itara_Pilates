@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { enrollStudent, removeEnrollment } from '../../horarios/actions'
 import { DAY_NAMES, formatTime } from '@/lib/day-names'
 
-type ClassOption = {
+export type ClassOption = {
   id: string
   dayOfWeek: number
   startTime: string
@@ -16,13 +16,15 @@ type ClassOption = {
   typeName: string
   enrolled: number
   enrollmentId: string | null
+  instructorId?: string | null
+  instructorName?: string | null
 }
 
-function maxCapacity(option: ClassOption) {
+export function maxCapacity(option: ClassOption) {
   return option.capacity + option.pendingExtraCapacity
 }
 
-function TimeGrid({
+export function TimeGrid({
   options,
   pending,
   onToggle,
@@ -77,13 +79,13 @@ function TimeGrid({
                   key={opt.id}
                   type="button"
                   onClick={() => onToggle(opt, !isChecked)}
-                  title={
+                  title={`${opt.instructorName ? `Prof. ${opt.instructorName} · ` : ''}${
                     isAtMax
                       ? `Al tope de cupo (${opt.enrolled}/${maxCapacity(opt)})`
                       : isFull
                         ? `Completo (${opt.enrolled}/${opt.capacity}) — se puede anotar igual`
                         : `${opt.enrolled}/${opt.capacity} ocupado`
-                  }
+                  }`}
                   className={`h-8 rounded-md border text-[11px] transition ${
                     isChecked
                       ? 'bg-moss text-white border-moss'

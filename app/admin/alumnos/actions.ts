@@ -57,6 +57,27 @@ export async function createStudent(formData: FormData) {
   const admin = createAdminClient()
   let newUserId: string | undefined
 
+  // Horarios fijos elegidos en el alta. Se validan ANTES de crear la cuenta para
+  // no dejar un alumno a medio crear si algo no cierra.
+  const classIds = Array.from(new Set(formData.getAll('class_ids').map(String).filter(Boolean)))
+  if (classIds.length > 0) {
+    const [{ data: chosen }, { data: counts }] = await Promise.all([
+      admin.from('classes').select('id, capacity, pending_extra_capacity, instructor_id').in('id', classIds),
+      admin.from('enrollments').select('class_id').in('class_id', classIds).eq('status', 'active'),
+    ])
+    if (!chosen || chosen.length !== classIds.length) {
+      return { error: 'Alguno de los horarios elegidos ya no existe. Recargá la página.' }
+    }
+    const instructorIds = new Set(chosen.map((c) => c.instructor_id).filter(Boolean))
+    if (instructorIds.size > 1) {
+      return { error: 'Un alumno solo puede tener clases con un mismo profesor.' }
+    }
+    const taken = new Map<string, number>()
+    for (const e of counts ?? []) taken.set(e.class_id, (taken.get(e.class_id) ?? 0) + 1)
+    const full = chosen.find((c) => (taken.get(c.id) ?? 0) >= c.capacity + c.pending_extra_capacity)
+    if (full) return { error: 'Uno de los horarios elegidos ya llegó al tope de cupo. Recargá y elegí otro.' }
+  }
+
   if (grantAccess) {
     const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(emailInput, {
       data: { full_name: fullName, first_name: firstName, roles: ['student'] },
@@ -110,6 +131,15 @@ export async function createStudent(formData: FormData) {
     })
   }
 
+  if (newUserId && classIds.length > 0) {
+    const { error: enrollError } = await admin
+      .from('enrollments')
+      .insert(classIds.map((class_id) => ({ student_id: newUserId, class_id, status: 'active' })))
+    if (enrollError) {
+      return { error: `El alumno se creó, pero no se pudieron anotar los horarios: ${enrollError.message}` }
+    }
+  }
+
   const requestId = String(formData.get('request_id') ?? '').trim()
   if (requestId && newUserId) {
     await admin
@@ -119,5 +149,6 @@ export async function createStudent(formData: FormData) {
   }
 
   revalidatePath('/admin/alumnos')
+  revalidatePath('/admin/horarios')
   return { success: true }
 }
