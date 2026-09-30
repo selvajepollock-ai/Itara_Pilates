@@ -1,9 +1,12 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { Search, Pencil, CheckCircle2, Clock, AlertCircle, HelpCircle, Gift } from 'lucide-react'
 import { STATUS_LABEL, STATUS_CLASSES, type PaymentStatus } from '@/lib/billing'
+
+const VALID_STATUSES: PaymentStatus[] = ['al_dia', 'por_vencer', 'vencido', 'sin_plan', 'bonificado']
 
 type Student = {
   id: string
@@ -28,9 +31,18 @@ const STATUS_CARDS: { status: PaymentStatus; label: string; icon: typeof CheckCi
 ]
 
 export function StudentsList({ students }: { students: Student[] }) {
+  const searchParams = useSearchParams()
+  const initialStatus = searchParams.get('estado') as PaymentStatus | null
   const [query, setQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<PaymentStatus | null>(null)
+  const [statusFilter, setStatusFilter] = useState<PaymentStatus | null>(
+    initialStatus && VALID_STATUSES.includes(initialStatus) ? initialStatus : null
+  )
   const [instructorFilter, setInstructorFilter] = useState<string | null>(null)
+
+  // Si se llega con ?estado=... desde otra pantalla (ej: Pagos), aplicar ese filtro.
+  useEffect(() => {
+    if (initialStatus && VALID_STATUSES.includes(initialStatus)) setStatusFilter(initialStatus)
+  }, [initialStatus])
 
   const instructors = useMemo(() => {
     const map = new Map<string, string>()

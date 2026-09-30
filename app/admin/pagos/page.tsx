@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { TrendingUp, AlertTriangle, Wallet } from 'lucide-react'
+import { TrendingUp, AlertTriangle, Wallet, Clock, type LucideIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { formatARS } from '@/lib/currency'
 import {
@@ -23,6 +23,71 @@ function monthRange(monthParam?: string) {
 }
 
 type PlanRef = { name: string; price: number } | null
+
+type DebtorRow = { studentId: string; name: string; status: PaymentStatus; endDate: string | null; planPrice: number }
+
+function DebtorSection({
+  title,
+  icon: Icon,
+  iconClass,
+  status,
+  rows,
+  limit,
+  emptyLabel,
+}: {
+  title: string
+  icon: LucideIcon
+  iconClass: string
+  status: PaymentStatus
+  rows: DebtorRow[]
+  limit: number
+  emptyLabel: string
+}) {
+  const preview = rows.slice(0, limit)
+  const remaining = rows.length - preview.length
+
+  return (
+    <div className="rounded-2xl border border-sand bg-white p-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-ink/40">
+          <Icon size={15} className={iconClass} />
+          <p className="text-xs uppercase tracking-[0.2em]">
+            {title} ({rows.length})
+          </p>
+        </div>
+        {rows.length > 0 && (
+          <Link href={`/admin/alumnos?estado=${status}`} className="text-xs font-medium text-moss hover:text-moss-dark">
+            Ver todos →
+          </Link>
+        )}
+      </div>
+      {rows.length === 0 ? (
+        <p className="mt-3 text-sm text-ink/40">{emptyLabel}</p>
+      ) : (
+        <>
+          <ul className="mt-3 divide-y divide-sand/60">
+            {preview.map((d) => (
+              <li key={d.studentId} className="flex items-center justify-between py-2">
+                <Link href={`/admin/alumnos/${d.studentId}`} className="text-sm text-ink hover:text-moss">
+                  {d.name}
+                </Link>
+                <span className="text-sm text-ink/50">{formatARS(d.planPrice)}</span>
+              </li>
+            ))}
+          </ul>
+          {remaining > 0 && (
+            <Link
+              href={`/admin/alumnos?estado=${status}`}
+              className="mt-2 block text-center text-xs font-medium text-moss hover:text-moss-dark"
+            >
+              Ver {remaining} más →
+            </Link>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
 
 export default async function PagosResumenPage({
   searchParams,
@@ -164,6 +229,11 @@ export default async function PagosResumenPage({
     ...(counts.bonificado > 0 ? [{ key: 'bonificado' as const, value: counts.bonificado }] : []),
   ]
 
+  const byOldestFirst = (a: DebtorRow, b: DebtorRow) => (a.endDate ?? '').localeCompare(b.endDate ?? '')
+  const vencidos = deudores.filter((d) => d.status === 'vencido').sort(byOldestFirst)
+  const porVencer = deudores.filter((d) => d.status === 'por_vencer').sort(byOldestFirst)
+  const PREVIEW_LIMIT = 6
+
   const monthName = new Date(start).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
 
   return (
@@ -212,15 +282,19 @@ export default async function PagosResumenPage({
         </div>
       </div>
 
-      {/* Estados */}
+      {/* Estados: clickeables, llevan a Alumnos ya filtrado por ese estado */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {statusCards.map(({ key, value }) => (
-          <div key={key} className="rounded-2xl border border-sand bg-white p-4 text-center">
+          <Link
+            key={key}
+            href={`/admin/alumnos?estado=${key}`}
+            className="rounded-2xl border border-sand bg-white p-4 text-center transition hover:border-moss/50 hover:shadow-sm"
+          >
             <p className="font-display text-2xl italic text-ink">{value}</p>
             <span className={`mt-1 inline-block rounded-full px-2.5 py-0.5 text-[11px] font-medium ${STATUS_CLASSES[key]}`}>
               {STATUS_LABEL[key]}
             </span>
-          </div>
+          </Link>
         ))}
       </div>
 
@@ -248,55 +322,46 @@ export default async function PagosResumenPage({
         </div>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-2">
-        {/* Ingresos por plan */}
-        <div className="rounded-2xl border border-sand bg-white p-6">
-          <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Ingresos por plan</p>
-          {incomeByPlan.size === 0 ? (
-            <p className="mt-3 text-sm text-ink/40">Sin pagos este mes.</p>
-          ) : (
-            <ul className="mt-3 space-y-1.5">
-              {Array.from(incomeByPlan.entries())
-                .sort((a, b) => b[1] - a[1])
-                .map(([plan, amount]) => (
-                  <li key={plan} className="flex justify-between text-sm text-ink/70">
-                    <span>{plan}</span>
-                    <span>{formatARS(amount)}</span>
-                  </li>
-                ))}
-            </ul>
-          )}
-        </div>
-
-        {/* Deudores */}
-        <div className="rounded-2xl border border-sand bg-white p-6">
-          <div className="flex items-center gap-2 text-ink/40">
-            <AlertTriangle size={15} className="text-clay" />
-            <p className="text-xs uppercase tracking-[0.2em]">Deudores</p>
-          </div>
-          {deudores.length === 0 ? (
-            <p className="mt-3 text-sm text-ink/40">Nadie con la cuota vencida o por vencer. 🎉</p>
-          ) : (
-            <ul className="mt-3 divide-y divide-sand/60">
-              {deudores.map((d) => (
-                <li key={d.studentId} className="flex items-center justify-between py-2">
-                  <Link
-                    href={`/admin/alumnos/${d.studentId}`}
-                    className="text-sm text-ink hover:text-moss"
-                  >
-                    {d.name}
-                  </Link>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-ink/50">{formatARS(d.planPrice)}</span>
-                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_CLASSES[d.status]}`}>
-                      {STATUS_LABEL[d.status]}
-                    </span>
-                  </div>
+      {/* Ingresos por plan */}
+      <div className="rounded-2xl border border-sand bg-white p-6">
+        <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Ingresos por plan</p>
+        {incomeByPlan.size === 0 ? (
+          <p className="mt-3 text-sm text-ink/40">Sin pagos este mes.</p>
+        ) : (
+          <ul className="mt-3 grid gap-x-6 gap-y-1.5 sm:grid-cols-2">
+            {Array.from(incomeByPlan.entries())
+              .sort((a, b) => b[1] - a[1])
+              .map(([plan, amount]) => (
+                <li key={plan} className="flex justify-between text-sm text-ink/70">
+                  <span>{plan}</span>
+                  <span>{formatARS(amount)}</span>
                 </li>
               ))}
-            </ul>
-          )}
-        </div>
+          </ul>
+        )}
+      </div>
+
+      {/* Vencidos y por vencer: secciones separadas (no una sola lista larga), acotadas
+          a una vista previa con link a la lista completa y filtrada en Alumnos. */}
+      <div className="grid gap-5 lg:grid-cols-2">
+        <DebtorSection
+          title="Vencidos"
+          icon={AlertTriangle}
+          iconClass="text-clay"
+          status="vencido"
+          rows={vencidos}
+          limit={PREVIEW_LIMIT}
+          emptyLabel="Nadie con la cuota vencida. 🎉"
+        />
+        <DebtorSection
+          title="Por vencer"
+          icon={Clock}
+          iconClass="text-amber-600"
+          status="por_vencer"
+          rows={porVencer}
+          limit={PREVIEW_LIMIT}
+          emptyLabel="Nadie con la cuota por vencer."
+        />
       </div>
 
       <p className="flex items-center gap-1.5 text-xs text-ink/30">
