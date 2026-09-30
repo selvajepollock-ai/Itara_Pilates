@@ -107,7 +107,8 @@ export async function annulPayment(paymentId: string, reason: string) {
   if (result.error) return { error: result.error }
 
   revalidatePayments()
-  return { success: true }
+  revalidatePath('/admin/pagos/liquidacion')
+  return { success: true, revertedEndDate: result.revertedEndDate, skippedRevert: result.skippedRevert }
 }
 
 /** Corrige el monto o la nota de un pago ya registrado. */

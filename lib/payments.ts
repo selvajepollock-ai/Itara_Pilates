@@ -12,6 +12,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
  */
 
 type Result = { error?: string }
+type VoidResult = { error?: string; revertedEndDate?: string | null; skippedRevert?: boolean }
 
 export type RecordPaymentInput = {
   supabase: SupabaseClient
@@ -38,12 +39,20 @@ export async function recordPayment({
 }: RecordPaymentInput): Promise<Result> {
   if (!newEndDate) return { error: 'Falta la nueva fecha de vencimiento.' }
 
+  const { data: currentSub } = await supabase
+    .from('subscriptions')
+    .select('end_date')
+    .eq('id', subscriptionId)
+    .maybeSingle()
+
   const { error: payError } = await supabase.from('payments').insert({
     subscription_id: subscriptionId,
     amount: amount || 0,
     method: 'manual',
     notes: notes?.trim() || null,
     recorded_by: recordedBy || null,
+    // Para poder revertir el "pagado hasta" si este pago se anula por error.
+    previous_end_date: currentSub?.end_date ?? null,
   })
   if (payError) return { error: payError.message }
 
@@ -65,16 +74,27 @@ export type VoidPaymentInput = {
 }
 
 /**
- * Anula un pago mal cargado. No revierte la fecha de la suscripción: si además
- * hay que corregir "pagado hasta", el admin lo ajusta desde la ficha del alumno.
+ * Anula un pago mal cargado. Si es el pago más reciente de esa suscripción (no
+ * hay otro pago sin anular después) y quedó guardada la fecha anterior, revierte
+ * el "pagado hasta" a lo que estaba antes de este pago -- así el alumno vuelve a
+ * mostrar el estado real (ej: vencido) en vez de quedar "al día" por error.
  */
 export async function voidPayment({
   supabase,
   paymentId,
   reason,
-}: VoidPaymentInput): Promise<Result> {
+}: VoidPaymentInput): Promise<VoidResult> {
   const trimmed = reason.trim()
   if (!trimmed) return { error: 'Indicá el motivo de la anulación.' }
+
+  const { data: payment } = await supabase
+    .from('payments')
+    .select('id, subscription_id, paid_at, previous_end_date, voided_at')
+    .eq('id', paymentId)
+    .maybeSingle()
+
+  if (!payment) return { error: 'Ese pago ya no existe.' }
+  if (payment.voided_at) return { error: 'Ese pago ya estaba anulado.' }
 
   const { error } = await supabase
     .from('payments')
@@ -83,8 +103,29 @@ export async function voidPayment({
     .is('voided_at', null)
   if (error) return { error: error.message }
 
+  if (payment.previous_end_date === null) {
+    // 🔌 Punto de enganche para sync externo (Google Sheet): pago anulado.
+    return {}
+  }
+
+  const { count: laterPayments } = await supabase
+    .from('payments')
+    .select('id', { count: 'exact', head: true })
+    .eq('subscription_id', payment.subscription_id)
+    .is('voided_at', null)
+    .gt('paid_at', payment.paid_at)
+
+  if (laterPayments) {
+    return { skippedRevert: true }
+  }
+
+  await supabase
+    .from('subscriptions')
+    .update({ end_date: payment.previous_end_date })
+    .eq('id', payment.subscription_id)
+
   // 🔌 Punto de enganche para sync externo (Google Sheet): pago anulado.
-  return {}
+  return { revertedEndDate: payment.previous_end_date }
 }
 
 export type UpdatePaymentInput = {

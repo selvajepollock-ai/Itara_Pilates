@@ -24,10 +24,12 @@ export function PaymentRowActions({
   const [open, setOpen] = useState<null | 'edit' | 'void'>(null)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [voidResult, setVoidResult] = useState<{ revertedEndDate?: string | null; skippedRevert?: boolean } | null>(null)
 
   function close() {
     setOpen(null)
     setError(null)
+    setVoidResult(null)
   }
 
   function handleEdit(formData: FormData) {
@@ -46,8 +48,8 @@ export function PaymentRowActions({
     startTransition(async () => {
       const res = await annulPayment(paymentId, reason)
       if (res?.error) return setError(res.error)
-      close()
       router.refresh()
+      setVoidResult({ revertedEndDate: res?.revertedEndDate, skippedRevert: res?.skippedRevert })
     })
   }
 
@@ -125,13 +127,46 @@ export function PaymentRowActions({
                   </button>
                 </div>
               </form>
+            ) : voidResult ? (
+              <div className="space-y-3">
+                <p className="font-display text-lg italic text-ink">Pago anulado ✓</p>
+                {voidResult.revertedEndDate ? (
+                  <p className="text-sm text-ink/70">
+                    Como era el pago más reciente, el "pagado hasta" del alumno volvió a{' '}
+                    <span className="font-medium text-ink">
+                      {new Date(`${voidResult.revertedEndDate}T00:00:00`).toLocaleDateString('es-AR', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })}
+                    </span>
+                    . Ya debería figurar con el estado real (ej: vencido).
+                  </p>
+                ) : voidResult.skippedRevert ? (
+                  <p className="text-sm text-ink/70">
+                    Hay un pago más nuevo registrado después de este, así que el "pagado hasta" no se tocó
+                    (ese otro pago ya lo define). Revisalo si algo no cierra.
+                  </p>
+                ) : (
+                  <p className="text-sm text-ink/70">
+                    Este pago no tenía una fecha anterior guardada (es de antes de este arreglo), así que el
+                    "pagado hasta" no se modificó. Si hace falta, ajustalo a mano desde "Cambiar plan / ajustar
+                    fecha manual".
+                  </p>
+                )}
+                <div className="flex justify-end pt-1">
+                  <button type="button" onClick={close} className="btn-primary-sm">
+                    Listo
+                  </button>
+                </div>
+              </div>
             ) : (
               <form action={handleVoid} className="space-y-3">
                 <p className="font-display text-lg italic text-ink">Anular pago</p>
                 <p className="text-sm text-ink/60">
                   Se anula el pago de <span className="font-medium text-ink">{formatARS(amount)}</span>. No se
-                  borra: queda registrado con el motivo. La fecha "pagado hasta" del alumno no cambia
-                  automáticamente.
+                  borra: queda registrado con el motivo. Si es el pago más reciente de ese alumno, su "pagado
+                  hasta" vuelve a lo que estaba antes de este pago.
                 </p>
                 <div>
                   <label className="text-xs font-medium uppercase tracking-wide text-ink/60">Motivo</label>
