@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { CalendarX, RefreshCw, Flower2, CalendarDays, Clock } from 'lucide-react'
+import { CalendarX, RefreshCw, Flower2, CalendarDays, Clock, AlertTriangle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
 import { subscriptionDisplayStatus, STATUS_LABEL, STATUS_CLASSES } from '@/lib/billing'
@@ -177,6 +177,29 @@ export default async function AlumnoDashboard() {
         </h1>
       </div>
       <p className="mt-1.5 text-sm italic text-ink/50">{quote}</p>
+
+      {(status === 'vencido' || status === 'por_vencer') && (
+        <div
+          className={`mt-4 flex items-start gap-2.5 rounded-2xl border px-4 py-3 text-sm ${
+            status === 'vencido' ? 'border-clay/40 bg-clay/10 text-clay' : 'border-amber-300 bg-amber-50 text-amber-800'
+          }`}
+        >
+          <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+          <p>
+            {status === 'vencido' ? (
+              <>
+                Tu cuota está <span className="font-medium">vencida</span>. Si ya la pagaste, avisale al estudio; si
+                no, hacelo cuanto antes.
+              </>
+            ) : (
+              <>
+                Tu cuota está <span className="font-medium">por vencer</span>. Recordá pagarla antes de que termine
+                el mes.
+              </>
+            )}
+          </p>
+        </div>
+      )}
 
       <div className="mt-6 rounded-2xl border border-sand bg-white px-5 py-4">
         <div className="flex items-center justify-between">
