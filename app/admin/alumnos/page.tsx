@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Plus, Upload } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { subscriptionStatus } from '@/lib/billing'
+import { subscriptionDisplayStatus } from '@/lib/billing'
 import { isNoAccessEmail } from '@/lib/auth-username'
 import { StudentsList } from './students-list'
 import { SignupRequestsSection } from './signup-requests-section'
@@ -20,7 +20,7 @@ export default async function AlumnosPage() {
         .contains('roles', ['student'])
         .order('created_at', { ascending: false }),
       supabase.from('subscriptions').select('student_id, end_date, comp').eq('status', 'active'),
-      supabase.from('studio_settings').select('payment_reminder_days_before, payment_due_day').single(),
+      supabase.from('studio_settings').select('payment_reminder_days_before').single(),
       supabase
         .from('signup_requests')
         .select('id, first_name, last_name, email, phone, created_at')
@@ -33,7 +33,6 @@ export default async function AlumnosPage() {
     ])
   const subByStudent = new Map((subscriptions ?? []).map((s) => [s.student_id, s]))
   const reminderDays = settings?.payment_reminder_days_before ?? 3
-  const graceDay = settings?.payment_due_day ?? 10
 
   // Un alumno tiene un solo profesor (regla de negocio): tomamos el primero que
   // aparezca entre sus clases activas.
@@ -50,7 +49,7 @@ export default async function AlumnosPage() {
     ...s,
     hasAccess: !isNoAccessEmail(s.email),
     displayEmail: isNoAccessEmail(s.email) ? s.contact_email ?? null : s.email,
-    status: subscriptionStatus(subByStudent.get(s.id) ?? null, reminderDays, graceDay),
+    status: subscriptionDisplayStatus(subByStudent.get(s.id) ?? null, reminderDays),
     instructorId: instructorByStudent.get(s.id)?.id ?? null,
     instructorName: instructorByStudent.get(s.id)?.name ?? null,
   }))

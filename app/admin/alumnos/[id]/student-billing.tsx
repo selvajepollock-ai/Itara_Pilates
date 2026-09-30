@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import {
   subscriptionStatus,
+  subscriptionDisplayStatus,
   STATUS_LABEL,
   STATUS_CLASSES,
   suggestNextPaymentDate,
@@ -39,11 +40,14 @@ export async function StudentBilling({ studentId, studentName }: { studentId: st
   const dueDay = settings?.payment_due_day ?? 10
   const reminderDays = settings?.payment_reminder_days_before ?? 3
   const isComp = Boolean(subscription?.comp)
-  const status = subscriptionStatus(subscription ?? null, reminderDays, dueDay)
+  // "status" es lo que VE Vane (informativo, mes calendario). "billingStatus" es el que
+  // realmente determina el recargo, con el margen de gracia hasta el día `dueDay`.
+  const status = subscriptionDisplayStatus(subscription ?? null, reminderDays)
+  const billingStatus = subscriptionStatus(subscription ?? null, reminderDays, dueDay)
   const suggestedNextDate = suggestNextPaymentDate(subscription?.end_date ?? null)
 
   const planInfo = subscription?.plans as unknown as { name: string; price: number } | null
-  const { amount: amountWithSurcharge, hasSurcharge } = applyLateSurcharge(planInfo?.price ?? 0, status)
+  const { amount: amountWithSurcharge, hasSurcharge } = applyLateSurcharge(planInfo?.price ?? 0, billingStatus)
 
   // Fecha de vencimiento real (con margen de gracia): día `dueDay` del mes siguiente
   // al que ya está cubierto.

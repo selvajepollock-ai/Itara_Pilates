@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, formatTime } from '@/lib/day-names'
-import { subscriptionStatus, STATUS_LABEL } from '@/lib/billing'
+import { subscriptionDisplayStatus, STATUS_LABEL } from '@/lib/billing'
 
 async function assertAdmin() {
   const supabase = await createClient()
@@ -46,7 +46,7 @@ export async function buildPeriodReport({
   ] = await Promise.all([
     s.from('profiles').select('id, full_name, phone, roles'),
     s.from('subscriptions').select('student_id, end_date, comp, comp_reason, plans(name, price)').eq('status', 'active'),
-    s.from('studio_settings').select('payment_due_day, payment_reminder_days_before').maybeSingle(),
+    s.from('studio_settings').select('payment_reminder_days_before').maybeSingle(),
     s
       .from('payments')
       .select('amount, paid_at, notes, recorded_by, subscriptions(student_id, plans(name))')
@@ -71,7 +71,6 @@ export async function buildPeriodReport({
     s.from('attendance').select('student_id').eq('status', 'absent').gte('session_date', from).lte('session_date', to),
   ])
 
-  const dueDay = settings?.payment_due_day ?? 10
   const reminderDays = settings?.payment_reminder_days_before ?? 3
 
   const nameById = new Map<string, string>()
@@ -125,7 +124,7 @@ export async function buildPeriodReport({
   let bonificados = 0
   for (const id of studentIds) {
     const sub = subByStudent.get(id) ?? null
-    const status = subscriptionStatus(sub as { end_date: string | null; comp?: boolean | null } | null, reminderDays, dueDay)
+    const status = subscriptionDisplayStatus(sub as { end_date: string | null; comp?: boolean | null } | null, reminderDays)
     if (status === 'bonificado') bonificados++
     const plan = (sub?.plans as unknown as PlanRef) ?? null
     const row: Row = {

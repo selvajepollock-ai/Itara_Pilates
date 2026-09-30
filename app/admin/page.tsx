@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { Users, UserCog, CalendarDays, ArrowUpRight, Cake, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { daysUntilNextBirthday, formatBirthday } from '@/lib/birthdays'
-import { suggestNextDueDate, getPaymentStatus } from '@/lib/billing'
+import { suggestNextDueDate, getDisplayStatus } from '@/lib/billing'
 import { DAY_NAMES } from '@/lib/day-names'
 import { QuickPayment } from './quick-payment'
 
@@ -50,7 +50,6 @@ export default async function AdminDashboard() {
   const studentsCount = studentsData?.length ?? 0
   const classesCount = classesData?.length ?? 0
 
-  const graceDay = settings?.payment_due_day ?? 10
   // Un alumno no debería tener más de una suscripción activa, pero por las dudas
   // (datos viejos, carrera del formulario) contamos una sola vez por alumno.
   const subsByStudent = new Map<string, NonNullable<typeof subscriptionsData>[number]>()
@@ -59,7 +58,7 @@ export default async function AdminDashboard() {
     if (!prev || s.end_date > prev.end_date) subsByStudent.set(s.student_id, s)
   }
   const overdueCount = [...subsByStudent.values()].filter(
-    (s) => !s.comp && getPaymentStatus(s.end_date, undefined, graceDay) === 'vencido'
+    (s) => !s.comp && getDisplayStatus(s.end_date) === 'vencido'
   ).length
 
   const stats = [

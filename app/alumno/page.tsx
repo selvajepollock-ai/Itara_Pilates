@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { CalendarX, RefreshCw, Flower2, CalendarDays, Clock } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
-import { subscriptionStatus, STATUS_LABEL, STATUS_CLASSES } from '@/lib/billing'
+import { subscriptionDisplayStatus, STATUS_LABEL, STATUS_CLASSES } from '@/lib/billing'
 import { getMonday, dateForDayOfWeek, toISODate, isInPast, hoursUntil } from '@/lib/sessions'
 import { getDailyQuote } from '@/lib/quotes'
 import { displayClassType } from '@/lib/class-type-display'
@@ -116,11 +116,7 @@ export default async function AlumnoDashboard() {
   const quote = getDailyQuote(studentId)
   const minHours = settings?.cancellation_min_hours ?? 12
 
-  const status = subscriptionStatus(
-    subscription ?? null,
-    settings?.payment_reminder_days_before ?? 3,
-    settings?.payment_due_day ?? 10
-  )
+  const status = subscriptionDisplayStatus(subscription ?? null, settings?.payment_reminder_days_before ?? 3)
   const planInfo = subscription?.plans as unknown as { name: string } | null
 
   const enrollments = (data ?? []) as unknown as MyClassRow[]

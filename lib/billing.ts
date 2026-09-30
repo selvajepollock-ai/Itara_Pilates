@@ -36,6 +36,33 @@ export function getPaymentStatus(
   return 'al_dia'
 }
 
+// Estado que VE Vane en las listas: informativo, sigue el mes calendario, sin
+// el margen de gracia (eso es aparte, para el recargo real -- ver getPaymentStatus).
+// "Vencido" apenas termina el mes que ya pagó, "por vencer" unos días antes de que
+// termine (mismo ajuste que ya usan para el recordatorio).
+export function getDisplayStatus(endDate: string | null, reminderDaysBefore: number = 3): PaymentStatus {
+  if (!endDate) return 'sin_plan'
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const end = new Date(`${endDate}T00:00:00`)
+
+  const diffDays = Math.round((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+
+  if (diffDays < 0) return 'vencido'
+  if (diffDays <= reminderDaysBefore) return 'por_vencer'
+  return 'al_dia'
+}
+
+export function subscriptionDisplayStatus(
+  sub: { end_date: string | null; comp?: boolean | null } | null | undefined,
+  reminderDaysBefore?: number
+): PaymentStatus {
+  if (!sub) return 'sin_plan'
+  if (sub.comp) return 'bonificado'
+  return getDisplayStatus(sub.end_date ?? null, reminderDaysBefore)
+}
+
 export const STATUS_LABEL: Record<PaymentStatus, string> = {
   al_dia: 'Al día',
   por_vencer: 'Por vencer',

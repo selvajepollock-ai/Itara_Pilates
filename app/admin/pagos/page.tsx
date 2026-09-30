@@ -3,7 +3,7 @@ import { TrendingUp, AlertTriangle, Wallet } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { formatARS } from '@/lib/currency'
 import {
-  subscriptionStatus,
+  subscriptionDisplayStatus,
   suggestNextDueDate,
   STATUS_LABEL,
   STATUS_CLASSES,
@@ -100,7 +100,7 @@ export default async function PagosResumenPage({
 
   for (const s of subs) {
     studentsWithSub.add(s.student_id)
-    const status = subscriptionStatus(s, reminderDays, dueDay)
+    const status = subscriptionDisplayStatus(s, reminderDays)
     counts[status] += 1
     if (status === 'vencido' || status === 'por_vencer') {
       deudores.push({
