@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
-import { cancelSession, bookRecovery, addExtraClassesBatch } from '@/app/actions/recovery'
+import { cancelSession, bookRecovery, addExtraClassesBatch, undoSessionCancellation } from '@/app/actions/recovery'
 import { formatTime } from '@/lib/day-names'
 import { displayClassType } from '@/lib/class-type-display'
 
@@ -15,6 +15,7 @@ type Cell = {
   typeName: string
   isScheduled: boolean
   isMyFixedSlot: boolean
+  isMyCancelledToday: boolean
   hasRoom: boolean
 } | null
 
@@ -50,6 +51,7 @@ export function MonthMoveCalendar({
   const [mode, setMode] = useState<'move' | 'extra'>('move')
   const [extraSelections, setExtraSelections] = useState<ExtraSelection[]>([])
   const [extraDone, setExtraDone] = useState(false)
+  const [undoneDone, setUndoneDone] = useState(false)
 
   function formatPrice(n: number) {
     return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n)
@@ -122,6 +124,26 @@ export function MonthMoveCalendar({
     })
   }
 
+  function handleUndoCancellation(cell: Cell) {
+    if (!cell || !cell.enrollmentId) return
+    setError(null)
+    setUndoneDone(false)
+    startTransition(async () => {
+      const res = await undoSessionCancellation({
+        studentId,
+        enrollmentId: cell.enrollmentId!,
+        classId: cell.classId,
+        sessionDate: cell.date,
+      })
+      if (res?.error) {
+        setError(res.error)
+        return
+      }
+      setUndoneDone(true)
+      router.refresh()
+    })
+  }
+
   function handleCellClick(cell: Cell) {
     if (!cell) return
     setError(null)
@@ -133,6 +155,10 @@ export function MonthMoveCalendar({
     }
 
     if (!selection) {
+      if (cell.isMyCancelledToday) {
+        handleUndoCancellation(cell)
+        return
+      }
       if (!cell.isMyFixedSlot || !cell.isScheduled) return
       setPendingConfirm(cell)
       return
@@ -262,6 +288,9 @@ export function MonthMoveCalendar({
       {extraDone && (
         <p className="mt-2 text-xs text-moss-dark">Clases extra agregadas ✓ — se sumaron a lo que debe.</p>
       )}
+      {undoneDone && (
+        <p className="mt-2 text-xs text-moss-dark">Deshecho ✓ — vuelve a contar como que viene normal, sin cargo.</p>
+      )}
 
       <div className="mt-4 overflow-x-auto">
         <div className="grid min-w-[480px] gap-1" style={{ gridTemplateColumns: `48px repeat(5, 1fr)` }}>
@@ -302,7 +331,7 @@ export function MonthMoveCalendar({
                     ? isExtraTarget
                     : selection
                       ? isSelected || isValidTarget
-                      : cell.isMyFixedSlot && cell.isScheduled
+                      : cell.isMyCancelledToday || (cell.isMyFixedSlot && cell.isScheduled)
 
                 return (
                   <button
@@ -310,34 +339,42 @@ export function MonthMoveCalendar({
                     type="button"
                     disabled={isPending || (!isClickable && !isSelected && !isExtraSelected)}
                     onClick={() => handleCellClick(cell)}
-                    title={`${cell.date.slice(8, 10)} — ${displayClassType(cell.typeName)} ${formatTime(hour)}${
-                      cell.isScheduled ? '' : cell.hasRoom ? ' — libre' : ' — completo'
-                    }`}
+                    title={
+                      cell.isMyCancelledToday && mode !== 'extra'
+                        ? `${cell.date.slice(8, 10)} — ${displayClassType(cell.typeName)} ${formatTime(hour)} — avisó que no venía: click para deshacer (al final viene, sin cargo)`
+                        : `${cell.date.slice(8, 10)} — ${displayClassType(cell.typeName)} ${formatTime(hour)}${
+                            cell.isScheduled ? '' : cell.hasRoom ? ' — libre' : ' — completo'
+                          }`
+                    }
                     className={`h-8 rounded-md border text-[11px] transition ${
                       isSelected
                         ? 'border-clay bg-clay text-white animate-pulse'
                         : isExtraSelected
                           ? 'border-clay bg-clay text-white'
-                          : cell.isScheduled
-                            ? 'border-moss bg-moss text-white'
-                            : cell.hasRoom
-                              ? isExtraTarget
-                                ? 'border-clay/50 bg-clay/10 text-clay hover:bg-clay/20'
-                                : isValidTarget || !selection
-                                  ? 'border-moss/40 bg-moss/10 text-moss hover:bg-moss/20'
-                                  : 'border-sand/40 bg-transparent text-ink/15'
-                              : 'border-clay/30 bg-clay/5 text-clay/60'
+                          : cell.isMyCancelledToday && mode !== 'extra'
+                            ? 'border-amber-400 bg-amber-100 text-amber-700 hover:bg-amber-200'
+                            : cell.isScheduled
+                              ? 'border-moss bg-moss text-white'
+                              : cell.hasRoom
+                                ? isExtraTarget
+                                  ? 'border-clay/50 bg-clay/10 text-clay hover:bg-clay/20'
+                                  : isValidTarget || !selection
+                                    ? 'border-moss/40 bg-moss/10 text-moss hover:bg-moss/20'
+                                    : 'border-sand/40 bg-transparent text-ink/15'
+                                : 'border-clay/30 bg-clay/5 text-clay/60'
                     } ${isPending ? 'opacity-50' : ''}`}
                   >
                     {isSelected
                       ? '↕'
                       : isExtraSelected
                         ? '✓'
-                        : cell.isScheduled
-                          ? '✓'
-                          : cell.hasRoom
-                            ? '+'
-                            : '!'}
+                        : cell.isMyCancelledToday && mode !== 'extra'
+                          ? '↺'
+                          : cell.isScheduled
+                            ? '✓'
+                            : cell.hasRoom
+                              ? '+'
+                              : '!'}
                   </button>
                 )
               })}
@@ -362,6 +399,10 @@ export function MonthMoveCalendar({
         <span className="flex items-center gap-1.5 text-ink/60">
           <span className="h-2.5 w-2.5 rounded bg-clay" />
           Seleccionada
+        </span>
+        <span className="flex items-center gap-1.5 text-ink/60">
+          <span className="h-2.5 w-2.5 rounded border border-amber-400 bg-amber-100" />
+          Avisó que no viene (↺ click para deshacer, sin cargo)
         </span>
       </div>
 

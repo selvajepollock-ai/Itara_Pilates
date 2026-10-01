@@ -189,6 +189,7 @@ export async function MonthSessions({
         typeName: classForSlot.class_types?.name ?? 'Clase',
         isScheduled,
         isMyFixedSlot,
+        isMyCancelledToday: isMyFixedSlot && isCancelledThisDate,
         hasRoom: hasRoom || isScheduled,
       }
     }),
