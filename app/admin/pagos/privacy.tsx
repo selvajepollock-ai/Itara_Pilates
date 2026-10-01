@@ -1,11 +1,9 @@
 'use client'
 
 import { createContext, useContext, useState } from 'react'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, ChevronDown } from 'lucide-react'
 
 const PrivacyContext = createContext(true)
-
-/** Envuelve la pantalla de Pagos: los montos arrancan tapados hasta que se destapen a mano. */
 const SetHiddenContext = createContext<(v: boolean) => void>(() => {})
 
 export function MoneyPrivacyProvider({ children }: { children: React.ReactNode }) {
@@ -15,6 +13,10 @@ export function MoneyPrivacyProvider({ children }: { children: React.ReactNode }
       <SetHiddenContext.Provider value={setHidden}>{children}</SetHiddenContext.Provider>
     </PrivacyContext.Provider>
   )
+}
+
+export function useMoneyHidden() {
+  return useContext(PrivacyContext)
 }
 
 /** Botón para tapar/destapar los montos — se ubica donde convenga en el layout. */
@@ -33,26 +35,43 @@ export function PrivacyToggleButton() {
   )
 }
 
-export function useMoneyHidden() {
-  return useContext(PrivacyContext)
-}
-
-/** Tapa un texto/monto en línea mientras el modo privado esté activo. */
+/**
+ * Tapa un monto en línea con guiones fijos (como el saldo de un banco) en vez de
+ * blurear el texto real: blureado se seguía notando la cantidad de dígitos/forma.
+ */
 export function Private({ children }: { children: React.ReactNode }) {
   const hidden = useMoneyHidden()
+  if (!hidden) return <>{children}</>
   return (
-    <span className={hidden ? 'select-none blur-sm' : undefined} aria-hidden={hidden}>
-      {children}
+    <span className="text-ink/30" aria-hidden>
+      • • • • • •
     </span>
   )
 }
 
-/** Igual que Private, pero para bloques (ej: un gráfico), usando un div en vez de span. */
-export function PrivateBlock({ children }: { children: React.ReactNode }) {
+/**
+ * Sección financiera completa (números grandes + gráfico): en vez de blurear las
+ * barras (que igual revelan la forma/magnitud), queda plegada hasta que se destapa.
+ */
+export function FinancialSection({ children, label = 'Resumen financiero' }: { children: React.ReactNode; label?: string }) {
   const hidden = useMoneyHidden()
-  return (
-    <div className={hidden ? 'select-none blur-sm' : undefined} aria-hidden={hidden}>
-      {children}
-    </div>
-  )
+  const setHidden = useContext(SetHiddenContext)
+
+  if (hidden) {
+    return (
+      <button
+        type="button"
+        onClick={() => setHidden(false)}
+        className="flex w-full items-center justify-between rounded-2xl border border-dashed border-sand bg-linen/40 px-5 py-4 text-left transition hover:border-moss/50"
+      >
+        <span className="flex items-center gap-2 text-sm text-ink/50">
+          <EyeOff size={15} />
+          {label} oculto — tocá para mostrar
+        </span>
+        <ChevronDown size={16} className="text-ink/30" />
+      </button>
+    )
+  }
+
+  return <>{children}</>
 }

@@ -11,7 +11,7 @@ import {
 } from '@/lib/billing'
 import { collectionSummary } from '@/lib/payments'
 import { QuickPayment } from '../quick-payment'
-import { MoneyPrivacyProvider, Private, PrivateBlock, PrivacyToggleButton } from './privacy'
+import { MoneyPrivacyProvider, Private, FinancialSection, PrivacyToggleButton } from './privacy'
 
 function monthRange(monthParam?: string) {
   const now = new Date()
@@ -258,46 +258,38 @@ export default async function PagosResumenPage({
       </div>
 
       {/* Cobranza del mes */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-2xl border border-sand bg-white p-5">
-          <div className="flex items-center gap-2 text-ink/40">
-            <TrendingUp size={15} className="text-moss" />
-            <p className="text-xs uppercase tracking-[0.2em]">Cobrado</p>
+      <FinancialSection label="Cobranza del mes">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-2xl border border-sand bg-white p-5">
+            <div className="flex items-center gap-2 text-ink/40">
+              <TrendingUp size={15} className="text-moss" />
+              <p className="text-xs uppercase tracking-[0.2em]">Cobrado</p>
+            </div>
+            <p className="mt-3 font-display text-3xl italic text-ink">{formatARS(summary.collected)}</p>
+            <p className="mt-1 text-xs text-ink/40">{payments.length} pagos</p>
           </div>
-          <p className="mt-3 font-display text-3xl italic text-ink">
-            <Private>{formatARS(summary.collected)}</Private>
-          </p>
-          <p className="mt-1 text-xs text-ink/40">{payments.length} pagos</p>
-        </div>
-        <div className="rounded-2xl border border-sand bg-white p-5">
-          <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Esperado</p>
-          <p className="mt-3 font-display text-3xl italic text-ink">
-            <Private>{formatARS(summary.expected)}</Private>
-          </p>
-          <p className="mt-1 text-xs text-ink/40">según planes activos</p>
-        </div>
-        <div className="rounded-2xl border border-sand bg-white p-5">
-          <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Cobranza</p>
-          <p className="mt-3 font-display text-3xl italic text-ink">
-            <Private>{summary.rate}%</Private>
-          </p>
-          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-linen">
-            <Private>
+          <div className="rounded-2xl border border-sand bg-white p-5">
+            <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Esperado</p>
+            <p className="mt-3 font-display text-3xl italic text-ink">{formatARS(summary.expected)}</p>
+            <p className="mt-1 text-xs text-ink/40">según planes activos</p>
+          </div>
+          <div className="rounded-2xl border border-sand bg-white p-5">
+            <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Cobranza</p>
+            <p className="mt-3 font-display text-3xl italic text-ink">{summary.rate}%</p>
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-linen">
               <div
                 className={`h-full rounded-full ${summary.rate >= 80 ? 'bg-moss' : 'bg-clay'}`}
                 style={{ width: `${Math.min(summary.rate, 100)}%` }}
               />
-            </Private>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-sand bg-white p-5">
+            <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Falta cobrar</p>
+            <p className="mt-3 font-display text-3xl italic text-ink">{formatARS(summary.gap)}</p>
+            <p className="mt-1 text-xs text-ink/40">estimado del mes</p>
           </div>
         </div>
-        <div className="rounded-2xl border border-sand bg-white p-5">
-          <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Falta cobrar</p>
-          <p className="mt-3 font-display text-3xl italic text-ink">
-            <Private>{formatARS(summary.gap)}</Private>
-          </p>
-          <p className="mt-1 text-xs text-ink/40">estimado del mes</p>
-        </div>
-      </div>
+      </FinancialSection>
 
       {/* Estados: clickeables, llevan a Alumnos ya filtrado por ese estado */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -322,22 +314,24 @@ export default async function PagosResumenPage({
         <div className="rounded-2xl border border-sand bg-white p-6">
           <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Últimos 6 meses</p>
           <p className="mt-1 font-display text-xl italic text-ink">Cobrado por mes</p>
-          <PrivateBlock>
-            <div className="mt-4 flex items-end gap-2" style={{ height: 120 }}>
-              {trend.map(([key, value]) => (
-                <div key={key} className="flex flex-1 flex-col items-center gap-1.5">
-                  <div className="flex w-full flex-1 items-end">
-                    <div
-                      className={`w-full rounded-t ${key === label ? 'bg-moss' : 'bg-moss/30'}`}
-                      style={{ height: `${Math.max((value / trendMax) * 100, 2)}%` }}
-                      title={formatARS(value)}
-                    />
+          <div className="mt-4">
+            <FinancialSection label="Gráfico">
+              <div className="flex items-end gap-2" style={{ height: 120 }}>
+                {trend.map(([key, value]) => (
+                  <div key={key} className="flex flex-1 flex-col items-center gap-1.5">
+                    <div className="flex w-full flex-1 items-end">
+                      <div
+                        className={`w-full rounded-t ${key === label ? 'bg-moss' : 'bg-moss/30'}`}
+                        style={{ height: `${Math.max((value / trendMax) * 100, 2)}%` }}
+                        title={formatARS(value)}
+                      />
+                    </div>
+                    <span className="text-[10px] text-ink/40">{key.slice(5)}</span>
                   </div>
-                  <span className="text-[10px] text-ink/40">{key.slice(5)}</span>
-                </div>
-              ))}
-            </div>
-          </PrivateBlock>
+                ))}
+              </div>
+            </FinancialSection>
+          </div>
         </div>
       </div>
 
