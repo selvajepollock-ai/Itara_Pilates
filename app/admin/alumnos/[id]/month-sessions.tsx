@@ -40,6 +40,8 @@ export async function MonthSessions({
     { data: allEnrollmentsGlobal },
     { data: settings },
     { data: subscription },
+    { data: weekCancellationsAll },
+    { data: weekRecoveriesAll },
   ] = await Promise.all([
     supabase
       .from('enrollments')
@@ -74,6 +76,20 @@ export async function MonthSessions({
       .eq('student_id', studentId)
       .eq('status', 'active')
       .maybeSingle(),
+    // De TODOS los alumnos (no solo este): para saber el cupo real de cada fecha
+    // puntual, no solo el cupo fijo -- una cancelación de otro alumno libera un
+    // lugar ese día, y una recuperación de otro alumno lo vuelve a ocupar.
+    admin
+      .from('session_cancellations')
+      .select('class_id, session_date')
+      .gte('session_date', weekStart)
+      .lte('session_date', weekEnd),
+    admin
+      .from('attendance')
+      .select('class_id, session_date')
+      .not('recovery_credit_id', 'is', null)
+      .gte('session_date', weekStart)
+      .lte('session_date', weekEnd),
   ])
 
   const plan = subscription?.plans as unknown as { price: number; classes_per_week: number | null } | null
@@ -116,6 +132,19 @@ export async function MonthSessions({
     enrolledCountByClass.set(e.class_id, (enrolledCountByClass.get(e.class_id) ?? 0) + 1)
   }
 
+  // Ajuste por fecha puntual (de TODOS los alumnos): cancelaciones liberan un
+  // lugar ese día, recuperaciones lo vuelven a ocupar. Sin esto, un lugar
+  // liberado por una cancelación seguía figurando "completo".
+  const dateAdjustByClass = new Map<string, number>()
+  for (const c of weekCancellationsAll ?? []) {
+    const k = `${c.class_id}_${c.session_date}`
+    dateAdjustByClass.set(k, (dateAdjustByClass.get(k) ?? 0) - 1)
+  }
+  for (const r of weekRecoveriesAll ?? []) {
+    const k = `${r.class_id}_${r.session_date}`
+    dateAdjustByClass.set(k, (dateAdjustByClass.get(k) ?? 0) + 1)
+  }
+
   const cancelledKeys = new Set((cancellations ?? []).map((c) => `${c.class_id}_${c.session_date}`))
   const recoveryByDateClass = new Map<string, string>()
   for (const r of recoveries ?? []) {
@@ -143,7 +172,8 @@ export async function MonthSessions({
       const recoveryId = recoveryByDateClass.get(key)
       const isScheduled = (isMyFixedSlot && !isCancelledThisDate) || Boolean(recoveryId)
 
-      const enrolled = enrolledCountByClass.get(classForSlot.id) ?? 0
+      const fixedEnrolled = enrolledCountByClass.get(classForSlot.id) ?? 0
+      const enrolled = fixedEnrolled + (dateAdjustByClass.get(key) ?? 0)
       const hasRoom = enrolled < classForSlot.capacity
 
       return {

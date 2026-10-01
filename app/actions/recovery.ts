@@ -136,6 +136,71 @@ export async function cancelSession({
   return { success: true, withinDeadline, recoveryCreditId }
 }
 
+// Deshace el aviso de "no voy" de UN alumno en UNA fecha puntual: vuelve a contar
+// como que viene normal ese día (horario fijo), sin cargarle una clase paga nueva
+// ni tratarlo como recuperación. Es para el caso de "avisó que no venía y al final
+// sí va a venir".
+export async function undoSessionCancellation({
+  studentId,
+  enrollmentId,
+  classId,
+  sessionDate,
+}: {
+  studentId: string
+  enrollmentId: string
+  classId: string
+  sessionDate: string
+}) {
+  const auth = await assertSelfOrAdmin(studentId)
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
+
+  const { data: cancellation } = await supabase
+    .from('session_cancellations')
+    .select('id, recovery_credit_id')
+    .eq('enrollment_id', enrollmentId)
+    .eq('class_id', classId)
+    .eq('session_date', sessionDate)
+    .maybeSingle()
+
+  if (!cancellation) return { error: 'No encontré un aviso de cancelación para esa fecha.' }
+
+  if (cancellation.recovery_credit_id) {
+    const { data: credit } = await supabase
+      .from('recovery_credits')
+      .select('id, status')
+      .eq('id', cancellation.recovery_credit_id)
+      .maybeSingle()
+
+    if (credit?.status === 'used') {
+      return {
+        error: 'Ya usó la recuperación de esta cancelación en otra clase. Para deshacer esto, primero hay que resolver esa recuperación.',
+      }
+    }
+    if (credit?.status === 'requested') {
+      return {
+        error: 'Tiene un pedido de recuperación esperando aprobación para esta cancelación. Resolvelo desde Avisos antes de deshacer esto.',
+      }
+    }
+    if (credit) {
+      // Crédito sin usar (available/expired): se descarta, nunca se llegó a usar.
+      await supabase.from('session_cancellations').update({ recovery_credit_id: null }).eq('id', cancellation.id)
+      await supabase.from('recovery_credits').delete().eq('id', credit.id)
+    }
+  }
+
+  const { error } = await supabase.from('session_cancellations').delete().eq('id', cancellation.id)
+  if (error) return { error: error.message }
+
+  revalidatePath('/alumno')
+  revalidatePath(`/admin/alumnos/${studentId}`)
+  revalidatePath('/admin/avisos')
+  revalidatePath(`/admin/horarios/${classId}`)
+  revalidatePath('/admin/horarios')
+
+  return { success: true }
+}
+
 // El alumno elige un horario candidato. Queda "solicitado", esperando el OK del estudio.
 // Todavía NO se anota de verdad (no se crea asistencia) hasta que el admin apruebe.
 export async function bookRecovery({

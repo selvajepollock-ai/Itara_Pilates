@@ -10,6 +10,7 @@ import { getMonday, dateForDayOfWeek, toISODate } from '@/lib/sessions'
 import { isNoAccessEmail } from '@/lib/auth-username'
 import { CancelOccurrenceForm } from './cancel-occurrence-form'
 import { ActivateExtraCapacityButton } from './activate-extra-capacity-button'
+import { UndoCancellationButton } from './undo-cancellation-button'
 
 type ClassDetail = {
   id: string
@@ -145,7 +146,7 @@ export default async function ClaseDetailPage({
   const dayLabel = sessionDateObj.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
 
   // Quiénes vienen ESE día: recuperan (resaltados), fijos, y los que avisaron que no.
-  type DayRow = { key: string; studentId: string; name: string; kind: 'recupera' | 'fijo' | 'cancelo' }
+  type DayRow = { key: string; studentId: string; name: string; kind: 'recupera' | 'fijo' | 'cancelo'; enrollmentId?: string }
   const dayRows: DayRow[] = [
     ...recovering.map((r): DayRow => ({ key: `r-${r.student_id}`, studentId: r.student_id, name: r.profiles?.full_name ?? 'Alumno', kind: 'recupera' })),
     ...enrollments
@@ -153,7 +154,7 @@ export default async function ClaseDetailPage({
       .map((e): DayRow => ({ key: `f-${e.id}`, studentId: e.student_id, name: e.profiles?.full_name ?? 'Alumno', kind: 'fijo' })),
     ...enrollments
       .filter((e) => cancelledEnrollmentIds.has(e.id))
-      .map((e): DayRow => ({ key: `c-${e.id}`, studentId: e.student_id, name: e.profiles?.full_name ?? 'Alumno', kind: 'cancelo' })),
+      .map((e): DayRow => ({ key: `c-${e.id}`, studentId: e.student_id, name: e.profiles?.full_name ?? 'Alumno', kind: 'cancelo', enrollmentId: e.id })),
   ]
 
   const stats: { label: string; value: string; tone: string; hint: string }[] = [
@@ -313,8 +314,18 @@ export default async function ClaseDetailPage({
                 )}
                 {r.kind === 'fijo' && <span className="shrink-0 text-[11px] text-ink/40">Fijo</span>}
                 {r.kind === 'cancelo' && (
-                  <span className="shrink-0 rounded-full bg-clay/10 px-2.5 py-0.5 text-[11px] font-medium text-clay">
-                    Canceló
+                  <span className="flex shrink-0 items-center gap-2">
+                    <span className="rounded-full bg-clay/10 px-2.5 py-0.5 text-[11px] font-medium text-clay">
+                      Canceló
+                    </span>
+                    {r.enrollmentId && (
+                      <UndoCancellationButton
+                        studentId={r.studentId}
+                        enrollmentId={r.enrollmentId}
+                        classId={classItem.id}
+                        sessionDate={sessionDate}
+                      />
+                    )}
                   </span>
                 )}
               </li>
