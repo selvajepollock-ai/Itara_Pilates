@@ -36,7 +36,7 @@ export function MonthMoveCalendar({
   weekLabel: string
   prevOffset: number
   nextOffset: number
-  dayLabels: string[]
+  dayLabels: { name: string; dayNum: number; isToday: boolean }[]
   cells: { hour: string; row: Cell[] }[]
   dropInPrice: number
   hasPlan: boolean
@@ -163,17 +163,15 @@ export function MonthMoveCalendar({
   return (
     <div className="rounded-2xl border border-sand bg-white p-6">
       <div className="flex items-center justify-between">
-        <div>
-          <p className="eyebrow">Semana {weekLabel}</p>
-          <p className="mt-1 font-display text-lg italic text-ink">Calendario del alumno</p>
-        </div>
-        <div className="flex items-center gap-1.5">
+        <p className="font-display text-lg italic text-ink">Calendario del alumno</p>
+        <div className="flex items-center gap-1.5 rounded-full border border-moss/30 bg-moss/5 py-1 pl-1 pr-3">
           <Link
             href={`?week=${prevOffset}`}
             className="icon-btn-sm h-7 w-7"
           >
             <ChevronLeft size={14} />
           </Link>
+          <p className="text-sm font-semibold text-moss-dark whitespace-nowrap">Semana {weekLabel}</p>
           <Link
             href={`?week=${nextOffset}`}
             className="icon-btn-sm h-7 w-7"
@@ -269,8 +267,20 @@ export function MonthMoveCalendar({
         <div className="grid min-w-[480px] gap-1" style={{ gridTemplateColumns: `48px repeat(5, 1fr)` }}>
           <div />
           {dayLabels.map((d) => (
-            <div key={d} className="pb-0.5 text-center text-[10px] font-medium uppercase text-ink/40">
-              {d}
+            <div
+              key={d.name}
+              className={`flex flex-col items-center gap-0.5 pb-1 text-center text-[10px] font-medium uppercase ${
+                d.isToday ? 'text-moss-dark' : 'text-ink/40'
+              }`}
+            >
+              <span>{d.name}</span>
+              <span
+                className={`flex h-5 w-5 items-center justify-center rounded-full font-display text-[11px] not-italic ${
+                  d.isToday ? 'bg-moss text-white' : 'text-ink/60'
+                }`}
+              >
+                {d.dayNum}
+              </span>
             </div>
           ))}
           {cells.map(({ hour, row }) => (

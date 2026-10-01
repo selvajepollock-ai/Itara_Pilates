@@ -156,7 +156,13 @@ export async function MonthSessions({
   )
 
   const hours = Array.from(new Set(classes.map((c) => c.start_time))).sort()
-  const dayLabels = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie']
+  const dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie']
+  const todayISO = toISODate(today)
+  const dayLabels = weekDates.map((date, i) => ({
+    name: dayNames[i],
+    dayNum: new Date(`${date}T00:00:00`).getDate(),
+    isToday: date === todayISO,
+  }))
   const dayOfWeekByIndex = weekDates.map((d) => new Date(`${d}T00:00:00`).getDay())
 
   const cells = hours.map((hour) => ({
