@@ -38,11 +38,11 @@ export function UndoCancellationButton({
         type="button"
         onClick={handleClick}
         disabled={isPending}
-        title="Al final sí viene: deshace el aviso de cancelación, sin cargarle una clase paga"
+        title="Deshace el aviso de cancelación (si al final sí viene), sin cargarle una clase paga"
         className="flex items-center gap-1 text-[11px] font-medium text-moss hover:text-moss-dark disabled:opacity-50"
       >
         <RotateCcw size={11} strokeWidth={2.5} />
-        {isPending ? 'Deshaciendo...' : 'Al final viene'}
+        {isPending ? 'Deshaciendo...' : 'Deshacer cancelación'}
       </button>
       {error && <span className="max-w-[160px] text-right text-[10px] text-clay">{error}</span>}
     </span>
