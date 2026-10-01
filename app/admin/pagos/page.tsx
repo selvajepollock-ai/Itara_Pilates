@@ -11,6 +11,7 @@ import {
 } from '@/lib/billing'
 import { collectionSummary } from '@/lib/payments'
 import { QuickPayment } from '../quick-payment'
+import { MoneyPrivacyProvider, Private, PrivateBlock, PrivacyToggleButton } from './privacy'
 
 function monthRange(monthParam?: string) {
   const now = new Date()
@@ -71,7 +72,9 @@ function DebtorSection({
                 <Link href={`/admin/alumnos/${d.studentId}`} className="text-sm text-ink hover:text-moss">
                   {d.name}
                 </Link>
-                <span className="text-sm text-ink/50">{formatARS(d.planPrice)}</span>
+                <span className="text-sm text-ink/50">
+                  <Private>{formatARS(d.planPrice)}</Private>
+                </span>
               </li>
             ))}
           </ul>
@@ -237,17 +240,21 @@ export default async function PagosResumenPage({
   const monthName = new Date(start).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
 
   return (
-    <div className="space-y-6">
+    <MoneyPrivacyProvider>
+      <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-ink/50 first-letter:uppercase">{monthName}</p>
-        <form action="/admin/pagos" method="GET">
-          <input
-            type="month"
-            name="month"
-            defaultValue={label}
-            className="rounded-full border border-sand px-4 py-2 text-sm text-ink/70 outline-none focus:border-moss"
-          />
-        </form>
+        <div className="flex flex-wrap items-center gap-2">
+          <PrivacyToggleButton />
+          <form action="/admin/pagos" method="GET">
+            <input
+              type="month"
+              name="month"
+              defaultValue={label}
+              className="rounded-full border border-sand px-4 py-2 text-sm text-ink/70 outline-none focus:border-moss"
+            />
+          </form>
+        </div>
       </div>
 
       {/* Cobranza del mes */}
@@ -257,27 +264,37 @@ export default async function PagosResumenPage({
             <TrendingUp size={15} className="text-moss" />
             <p className="text-xs uppercase tracking-[0.2em]">Cobrado</p>
           </div>
-          <p className="mt-3 font-display text-3xl italic text-ink">{formatARS(summary.collected)}</p>
+          <p className="mt-3 font-display text-3xl italic text-ink">
+            <Private>{formatARS(summary.collected)}</Private>
+          </p>
           <p className="mt-1 text-xs text-ink/40">{payments.length} pagos</p>
         </div>
         <div className="rounded-2xl border border-sand bg-white p-5">
           <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Esperado</p>
-          <p className="mt-3 font-display text-3xl italic text-ink">{formatARS(summary.expected)}</p>
+          <p className="mt-3 font-display text-3xl italic text-ink">
+            <Private>{formatARS(summary.expected)}</Private>
+          </p>
           <p className="mt-1 text-xs text-ink/40">según planes activos</p>
         </div>
         <div className="rounded-2xl border border-sand bg-white p-5">
           <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Cobranza</p>
-          <p className="mt-3 font-display text-3xl italic text-ink">{summary.rate}%</p>
+          <p className="mt-3 font-display text-3xl italic text-ink">
+            <Private>{summary.rate}%</Private>
+          </p>
           <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-linen">
-            <div
-              className={`h-full rounded-full ${summary.rate >= 80 ? 'bg-moss' : 'bg-clay'}`}
-              style={{ width: `${Math.min(summary.rate, 100)}%` }}
-            />
+            <Private>
+              <div
+                className={`h-full rounded-full ${summary.rate >= 80 ? 'bg-moss' : 'bg-clay'}`}
+                style={{ width: `${Math.min(summary.rate, 100)}%` }}
+              />
+            </Private>
           </div>
         </div>
         <div className="rounded-2xl border border-sand bg-white p-5">
           <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Falta cobrar</p>
-          <p className="mt-3 font-display text-3xl italic text-ink">{formatARS(summary.gap)}</p>
+          <p className="mt-3 font-display text-3xl italic text-ink">
+            <Private>{formatARS(summary.gap)}</Private>
+          </p>
           <p className="mt-1 text-xs text-ink/40">estimado del mes</p>
         </div>
       </div>
@@ -305,20 +322,22 @@ export default async function PagosResumenPage({
         <div className="rounded-2xl border border-sand bg-white p-6">
           <p className="text-xs uppercase tracking-[0.2em] text-ink/40">Últimos 6 meses</p>
           <p className="mt-1 font-display text-xl italic text-ink">Cobrado por mes</p>
-          <div className="mt-4 flex items-end gap-2" style={{ height: 120 }}>
-            {trend.map(([key, value]) => (
-              <div key={key} className="flex flex-1 flex-col items-center gap-1.5">
-                <div className="flex w-full flex-1 items-end">
-                  <div
-                    className={`w-full rounded-t ${key === label ? 'bg-moss' : 'bg-moss/30'}`}
-                    style={{ height: `${Math.max((value / trendMax) * 100, 2)}%` }}
-                    title={formatARS(value)}
-                  />
+          <PrivateBlock>
+            <div className="mt-4 flex items-end gap-2" style={{ height: 120 }}>
+              {trend.map(([key, value]) => (
+                <div key={key} className="flex flex-1 flex-col items-center gap-1.5">
+                  <div className="flex w-full flex-1 items-end">
+                    <div
+                      className={`w-full rounded-t ${key === label ? 'bg-moss' : 'bg-moss/30'}`}
+                      style={{ height: `${Math.max((value / trendMax) * 100, 2)}%` }}
+                      title={formatARS(value)}
+                    />
+                  </div>
+                  <span className="text-[10px] text-ink/40">{key.slice(5)}</span>
                 </div>
-                <span className="text-[10px] text-ink/40">{key.slice(5)}</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </PrivateBlock>
         </div>
       </div>
 
@@ -334,7 +353,7 @@ export default async function PagosResumenPage({
               .map(([plan, amount]) => (
                 <li key={plan} className="flex justify-between text-sm text-ink/70">
                   <span>{plan}</span>
-                  <span>{formatARS(amount)}</span>
+                  <Private>{formatARS(amount)}</Private>
                 </li>
               ))}
           </ul>
@@ -368,6 +387,7 @@ export default async function PagosResumenPage({
         <Wallet size={12} />
         "Esperado" y "Falta cobrar" son estimados: suman el precio de lista de los planes activos, sin contar recargos ni clases sueltas.
       </p>
-    </div>
+      </div>
+    </MoneyPrivacyProvider>
   )
 }
