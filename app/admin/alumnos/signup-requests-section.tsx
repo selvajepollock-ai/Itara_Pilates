@@ -1,10 +1,7 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
-import { Copy, Check, UserPlus } from 'lucide-react'
 import { RejectSignupButton } from './reject-signup-button'
-import { PUBLIC_SITE_URL } from '@/lib/site-url'
 
 type SignupRequest = {
   id: string
@@ -16,40 +13,11 @@ type SignupRequest = {
 }
 
 export function SignupRequestsSection({ requests }: { requests: SignupRequest[] }) {
-  const [copied, setCopied] = useState(false)
-  const registroUrl = `${PUBLIC_SITE_URL}/registro`
-
-  function handleCopy() {
-    navigator.clipboard.writeText(registroUrl)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+  // El link de registro para compartir ahora se copia desde el encabezado de Alumnos.
+  if (requests.length === 0) return null
 
   return (
-    <div className="mb-6">
-      <button
-        onClick={handleCopy}
-        className="flex w-full items-center justify-between rounded-2xl border border-dashed border-sand bg-white px-5 py-3 text-left transition hover:border-moss"
-      >
-        <span className="flex items-center gap-2 text-sm text-ink/70">
-          <UserPlus size={15} className="text-moss" />
-          Link de registro para compartir: <span className="text-ink/40">{registroUrl}</span>
-        </span>
-        <span className="flex items-center gap-1 text-xs font-medium text-moss">
-          {copied ? (
-            <>
-              <Check size={13} /> Copiado
-            </>
-          ) : (
-            <>
-              <Copy size={13} /> Copiar
-            </>
-          )}
-        </span>
-      </button>
-
-      {requests.length > 0 && (
-        <div className="mt-3 rounded-2xl border border-clay/30 bg-clay/5 p-5">
+    <div className="rounded-2xl border border-clay/30 bg-clay/5 p-5">
           <p className="text-xs uppercase tracking-wide text-clay">
             Solicitudes nuevas ({requests.length})
           </p>
@@ -80,8 +48,6 @@ export function SignupRequestsSection({ requests }: { requests: SignupRequest[] 
               </li>
             ))}
           </ul>
-        </div>
-      )}
     </div>
   )
 }

@@ -15,9 +15,18 @@ type StudentBilling = {
   suggestedNextDate: string
 }
 
-export function QuickPayment({ students }: { students: StudentBilling[] }) {
+export function QuickPayment({
+  students,
+  initialStudentId,
+}: {
+  students: StudentBilling[]
+  /** Abre el formulario con este alumno ya elegido (ej: desde su ficha). */
+  initialStudentId?: string
+}) {
   const [query, setQuery] = useState('')
-  const [selected, setSelected] = useState<StudentBilling | null>(null)
+  const [selected, setSelected] = useState<StudentBilling | null>(
+    () => students.find((s) => s.id === initialStudentId) ?? null
+  )
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
