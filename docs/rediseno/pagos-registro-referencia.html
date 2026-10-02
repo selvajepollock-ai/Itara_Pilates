@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Itara · Pagos, registro diario (escritorio)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400;1,9..144,500&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#3F5B46}a:hover{color:#2F4A36}
+button{font-family:inherit;cursor:pointer}
+input,select{font-family:inherit}
+.alumno:hover{text-decoration:underline;color:#2F4A36 !important}
+</style>
+</helmet>
+<div style="display: flex; min-height: 1250px; background: #FFFFFF; font-family: 'Work Sans', system-ui, sans-serif; color: #2B2A26; font-variant-numeric: tabular-nums">
+
+  <aside style="width: 248px; flex-shrink: 0; box-sizing: border-box; background: #FFFFFF; border-right: 1px solid #EEE8DF; padding: 22px 16px; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+      <div style="width: 36px; height: 36px; border-radius: 999px; background: #E9DFD0; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 18px; color: #8A5A3C">I</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 20px; line-height: 1">Itara</span>
+        <span style="font-size: 10px; letter-spacing: 0.18em; color: #6B6459; margin-top: 3px">PILATES</span>
+      </div>
+    </div>
+    <nav aria-label="Navegación principal" style="display: flex; flex-direction: column; gap: 18px">
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">OPERACIÓN</span>
+        <a href="Main.dc.html" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Inicio</a>
+        <a href="Semana.dc.html" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Horarios</a>
+        <a href="Alumnos.dc.html" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Alumnos</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">FINANZAS</span>
+        <a href="#" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; background: {{accent}}; color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 500"><span style="flex-grow: 1">Pagos</span><span style="font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.9); color: #2F4A36; border-radius: 999px; padding: 2px 8px">118</span></a>
+        <a href="#" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Reportes</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">COMUNICACIÓN</span>
+        <a href="#" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Comunicados</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">CONFIGURACIÓN</span>
+        <a href="#" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Planes</a>
+        <a href="#" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Equipo</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main style="flex-grow: 1; min-width: 0; padding: 32px 40px 48px; box-sizing: border-box">
+    <div style="max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px">
+
+      <header style="display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; align-items: flex-end; justify-content: space-between">
+          <h1 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 400; font-size: 38px; line-height: 1.1">Pagos</h1>
+          <div style="display: flex; gap: 10px">
+            <button type="button" style="height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #2B2A26; font-size: 14px">Exportar ▾</button>
+            <button type="button" style="height: 44px; padding: 0 18px; border-radius: 12px; border: none; background: {{accent}}; color: #FFFFFF; font-size: 14px; font-weight: 600">+ Registrar pago</button>
+          </div>
+        </div>
+        <div role="tablist" aria-label="Secciones de pagos" style="display: flex; gap: 28px; border-bottom: 1px solid #EEE8DF">
+          <a href="PagosResumen.dc.html" role="tab" aria-selected="false" style="padding: 0 0 12px; font-size: 15px; color: #6B6459; text-decoration: none">Resumen</a>
+          <a href="#" role="tab" aria-selected="true" style="padding: 0 0 12px; font-size: 15px; font-weight: 600; color: #2B2A26; text-decoration: none; border-bottom: 2px solid {{accent}}; margin-bottom: -1px">Registro diario</a>
+          <a href="PagosLiquidacion.dc.html" role="tab" aria-selected="false" style="padding: 0 0 12px; font-size: 15px; color: #6B6459; text-decoration: none">Liquidación</a>
+        </div>
+      </header>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap">
+        <div style="display: flex; align-items: center; gap: 8px">
+          <button type="button" aria-label="Mes anterior" style="width: 40px; height: 40px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; font-size: 16px">‹</button>
+          <button type="button" onClick="{{goToday}}" style="height: 40px; padding: 0 14px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; font-size: 14px">Hoy</button>
+          <button type="button" aria-label="Mes siguiente" style="width: 40px; height: 40px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; font-size: 16px">›</button>
+          <span style="font-size: 16px; font-weight: 600; margin-left: 6px">{{scopeTitle}}</span>
+          <sc-if value="{{hasDay}}" hint-placeholder-val="{{ false }}">
+            <button type="button" onClick="{{clearDay}}" style="height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid #E2D9CC; background: #FFFFFF; font-size: 13px; color: #3F5B46">Ver todo octubre</button>
+          </sc-if>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+          <div role="tablist" aria-label="Tipo de pago" style="display: flex; padding: 3px; background: #F5F1EB; border-radius: 12px">
+            <sc-for list="{{types}}" as="t" hint-placeholder-count="3">
+              <button type="button" role="tab" aria-selected="{{t.active}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button>
+            </sc-for>
+          </div>
+          <label style="display: flex; align-items: center; gap: 6px; height: 40px; padding: 0 12px; border: 1px solid #E2D9CC; border-radius: 12px; font-size: 14px; color: #4A463F">Registró
+            <select aria-label="Filtrar por quién registró" style="border: none; background: transparent; font-size: 14px; outline: none"><option>Todos</option><option>Vanesa Saldaña</option><option>Rodrigo Schulz</option></select>
+          </label>
+          <label style="display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; border: 1px solid #E2D9CC; border-radius: 12px; width: 200px; box-sizing: border-box; color: #6B6459">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+            <input type="search" placeholder="Buscar alumno" aria-label="Buscar alumno" style="border: none; outline: none; background: transparent; font-size: 14px; flex-grow: 1; min-width: 0">
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #4A463F"><input type="checkbox" style="width: 16px; height: 16px; accent-color: #4F6B55">Ver anulados</label>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start">
+
+        <section aria-label="Pagos por día" style="display: flex; flex-direction: column; gap: 16px">
+          <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 40px; text-align: center; border: 1px dashed #E2D9CC; border-radius: 16px; color: #6B6459; font-size: 14px">No hay pagos de este tipo en el período.</div>
+          </sc-if>
+          <sc-for list="{{groups}}" as="g" hint-placeholder-count="2">
+            <div style="border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05); overflow: hidden">
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: #FAF8F5; border-bottom: 1px solid #EEE8DF">
+                <div style="display: flex; align-items: baseline; gap: 10px">
+                  <span style="font-size: 15px; font-weight: 600">{{g.title}}</span>
+                  <sc-if value="{{g.today}}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size: 11px; font-weight: 600; background: {{accent}}; color: #FFFFFF; border-radius: 999px; padding: 2px 8px">Hoy</span>
+                  </sc-if>
+                  <span style="font-size: 13px; color: #6B6459">{{g.countLabel}}</span>
+                </div>
+                <span style="font-size: 16px; font-weight: 600">{{g.total}}</span>
+              </div>
+              <sc-for list="{{g.items}}" as="p" hint-placeholder-count="6">
+                <div style="display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.4fr) minmax(0, 1fr) 110px 40px; align-items: center; gap: 12px; padding: 0 18px; height: 54px; border-bottom: 1px solid #F3EEE6">
+                  <div style="display: flex; align-items: center; gap: 10px; min-width: 0">
+                    <span style="{{p.avatarStyle}}">{{p.initials}}</span>
+                    <a href="Alumnos.dc.html" class="alumno" style="font-size: 14px; font-weight: 500; color: #2B2A26; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{p.name}}</a>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px; min-width: 0">
+                    <span style="{{p.typeStyle}}">{{p.type}}</span>
+                    <span style="font-size: 13px; color: #4A463F; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{p.concept}}</span>
+                  </div>
+                  <span style="font-size: 13px; color: #6B6459">{{p.by}}</span>
+                  <span style="font-size: 14px; font-weight: 600; text-align: right">{{p.amount}}</span>
+                  <button type="button" aria-label="Acciones del pago: editar o anular" style="width: 34px; height: 34px; border-radius: 10px; border: none; background: transparent; color: #6B6459">⋯</button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </section>
+
+        <div style="display: flex; flex-direction: column; gap: 16px; position: sticky; top: 16px">
+          <section aria-label="Calendario de cobros" style="border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05); padding: 16px">
+            <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px">
+              <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 20px">Octubre</span>
+              <span style="font-size: 12px; color: #6B6459">Tocá un día</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; font-size: 11px; color: #6B6459; text-align: center; margin-bottom: 4px">
+              <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px">
+              <sc-for list="{{cal}}" as="d" hint-placeholder-count="35">
+                <button type="button" onClick="{{d.pick}}" disabled="{{d.disabled}}" aria-label="{{d.aria}}" style="{{d.style}}">
+                  <span style="font-size: 12px; font-weight: 600">{{d.num}}</span>
+                  <span style="{{d.amountStyle}}">{{d.amount}}</span>
+                </button>
+              </sc-for>
+            </div>
+          </section>
+
+          <section aria-label="Totales" style="border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05); padding: 16px; display: flex; flex-direction: column; gap: 12px">
+            <span style="font-size: 13px; color: #6B6459; font-weight: 500">{{sumTitle}}</span>
+            <div style="display: flex; align-items: baseline; justify-content: space-between">
+              <span style="font-size: 28px; font-weight: 600">{{sumTotal}}</span>
+              <span style="font-size: 13px; color: #6B6459">{{sumCount}}</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #F0EAE1; padding-top: 12px; font-size: 14px">
+              <div style="display: flex; justify-content: space-between"><span style="color: #4A463F">Cuotas</span><span style="font-weight: 500">{{sumCuotas}}</span></div>
+              <div style="display: flex; justify-content: space-between"><span style="color: #4A463F">Clases sueltas</span><span style="font-weight: 500">{{sumSueltas}}</span></div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #F0EAE1; padding-top: 12px; font-size: 14px">
+              <span style="font-size: 12px; color: #6B6459; font-weight: 500">Registró</span>
+              <sc-for list="{{byPerson}}" as="b" hint-placeholder-count="2">
+                <div style="display: flex; justify-content: space-between"><span style="color: #4A463F">{{b.name}} <span style="color: #6B6459">· {{b.count}}</span></span><span style="font-weight: 500">{{b.total}}</span></div>
+              </sc-for>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#4F6B55","options":["#4F6B55","#3F5B46","#6B5B45"]},"$preview":{"width":1440,"height":1250}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { day: null, type: 'todos' };
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#4F6B55';
+    const st = this.state || {};
+    const day = st.day || null;
+    const type = st.type || 'todos';
+    const fmt = (n) => '$ ' + n.toLocaleString('es-AR');
+    const short = (n) => n >= 1000 ? '$' + Math.round(n / 1000) + 'k' : '';
+    const V = 'Vanesa Saldaña', R = 'Rodrigo Schulz';
+    const raw = [
+      [2, 'Carina Datschke', '2x por semana', 38000, V], [2, 'Cameca Imbach', '3x por semana', 46000, V],
+      [2, 'Angelo Da Silva', '1x por semana', 28000, V], [2, 'Mary Benitez', '2x por semana', 38000, V],
+      [2, 'Graciela Armua', '2x por semana', 38000, R], [2, 'Selma Herman', '2x por semana', 38000, R],
+      [2, 'Margarita Benítez', '2x por semana', 38000, R], [2, 'Aurelia Aquino', '3x por semana', 46000, R],
+      [1, 'Jorge Esterche', '2x por semana', 38000, V], [1, 'Gina Eskiviski', '2x por semana', 38000, V],
+      [1, 'Maria Isabel Martinez', '2x por semana', 38000, V], [1, 'Clau Wolf', '1x por semana', 28000, V],
+      [1, 'Patricia Ocampo', '3x por semana', 46000, V], [1, 'Yoli Ortega', '2x por semana', 38000, V],
+      [1, 'Vanessa Romero', '3x por semana', 46000, V], [1, 'Lalo Rabosto', '2x por semana', 38000, V],
+      [1, 'Laly Maciel', '3x por semana', 46000, V], [1, 'Sandra Caballero', '2x por semana', 38000, R],
+      [1, 'Luz Ubiria', '2x por semana', 38000, V]
+    ];
+    const avs = [['#E4ECE5','#2F4A36'],['#F3E6DB','#7A4429'],['#E2ECF5','#255377'],['#EFE6DA','#6E4A30'],['#EDE6F1','#5B3F72']];
+    const all = raw.map((r, i) => ({
+      d: r[0], name: r[1], plan: r[2], amt: r[3], by: r[4], kind: 'cuota'
+    }));
+    const filtered = all.filter((p) => (type === 'todos' || (type === 'cuotas' && p.kind === 'cuota') || (type === 'sueltas' && p.kind === 'suelta')) && (!day || p.d === day));
+    const dayTitles = { 1: 'Jueves 1 de octubre', 2: 'Viernes 2 de octubre' };
+    const daysPresent = [2, 1].filter((d) => filtered.some((p) => p.d === d));
+    const groups = daysPresent.map((d) => {
+      const items = filtered.filter((p) => p.d === d).map((p, i) => {
+        const av = avs[(p.name.length + i) % avs.length];
+        return {
+          name: p.name,
+          initials: p.name.split(' ').map((x) => x[0]).slice(0, 2).join(''),
+          avatarStyle: 'width:30px;height:30px;flex-shrink:0;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;background:' + av[0] + ';color:' + av[1],
+          type: p.kind === 'cuota' ? 'Cuota' : 'Suelta',
+          typeStyle: 'font-size:11px;font-weight:600;border-radius:999px;padding:2px 8px;' + (p.kind === 'cuota' ? 'background:#E1EBE2;color:#2F4A36' : 'background:#E2ECF5;color:#255377'),
+          concept: 'Octubre · ' + p.plan,
+          by: p.by,
+          amount: fmt(p.amt)
+        };
+      });
+      const total = filtered.filter((p) => p.d === d).reduce((s, p) => s + p.amt, 0);
+      return { title: dayTitles[d], today: d === 2, countLabel: items.length + ' pagos', total: fmt(total), items };
+    });
+    const dayTotals = {};
+    all.forEach((p) => { dayTotals[p.d] = (dayTotals[p.d] || 0) + p.amt; });
+    const cal = [];
+    for (let i = 0; i < 35; i++) {
+      const n = i - 2;
+      if (n < 1 || n > 31) { cal.push({ num: '', amount: '', disabled: true, aria: 'Sin fecha', pick: () => {}, style: 'height:44px;border:none;background:transparent', amountStyle: 'display:none' }); continue; }
+      const has = !!dayTotals[n];
+      const future = n > 2;
+      const sel = day === n;
+      let look = 'background:#FFFFFF;color:#2B2A26;border:1px solid #F0EAE1';
+      if (has) look = 'background:#E1EBE2;color:#2F4A36;border:1px solid #CFDDD1';
+      if (future) look = 'background:#FFFFFF;color:#B5AEA2;border:1px solid #F5F1EB';
+      if (sel) look = 'background:' + accent + ';color:#FFFFFF;border:1px solid ' + accent;
+      if (n === 2 && !sel) look += ';box-shadow:inset 0 0 0 2px ' + accent;
+      cal.push({
+        num: String(n),
+        amount: has ? short(dayTotals[n]) : '',
+        disabled: future,
+        aria: n + ' de octubre' + (has ? ', ' + fmt(dayTotals[n]) : ', sin pagos'),
+        pick: () => this.setState({ day: sel ? null : n }),
+        style: 'height:44px;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:0;font-family:inherit;' + look,
+        amountStyle: 'font-size:9.5px;font-weight:600;line-height:1.1;' + (has ? '' : 'display:none')
+      });
+    }
+    const scope = filtered;
+    const sum = scope.reduce((s, p) => s + p.amt, 0);
+    const per = {};
+    scope.forEach((p) => { per[p.by] = per[p.by] || { name: p.by, count: 0, total: 0 }; per[p.by].count++; per[p.by].total += p.amt; });
+    const typeDefs = [['todos', 'Todos'], ['cuotas', 'Cuotas'], ['sueltas', 'Clases sueltas']];
+    return {
+      accent,
+      groups,
+      cal,
+      isEmpty: groups.length === 0,
+      hasDay: !!day,
+      clearDay: () => this.setState({ day: null }),
+      goToday: () => this.setState({ day: 2 }),
+      scopeTitle: day ? dayTitles[day] || (day + ' de octubre') : 'Octubre 2026',
+      types: typeDefs.map((t) => ({
+        label: t[1], active: type === t[0], pick: () => this.setState({ type: t[0] }),
+        style: 'height:34px;padding:0 12px;border-radius:9px;border:none;font-size:13px;' + (type === t[0] ? 'background:#FFFFFF;color:#2B2A26;font-weight:600;box-shadow:0 1px 3px rgba(43,42,38,0.12)' : 'background:transparent;color:#4A463F')
+      })),
+      sumTitle: day ? 'Total del ' + (dayTitles[day] || '').toLowerCase() : 'Total de octubre hasta hoy',
+      sumTotal: fmt(sum),
+      sumCount: scope.length + ' pagos',
+      sumCuotas: fmt(scope.filter((p) => p.kind === 'cuota').reduce((s, p) => s + p.amt, 0)),
+      sumSueltas: fmt(scope.filter((p) => p.kind === 'suelta').reduce((s, p) => s + p.amt, 0)),
+      byPerson: Object.keys(per).map((k) => ({ name: per[k].name, count: per[k].count + (per[k].count === 1 ? ' pago' : ' pagos'), total: fmt(per[k].total) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

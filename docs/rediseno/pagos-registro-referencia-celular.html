@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Itara · Registro diario de pagos (celular)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400;1,9..144,500&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#3F5B46}a:hover{color:#2F4A36}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 1300px; box-sizing: border-box; background: #FFFFFF; font-family: 'Work Sans', system-ui, sans-serif; color: #2B2A26; font-variant-numeric: tabular-nums; overflow: hidden">
+  <div style="padding: 24px 18px 110px; display: flex; flex-direction: column; gap: 14px">
+    <h1 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 400; font-size: 32px; line-height: 1.1">Pagos</h1>
+
+    <div role="tablist" aria-label="Secciones de pagos" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 4px; background: #F5F1EB; border-radius: 12px">
+      <a href="#" role="tab" aria-selected="false" style="height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 9px; font-size: 13.5px; color: #4A463F; text-decoration: none">Resumen</a>
+      <a href="#" role="tab" aria-selected="true" style="height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 9px; font-size: 13.5px; font-weight: 600; color: #2B2A26; background: #FFFFFF; box-shadow: 0 1px 3px rgba(43,42,38,0.12); text-decoration: none">Registro</a>
+      <a href="#" role="tab" aria-selected="false" style="height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 9px; font-size: 13.5px; color: #4A463F; text-decoration: none">Liquidación</a>
+    </div>
+
+    <div style="display: flex; gap: 6px; overflow-x: auto; margin: 0 -18px; padding: 0 18px 2px">
+      <sc-for list="{{strip}}" as="d" hint-placeholder-count="7">
+        <button type="button" onClick="{{d.pick}}" disabled="{{d.disabled}}" aria-label="{{d.aria}}" style="{{d.style}}">
+          <span style="{{d.subStyle}}">{{d.wd}}</span>
+          <span style="font-size: 17px; font-weight: 600">{{d.num}}</span>
+          <span style="{{d.amountStyle}}">{{d.amount}}</span>
+        </button>
+      </sc-for>
+    </div>
+
+    <section aria-label="Total del día" style="padding: 16px; border-radius: 16px; background: #F4F8F4; border: 1px solid #DCE7DE; display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 13px; color: #3F5B46; font-weight: 600">{{dayTitle}}</span>
+      <div style="display: flex; align-items: baseline; justify-content: space-between">
+        <span style="font-size: 28px; font-weight: 600">{{dayTotal}}</span>
+        <span style="font-size: 13px; color: #4A463F">{{dayCount}}</span>
+      </div>
+      <span style="font-size: 13px; color: #4A463F">{{byLine}}</span>
+    </section>
+
+    <section aria-label="Pagos del día" style="border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05); overflow: hidden">
+      <sc-for list="{{items}}" as="p" hint-placeholder-count="8">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid #F3EEE6; min-height: 44px">
+          <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+            <span style="font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{p.name}}</span>
+            <span style="font-size: 12px; color: #6B6459">Cuota · {{p.plan}} · {{p.by}}</span>
+          </div>
+          <span style="font-size: 15px; font-weight: 600">{{p.amount}}</span>
+        </div>
+      </sc-for>
+    </section>
+  </div>
+
+  <button type="button" aria-label="Registrar pago" style="position: absolute; right: 18px; bottom: 96px; height: 56px; padding: 0 20px; border-radius: 18px; border: none; background: {{accent}}; color: #FFFFFF; font-size: 15px; font-weight: 600; box-shadow: 0 6px 18px rgba(43,42,38,0.2)">+ Registrar pago</button>
+
+  <nav aria-label="Navegación principal" style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; background: #FFFFFF; border-top: 1px solid #EEE8DF; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding-bottom: 8px; box-sizing: border-box; font-size: 11px">
+    <a href="Mobile.dc.html" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: #6B6459">Inicio</a>
+    <a href="SemanaMobile.dc.html" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: #6B6459">Horarios</a>
+    <a href="AlumnosMobile.dc.html" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: #6B6459">Alumnos</a>
+    <a href="#" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: {{accent}}; font-weight: 600">Pagos</a>
+    <a href="#" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: #6B6459">Más</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#4F6B55","options":["#4F6B55","#3F5B46","#6B5B45"]},"$preview":{"width":390,"height":1300}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { day: 2 };
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#4F6B55';
+    const day = (this.state && this.state.day) || 2;
+    const fmt = (n) => '$ ' + n.toLocaleString('es-AR');
+    const V = 'Vanesa', R = 'Rodrigo';
+    const raw = [
+      [2, 'Carina Datschke', '2x', 38000, V], [2, 'Cameca Imbach', '3x', 46000, V], [2, 'Angelo Da Silva', '1x', 28000, V], [2, 'Mary Benitez', '2x', 38000, V],
+      [2, 'Graciela Armua', '2x', 38000, R], [2, 'Selma Herman', '2x', 38000, R], [2, 'Margarita Benítez', '2x', 38000, R], [2, 'Aurelia Aquino', '3x', 46000, R],
+      [1, 'Jorge Esterche', '2x', 38000, V], [1, 'Gina Eskiviski', '2x', 38000, V], [1, 'Maria Isabel Martinez', '2x', 38000, V], [1, 'Clau Wolf', '1x', 28000, V],
+      [1, 'Patricia Ocampo', '3x', 46000, V], [1, 'Yoli Ortega', '2x', 38000, V], [1, 'Vanessa Romero', '3x', 46000, V], [1, 'Lalo Rabosto', '2x', 38000, V],
+      [1, 'Laly Maciel', '3x', 46000, V], [1, 'Sandra Caballero', '2x', 38000, R], [1, 'Luz Ubiria', '2x', 38000, V]
+    ];
+    const totals = {};
+    raw.forEach((r) => { totals[r[0]] = (totals[r[0]] || 0) + r[3]; });
+    const stripDefs = [[28, 'Lun', 'sep'], [29, 'Mar', 'sep'], [30, 'Mié', 'sep'], [1, 'Jue', 'oct'], [2, 'Vie', 'oct'], [3, 'Sáb', 'oct'], [4, 'Dom', 'oct']];
+    const strip = stripDefs.map((s) => {
+      const n = s[0], isOct = s[2] === 'oct';
+      const has = isOct && !!totals[n];
+      const future = isOct && n > 2;
+      const sel = isOct && n === day;
+      let look = 'background:#FFFFFF;color:#2B2A26;border:1px solid #E2D9CC';
+      if (has) look = 'background:#E1EBE2;color:#2F4A36;border:1px solid #CFDDD1';
+      if (future) look = 'background:#FFFFFF;color:#B5AEA2;border:1px solid #F0EAE1';
+      if (sel) look = 'background:' + accent + ';color:#FFFFFF;border:1px solid ' + accent;
+      return {
+        wd: s[1], num: String(n),
+        amount: has ? '$' + Math.round(totals[n] / 1000) + 'k' : '·',
+        disabled: future || !isOct,
+        aria: s[1] + ' ' + n + ' ' + s[2],
+        pick: () => this.setState({ day: n }),
+        style: 'flex-shrink:0;width:56px;height:72px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:0;' + look,
+        subStyle: 'font-size:11px;' + (sel ? 'color:rgba(255,255,255,0.85)' : 'color:#6B6459'),
+        amountStyle: 'font-size:10px;font-weight:600;' + (sel ? 'color:rgba(255,255,255,0.9)' : '')
+      };
+    });
+    const list = raw.filter((r) => r[0] === day);
+    const byV = list.filter((r) => r[4] === V).reduce((s, r) => s + r[3], 0);
+    const byR = list.filter((r) => r[4] === R).reduce((s, r) => s + r[3], 0);
+    const titles = { 1: 'Jueves 1 de octubre', 2: 'Hoy · viernes 2 de octubre' };
+    return {
+      accent,
+      strip,
+      dayTitle: titles[day] || '',
+      dayTotal: fmt(totals[day] || 0),
+      dayCount: list.length + ' pagos',
+      byLine: 'Vanesa ' + fmt(byV) + ' · Rodrigo ' + fmt(byR),
+      items: list.map((r) => ({ name: r[1], plan: r[2] + ' por semana', by: r[4], amount: fmt(r[3]) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

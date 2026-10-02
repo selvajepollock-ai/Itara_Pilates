@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Itara · Pagos, liquidación (escritorio)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400;1,9..144,500&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#3F5B46}a:hover{color:#2F4A36}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="display: flex; min-height: 1250px; background: #FFFFFF; font-family: 'Work Sans', system-ui, sans-serif; color: #2B2A26; font-variant-numeric: tabular-nums">
+
+  <aside style="width: 248px; flex-shrink: 0; box-sizing: border-box; background: #FFFFFF; border-right: 1px solid #EEE8DF; padding: 22px 16px; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+      <div style="width: 36px; height: 36px; border-radius: 999px; background: #E9DFD0; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 18px; color: #8A5A3C">I</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 20px; line-height: 1">Itara</span>
+        <span style="font-size: 10px; letter-spacing: 0.18em; color: #6B6459; margin-top: 3px">PILATES</span>
+      </div>
+    </div>
+    <nav aria-label="Navegación principal" style="display: flex; flex-direction: column; gap: 18px">
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">OPERACIÓN</span>
+        <a href="Main.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Inicio</a>
+        <a href="Semana.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Horarios</a>
+        <a href="Alumnos.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Alumnos</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">FINANZAS</span>
+        <a href="#" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; background: {{accent}}; color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 500"><span style="flex-grow: 1">Pagos</span><span style="font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.9); color: #2F4A36; border-radius: 999px; padding: 2px 8px">118</span></a>
+        <a href="#" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Reportes</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">CONFIGURACIÓN</span>
+        <a href="#" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Planes</a>
+        <a href="#" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Equipo</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main style="flex-grow: 1; min-width: 0; padding: 32px 40px 48px; box-sizing: border-box">
+    <div style="max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px">
+
+      <header style="display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; align-items: flex-end; justify-content: space-between">
+          <h1 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 400; font-size: 38px; line-height: 1.1">Pagos</h1>
+          <div style="display: flex; gap: 10px">
+            <button type="button" style="height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #2B2A26; font-size: 14px">Octubre 2026 ▾</button>
+            <button type="button" style="height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #2B2A26; font-size: 14px">Exportar ▾</button>
+          </div>
+        </div>
+        <div role="tablist" aria-label="Secciones de pagos" style="display: flex; gap: 28px; border-bottom: 1px solid #EEE8DF">
+          <a href="PagosResumen.dc.html" role="tab" aria-selected="false" style="padding: 0 0 12px; font-size: 15px; color: #6B6459; text-decoration: none">Resumen</a>
+          <a href="PagosRegistro.dc.html" role="tab" aria-selected="false" style="padding: 0 0 12px; font-size: 15px; color: #6B6459; text-decoration: none">Registro diario</a>
+          <a href="#" role="tab" aria-selected="true" style="padding: 0 0 12px; font-size: 15px; font-weight: 600; color: #2B2A26; text-decoration: none; border-bottom: 2px solid {{accent}}; margin-bottom: -1px">Liquidación</a>
+        </div>
+      </header>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-radius: 14px; background: #FDF6E1; border: 1px solid #F0DFA8">
+        <span style="font-size: 14px; color: #6B4E0A"><strong style="font-weight: 600">4 alumnos sin profesor asignado.</strong> No suman a ningún profesor hasta que tengan horarios fijos.</span>
+        <a href="Alumnos.dc.html" style="height: 34px; padding: 0 12px; border-radius: 10px; background: #FFFFFF; border: 1px solid #E6D49A; font-size: 13px; font-weight: 600; color: #6B4E0A; text-decoration: none; display: flex; align-items: center; white-space: nowrap">Asignar profesor →</a>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 6px; padding: 20px; border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05)">
+          <span style="font-size: 13px; color: #6B6459; font-weight: 500">Cobrado en octubre</span>
+          <span style="font-size: 30px; font-weight: 600">$ 742.000</span>
+          <span style="font-size: 13px; color: #6B6459">de $ 5.664.000 asignado · 13%</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px; padding: 20px; border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05)">
+          <span style="font-size: 13px; color: #6B6459; font-weight: 500">A pagar a profesores</span>
+          <span style="font-size: 30px; font-weight: 600; color: #8E3A24">$ 50.400</span>
+          <span style="font-size: 13px; color: #6B6459">60% de lo cobrado de Fabi y Yanina</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px; padding: 20px; border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05)">
+          <span style="font-size: 13px; color: #6B6459; font-weight: 500">Queda para el estudio</span>
+          <span style="font-size: 30px; font-weight: 600">$ 691.600</span>
+          <span style="font-size: 13px; color: #6B6459">$ 5.124.000 si pagaran todos</span>
+        </div>
+      </div>
+
+      <section aria-label="Liquidación por profesor" style="display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; align-items: baseline; justify-content: space-between">
+          <h2 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 500; font-size: 22px">Por profesor</h2>
+          <button type="button" onClick="{{toggleHelp}}" style="border: none; background: transparent; font-size: 13px; color: #3F5B46; font-weight: 500">¿Cómo se calcula?</button>
+        </div>
+        <sc-if value="{{showHelp}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 14px 16px; border-radius: 12px; background: #FAF8F5; font-size: 13px; color: #4A463F; line-height: 1.5">La comisión es el 60% del valor de cada cuota. "Asignado" es el precio del plan más cargos extra del mes; "Cobrado" es lo que efectivamente entró, por fecha de pago. Los bonificados no suman. A Rodrigo no se le calcula comisión. "A pagar" es la comisión sobre lo cobrado menos lo ya pagado al profesor.</div>
+        </sc-if>
+
+        <sc-for list="{{profs}}" as="p" hint-placeholder-count="4">
+          <div style="border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05); overflow: hidden">
+            <button type="button" onClick="{{p.toggle}}" aria-expanded="{{p.open}}" style="width: 100%; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.6fr) minmax(0, 1fr) 150px 24px; align-items: center; gap: 16px; padding: 16px 20px; border: none; background: #FFFFFF; text-align: left; font-family: inherit; color: inherit">
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: 16px; font-weight: 600">{{p.name}}</span>
+                <span style="font-size: 13px; color: #6B6459">{{p.students}}</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <div style="display: flex; justify-content: space-between; font-size: 13px"><span style="color: #6B6459">Cobrado</span><span><strong style="font-weight: 600">{{p.cobrado}}</strong> <span style="color: #6B6459">de {{p.asignado}}</span></span></div>
+                <div style="height: 6px; border-radius: 999px; background: #EFE9DF; overflow: hidden"><div style="{{p.barStyle}}"></div></div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: 12px; color: #6B6459">Comisión</span>
+                <span style="font-size: 14px; font-weight: 500">{{p.comision}}</span>
+              </div>
+              <div style="display: flex; justify-content: flex-end">
+                <span style="{{p.dueStyle}}">{{p.due}}</span>
+              </div>
+              <span style="color: #6B6459; font-size: 14px">{{p.chevron}}</span>
+            </button>
+            <sc-if value="{{p.open}}" hint-placeholder-val="{{ false }}">
+              <div style="border-top: 1px solid #EEE8DF">
+                <div style="display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1.3fr) 110px 120px 130px; gap: 12px; padding: 0 20px; height: 40px; align-items: center; background: #FAF8F5; font-size: 12px; font-weight: 600; color: #6B6459">
+                  <span>Alumno</span><span>Plan</span><span style="text-align: right">Asignado</span><span>Estado</span><span style="text-align: right">Comisión</span>
+                </div>
+                <sc-for list="{{p.rows}}" as="r" hint-placeholder-count="7">
+                  <div style="display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1.3fr) 110px 120px 130px; gap: 12px; padding: 0 20px; height: 46px; align-items: center; border-top: 1px solid #F3EEE6; font-size: 14px">
+                    <a href="Alumnos.dc.html" style="color: #2B2A26; text-decoration: none; font-weight: 500">{{r.name}}</a>
+                    <span style="color: #4A463F">{{r.plan}}</span>
+                    <span style="text-align: right">{{r.asignado}}</span>
+                    <span style="{{r.statusStyle}}"><span style="{{r.dotStyle}}"></span>{{r.status}}</span>
+                    <span style="text-align: right; font-weight: 500">{{r.com}}</span>
+                  </div>
+                </sc-for>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-top: 1px solid #EEE8DF; background: #FAF8F5">
+                  <span style="font-size: 13px; color: #4A463F">Pagos a {{p.short}} este mes: <strong style="font-weight: 600">todavía ninguno</strong></span>
+                  <sc-if value="{{p.canPay}}" hint-placeholder-val="{{ true }}">
+                    <button type="button" style="height: 38px; padding: 0 14px; border-radius: 10px; border: none; background: {{accent}}; color: #FFFFFF; font-size: 13px; font-weight: 600">Registrar pago a {{p.short}}</button>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#4F6B55","options":["#4F6B55","#3F5B46","#6B5B45"]},"$preview":{"width":1440,"height":1250}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { open: { fabi: true }, help: false };
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#4F6B55';
+    const st = this.state || {};
+    const open = st.open || {};
+    const fmt = (n) => '$ ' + n.toLocaleString('es-AR');
+    const fabiRows = [
+      ['Carina Datschke', '2x por semana', 38000, true], ['Gabriela Florentin', '3x por semana', 46000, false],
+      ['Laly Maciel', '3x por semana', 46000, true], ['Nelly Simian', '2x por semana', 38000, false],
+      ['Pablo Collman', '1x clase', 10000, false], ['Patricia Polina', '2x por semana', 38000, false],
+      ['Romina Britez', '1x por semana', 28000, false]
+    ];
+    const yaniRows = [
+      ['Andrea Becker', '3x por semana', 46000], ['Camila Romero', '2x por semana', 38000], ['Carmen Bareiro', '3x por semana', 46000],
+      ['Carolina Xander', '2x por semana', 38000], ['Cinthya Sandberg', '2x por semana', 38000], ['Dilen Zena', '3x por semana', 46000],
+      ['Flavia Oga', '2x por semana', 38000], ['Franco Becca', '2x por semana', 38000], ['Majo Aguilar Pozze', '2x por semana', 38000],
+      ['Marisa Zaiser', '2x por semana', 38000], ['Maru Frontera', '3x por semana', 46000], ['Maura Giménez', '2x por semana', 38000],
+      ['Melina Weidenbacher', '2x por semana', 38000], ['Silvia Duarte', '3x por semana', 46000], ['Vale Giménez', '2x por semana', 38000],
+      ['Valentina Weichzel', '3x por semana', 46000]
+    ].map((r) => [r[0], r[1], r[2], false]);
+    const mkRows = (rows, withCom) => rows.map((r) => ({
+      name: r[0], plan: r[1], asignado: fmt(r[2]),
+      status: r[3] ? 'Pagó' : 'Vencido',
+      statusStyle: 'display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:' + (r[3] ? '#2F6B3E' : '#9A4A1E'),
+      dotStyle: 'width:8px;height:8px;border-radius:999px;background:' + (r[3] ? '#3E8A52' : '#C8692E'),
+      com: withCom ? (r[3] ? fmt(Math.round(r[2] * 0.6)) : '—') : '—'
+    }));
+    const defs = [
+      { id: 'fabi', name: 'Fabi', short: 'Fabi', n: 7, asig: 244000, cob: 84000, com: 50400, due: 50400, rows: mkRows(fabiRows, true), canPay: true },
+      { id: 'yani', name: 'Yanina Cervino', short: 'Yanina', n: 16, asig: 656000, cob: 0, com: 0, due: 0, rows: mkRows(yaniRows, true), canPay: false },
+      { id: 'rodri', name: 'Rodrigo Schulz', short: 'Rodrigo', n: 121, asig: 4604000, cob: 658000, com: null, due: null, rows: [], canPay: false, owner: true },
+      { id: 'sin', name: 'Sin profesor asignado', short: '', n: 4, asig: 160000, cob: 0, com: null, due: null, rows: [], canPay: false }
+    ];
+    const profs = defs.map((d) => {
+      const isOpen = !!open[d.id];
+      let due = 'Al día', dueStyle = 'font-size:13px;font-weight:600;border-radius:999px;padding:4px 10px;background:#E1EBE2;color:#2F4A36';
+      if (d.due > 0) { due = 'A pagar ' + fmt(d.due); dueStyle = 'font-size:13px;font-weight:600;border-radius:999px;padding:4px 10px;background:#F5E1DC;color:#8E3A24'; }
+      if (d.due === null) { due = d.owner ? 'Dueño · sin comisión' : 'Sin comisión'; dueStyle = 'font-size:12px;color:#6B6459'; }
+      return {
+        name: d.name, short: d.short,
+        students: d.n + ' alumnos',
+        asignado: fmt(d.asig), cobrado: fmt(d.cob),
+        comision: d.com === null ? '—' : fmt(d.com) + ' (60%)',
+        barStyle: 'height:100%;border-radius:999px;width:' + Math.round(d.cob / d.asig * 100) + '%;background:' + accent,
+        due, dueStyle,
+        open: isOpen && d.rows.length > 0,
+        chevron: d.rows.length === 0 ? '' : (isOpen ? '▴' : '▾'),
+        toggle: () => { const o = Object.assign({}, open); o[d.id] = !o[d.id]; this.setState({ open: o }); },
+        rows: d.rows,
+        canPay: d.canPay
+      };
+    });
+    return {
+      accent,
+      profs,
+      showHelp: !!st.help,
+      toggleHelp: () => this.setState({ help: !st.help })
+    };
+  }
+}
+</script>
+</body>
+</html>
