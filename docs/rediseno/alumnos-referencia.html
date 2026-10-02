@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Itara · Alumnos (escritorio)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400;1,9..144,500&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#3F5B46}a:hover{color:#2F4A36}
+button{font-family:inherit;cursor:pointer}
+input,select{font-family:inherit}
+</style>
+</helmet>
+<div style="display: flex; min-height: 1000px; background: #FFFFFF; font-family: 'Work Sans', system-ui, sans-serif; color: #2B2A26; font-variant-numeric: tabular-nums; position: relative">
+
+  <aside style="width: 248px; flex-shrink: 0; box-sizing: border-box; background: #FFFFFF; border-right: 1px solid #EEE8DF; padding: 22px 16px; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+      <div style="width: 36px; height: 36px; border-radius: 999px; background: #E9DFD0; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 18px; color: #8A5A3C">I</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 20px; line-height: 1">Itara</span>
+        <span style="font-size: 10px; letter-spacing: 0.18em; color: #6B6459; margin-top: 3px">PILATES</span>
+      </div>
+    </div>
+    <button type="button" style="display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px; border: 1px solid #E2D9CC; background: #FFFFFF; border-radius: 10px; color: #6B6459; font-size: 14px; text-align: left">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      <span style="flex-grow: 1">Buscar…</span>
+    </button>
+    <nav aria-label="Navegación principal" style="display: flex; flex-direction: column; gap: 18px">
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">OPERACIÓN</span>
+        <a href="Main.dc.html" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>Inicio</a>
+        <a href="#" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>Horarios</a>
+        <a href="#" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; background: {{accent}}; color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 500">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.8.7 3 2.5 3.5 5.2"></path></svg>Alumnos</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">FINANZAS</span>
+        <a href="#" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"></rect><path d="M3 10h18M16 15h2"></path></svg>
+          <span style="flex-grow: 1">Pagos</span>
+          <span style="font-size: 11px; font-weight: 600; background: #F3DCD3; color: #8E3A24; border-radius: 999px; padding: 2px 8px">125</span></a>
+        <a href="#" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V11M10 20V5M16 20v-8M2 20h20"></path></svg>Reportes</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">COMUNICACIÓN</span>
+        <a href="#" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15 9a4 4 0 0 1 0 6M18 6a8 8 0 0 1 0 12"></path></svg>Comunicados</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">CONFIGURACIÓN</span>
+        <a href="#" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 8l10 5 10-5zM2 13l10 5 10-5"></path></svg>Planes</a>
+        <a href="#" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg>Equipo</a>
+      </div>
+    </nav>
+    <div style="margin-top: auto; border-top: 1px solid #EEE8DF; padding: 14px 8px 0; display: flex; align-items: center; gap: 10px">
+      <div style="width: 34px; height: 34px; border-radius: 999px; background: #E9DFD0; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; color: #6E4A30">V</div>
+      <div style="display: flex; flex-direction: column; flex-grow: 1">
+        <span style="font-size: 14px; font-weight: 500">Vic</span>
+        <span style="font-size: 12px; color: #6B6459">Administradora</span>
+      </div>
+      <button type="button" aria-label="Menú de cuenta" style="width: 32px; height: 32px; border: none; background: transparent; color: #6B6459; border-radius: 8px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 6h.01M12 12h.01M12 18h.01"></path></svg>
+      </button>
+    </div>
+  </aside>
+
+  <main style="flex-grow: 1; min-width: 0; padding: 32px 40px 96px; box-sizing: border-box">
+    <div style="max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px">
+
+      <header style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+        <div style="display: flex; align-items: baseline; gap: 12px">
+          <h1 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 400; font-size: 38px; line-height: 1.1">Alumnos</h1>
+          <span style="font-size: 14px; color: #6B6459">157 activos</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px">
+          <button type="button" style="height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #2B2A26; font-size: 14px; display: flex; align-items: center; gap: 8px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"></path></svg>Copiar link de registro</button>
+          <button type="button" aria-label="Más acciones: importar, exportar" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #3A3832; display: flex; align-items: center; justify-content: center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h.01M12 12h.01M19 12h.01"></path></svg>
+          </button>
+          <button type="button" style="height: 44px; padding: 0 18px; border-radius: 12px; border: none; background: {{accent}}; color: #FFFFFF; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>Nuevo alumno</button>
+        </div>
+      </header>
+
+      <div role="tablist" aria-label="Filtrar por estado" style="display: flex; gap: 8px; flex-wrap: wrap">
+        <sc-for list="{{filters}}" as="f" hint-placeholder-count="6">
+          <button type="button" role="tab" aria-selected="{{f.active}}" onClick="{{f.pick}}" style="{{f.style}}">
+            <span style="{{f.dotStyle}}"></span>{{f.label}}<span style="{{f.countStyle}}">{{f.count}}</span>
+          </button>
+        </sc-for>
+      </div>
+
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
+        <label style="display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 14px; border: 1px solid #E2D9CC; border-radius: 12px; flex-grow: 1; min-width: 240px; max-width: 420px; color: #6B6459">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+          <input type="search" placeholder="Buscar por nombre, email o teléfono" aria-label="Buscar alumno" style="border: none; outline: none; background: transparent; font-size: 14px; color: #2B2A26; flex-grow: 1; min-width: 0">
+        </label>
+        <label style="display: flex; align-items: center; gap: 6px; height: 42px; padding: 0 12px; border: 1px solid #E2D9CC; border-radius: 12px; font-size: 14px; color: #4A463F">Profesor
+          <select aria-label="Filtrar por profesor" style="border: none; background: transparent; font-size: 14px; color: #2B2A26; outline: none">
+            <option>Todos</option><option>Rodrigo Schulz</option><option>Yanina Cervino</option><option>Fabi</option><option>Sin asignar</option>
+          </select>
+        </label>
+        <label style="display: flex; align-items: center; gap: 6px; height: 42px; padding: 0 12px; border: 1px solid #E2D9CC; border-radius: 12px; font-size: 14px; color: #4A463F">Plan
+          <select aria-label="Filtrar por plan" style="border: none; background: transparent; font-size: 14px; color: #2B2A26; outline: none">
+            <option>Todos</option><option>1x por semana</option><option>2x por semana</option><option>3x por semana</option><option>4x por semana</option><option>5x por semana</option>
+          </select>
+        </label>
+      </div>
+
+      <section aria-label="Lista de alumnos" style="border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05); overflow: hidden">
+        <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) minmax(0, 1.1fr) minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 0.9fr) 92px; align-items: center; gap: 12px; padding: 0 16px; height: 44px; background: #FAF8F5; border-bottom: 1px solid #EEE8DF; font-size: 12px; font-weight: 600; color: #6B6459; position: sticky; top: 0">
+          <input type="checkbox" aria-label="Seleccionar todos" checked="{{allChecked}}" onChange="{{toggleAll}}" style="width: 18px; height: 18px; accent-color: #4F6B55">
+          <span>Alumno ↑</span>
+          <span>Plan</span>
+          <span>Profesor</span>
+          <span>Estado</span>
+          <span>Último pago</span>
+          <span style="text-align: right">Acciones</span>
+        </div>
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="9">
+          <div style="{{r.rowStyle}}">
+            <input type="checkbox" aria-label="Seleccionar {{r.name}}" checked="{{r.checked}}" onChange="{{r.toggle}}" style="width: 18px; height: 18px; accent-color: #4F6B55">
+            <div style="display: flex; align-items: center; gap: 12px; min-width: 0">
+              <span style="{{r.avatarStyle}}">{{r.initials}}</span>
+              <div style="display: flex; flex-direction: column; min-width: 0">
+                <button type="button" onClick="{{r.open}}" style="border: none; background: transparent; padding: 0; text-align: left; font-size: 14px; font-weight: 500; color: #2B2A26; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.name}}</button>
+                <span style="font-size: 12px; color: #6B6459">{{r.access}}</span>
+              </div>
+            </div>
+            <span style="font-size: 14px; color: #3A3832">{{r.plan}}</span>
+            <span style="{{r.teacherStyle}}">{{r.teacher}}</span>
+            <span style="{{r.statusStyle}}"><span style="{{r.statusDot}}"></span>{{r.status}}</span>
+            <span style="font-size: 14px; color: #4A463F">{{r.lastPay}}</span>
+            <div style="display: flex; justify-content: flex-end; gap: 4px">
+              <button type="button" aria-label="Escribir por WhatsApp a {{r.name}}" style="width: 36px; height: 36px; border-radius: 10px; border: none; background: transparent; color: #3F5B46; display: flex; align-items: center; justify-content: center">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8.5 8.5 0 0 1-12.6 7.4L3 21l1.6-5.2A8.5 8.5 0 1 1 21 12z"></path></svg>
+              </button>
+              <button type="button" aria-label="Más acciones para {{r.name}}" style="width: 36px; height: 36px; border-radius: 10px; border: none; background: transparent; color: #6B6459; display: flex; align-items: center; justify-content: center">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h.01M12 12h.01M19 12h.01"></path></svg>
+              </button>
+            </div>
+          </div>
+        </sc-for>
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-top: 1px solid #EEE8DF; font-size: 13px; color: #6B6459">
+          <span>Mostrando 1–25 de 157</span>
+          <div style="display: flex; gap: 6px; align-items: center">
+            <button type="button" aria-label="Página anterior" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #A39C90">‹</button>
+            <button type="button" aria-current="page" style="width: 34px; height: 34px; border-radius: 10px; border: none; background: {{accent}}; color: #FFFFFF; font-weight: 600">1</button>
+            <button type="button" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #3A3832">2</button>
+            <button type="button" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #3A3832">3</button>
+            <span>…</span>
+            <button type="button" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #3A3832">7</button>
+            <button type="button" aria-label="Página siguiente" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #3A3832">›</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <sc-if value="{{anyChecked}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; left: calc(248px + 40px); bottom: 28px; display: flex; align-items: center; gap: 6px; padding: 8px 8px 8px 18px; background: #2B2A26; color: #FFFFFF; border-radius: 14px; box-shadow: 0 8px 24px rgba(43,42,38,0.25); font-size: 14px">
+        <span style="font-weight: 600; margin-right: 8px">{{checkedLabel}}</span>
+        <button type="button" style="height: 36px; padding: 0 12px; border-radius: 10px; border: none; background: rgba(255,255,255,0.12); color: #FFFFFF; font-size: 13px">Enviar recordatorio</button>
+        <button type="button" style="height: 36px; padding: 0 12px; border-radius: 10px; border: none; background: rgba(255,255,255,0.12); color: #FFFFFF; font-size: 13px">Asignar profesor</button>
+        <button type="button" style="height: 36px; padding: 0 12px; border-radius: 10px; border: none; background: rgba(255,255,255,0.12); color: #FFFFFF; font-size: 13px">Cambiar plan</button>
+        <button type="button" onClick="{{clearChecked}}" aria-label="Quitar selección" style="width: 36px; height: 36px; border-radius: 10px; border: none; background: transparent; color: #FFFFFF">✕</button>
+      </div>
+    </sc-if>
+  </main>
+
+  <sc-if value="{{hasSelected}}" hint-placeholder-val="{{ true }}">
+    <aside aria-label="Ficha del alumno" style="position: absolute; top: 0; right: 0; bottom: 0; width: 420px; background: #FFFFFF; border-left: 1px solid #EEE8DF; box-shadow: -12px 0 32px rgba(43,42,38,0.08); display: flex; flex-direction: column">
+      <div style="padding: 20px 24px 16px; display: flex; flex-direction: column; gap: 14px; border-bottom: 1px solid #EEE8DF">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between">
+          <div style="display: flex; align-items: center; gap: 14px">
+            <span style="{{sel.avatarBig}}">{{sel.initials}}</span>
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 24px; line-height: 1.1">{{sel.name}}</span>
+              <span style="{{sel.statusStyle}}"><span style="{{sel.statusDot}}"></span>{{sel.status}}</span>
+            </div>
+          </div>
+          <button type="button" onClick="{{closePanel}}" aria-label="Cerrar ficha" style="width: 36px; height: 36px; border-radius: 10px; border: none; background: transparent; color: #6B6459; font-size: 18px">✕</button>
+        </div>
+        <div style="display: flex; gap: 8px">
+          <button type="button" style="flex-grow: 1; height: 42px; border-radius: 12px; border: none; background: {{accent}}; color: #FFFFFF; font-size: 14px; font-weight: 600">Registrar pago</button>
+          <button type="button" style="flex-grow: 1; height: 42px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #2B2A26; font-size: 14px">WhatsApp</button>
+          <button type="button" aria-label="Editar o dar de baja" style="width: 42px; height: 42px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #3A3832">⋯</button>
+        </div>
+        <div role="tablist" aria-label="Secciones de la ficha" style="display: flex; gap: 20px; font-size: 14px; margin-bottom: -17px">
+          <button type="button" role="tab" aria-selected="true" style="border: none; background: transparent; padding: 0 0 12px; font-weight: 600; color: #2B2A26; border-bottom: 2px solid {{accent}}">Resumen</button>
+          <button type="button" role="tab" aria-selected="false" style="border: none; background: transparent; padding: 0 0 12px; color: #6B6459">Pagos</button>
+          <button type="button" role="tab" aria-selected="false" style="border: none; background: transparent; padding: 0 0 12px; color: #6B6459">Clases</button>
+          <button type="button" role="tab" aria-selected="false" style="border: none; background: transparent; padding: 0 0 12px; color: #6B6459">Notas</button>
+        </div>
+      </div>
+
+      <div style="padding: 20px 24px; display: flex; flex-direction: column; gap: 18px; overflow: auto">
+        <sc-if value="{{sel.hasDebt}}" hint-placeholder-val="{{ true }}">
+          <div style="padding: 16px; border-radius: 14px; background: #FBF1EA; border: 1px solid #F1DCCD; display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 13px; color: #8A4A26; font-weight: 600">Cuota de octubre sin pagar</span>
+            <span style="font-size: 26px; font-weight: 600">{{sel.price}}</span>
+            <span style="font-size: 13px; color: #6B6459">Venció el 1/10 · desde el 11/10 pasa a {{sel.withFee}}</span>
+          </div>
+        </sc-if>
+
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px">
+          <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #6B6459">Plan</span><span style="font-size: 14px; font-weight: 500">{{sel.plan}}</span></div>
+          <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #6B6459">Cuota</span><span style="font-size: 14px; font-weight: 500">{{sel.priceMonth}}</span></div>
+          <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #6B6459">Profesor</span><span style="font-size: 14px; font-weight: 500">{{sel.teacher}}</span></div>
+          <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #6B6459">Último pago</span><span style="font-size: 14px; font-weight: 500">{{sel.lastPay}}</span></div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 13px; font-weight: 600">Acceso a la app</span>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid #EEE8DF; border-radius: 12px">
+            <span style="font-size: 14px; color: #4A463F">{{sel.access}}</span>
+            <button type="button" style="height: 34px; padding: 0 12px; border-radius: 10px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #3A3832; font-size: 13px">Enviar invitación</button>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 13px; font-weight: 600">Contacto</span>
+          <div style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #4A463F">
+            <span>Teléfono: [teléfono]</span>
+            <span>Email: [email]</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#4F6B55","options":["#4F6B55","#3F5B46","#6B5B45"]},"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { selected: 'kh', checked: {}, filter: 'todos' };
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#4F6B55';
+    const st = this.state || {};
+    const checked = st.checked || {};
+    const prices = { '1x por semana': 28000, '2x por semana': 38000, '3x por semana': 46000 };
+    const fmt = (n) => '$ ' + n.toLocaleString('es-AR');
+    const statuses = {
+      'Al día':     { color: '#2F6B3E', dot: '#3E8A52' },
+      'Vencido':    { color: '#9A4A1E', dot: '#C8692E' },
+      'Bonificado': { color: '#5E584F', dot: '#A39C90' },
+      'Sin plan':   { color: '#8A5A12', dot: '#C9962E' }
+    };
+    const avatarBgs = [['#E4ECE5', '#2F4A36'], ['#F3E6DB', '#7A4429'], ['#E2ECF5', '#255377'], ['#EFE6DA', '#6E4A30'], ['#EDE6F1', '#5B3F72']];
+    const base = [
+      { id: 'kh', name: 'Karina Horianski', plan: '3x por semana', teacher: 'Rodrigo Schulz', status: 'Vencido', lastPay: '4 sep' },
+      { id: 'sc', name: 'Sandra Cardozo', plan: '2x por semana', teacher: 'Rodrigo Schulz', status: 'Vencido', lastPay: '2 sep' },
+      { id: 'mb', name: 'Margarita Barrientos', plan: '2x por semana', teacher: 'Yanina Cervino', status: 'Vencido', lastPay: '8 sep' },
+      { id: 'si', name: 'Silvia Imbach', plan: '2x por semana', teacher: 'Rodrigo Schulz', status: 'Vencido', lastPay: '1 sep' },
+      { id: 'vw', name: 'Valentina Weichzel', plan: '3x por semana', teacher: 'Fabi', status: 'Vencido', lastPay: '10 sep' },
+      { id: 'nb', name: 'Nidia Báez', plan: '2x por semana', teacher: '', status: 'Vencido', lastPay: '5 sep' },
+      { id: 'ck', name: 'Carmen Karg', plan: '2x por semana', teacher: 'Rodrigo Schulz', status: 'Al día', lastPay: '1 oct' },
+      { id: 'mk', name: 'Marcio Klauk', plan: '1x por semana', teacher: 'Yanina Cervino', status: 'Al día', lastPay: '2 oct' },
+      { id: 'vs', name: 'Valentina Silva Pollock', plan: '2x por semana', teacher: 'Rodrigo Schulz', status: 'Bonificado', lastPay: '—' }
+    ];
+    const toggleOne = (id) => {
+      const next = Object.assign({}, checked);
+      if (next[id]) { delete next[id]; } else { next[id] = true; }
+      this.setState({ checked: next });
+    };
+    const rows = base.map((r, i) => {
+      const s = statuses[r.status];
+      const av = avatarBgs[i % avatarBgs.length];
+      const initials = r.name.split(' ').map((p) => p[0]).slice(0, 2).join('');
+      const isSel = st.selected === r.id;
+      const isChecked = !!checked[r.id];
+      return Object.assign({}, r, {
+        initials,
+        teacher: r.teacher || 'Sin asignar',
+        teacherStyle: r.teacher ? 'font-size:14px;color:#3A3832' : 'font-size:14px;color:#8A5A12;font-weight:500',
+        access: 'Sin acceso a la app',
+        checked: isChecked,
+        toggle: () => toggleOne(r.id),
+        open: () => this.setState({ selected: r.id }),
+        rowStyle: 'display:grid;grid-template-columns:44px minmax(0,2.2fr) minmax(0,1.1fr) minmax(0,1.2fr) minmax(0,1fr) minmax(0,0.9fr) 92px;align-items:center;gap:12px;padding:0 16px;height:60px;border-bottom:1px solid #F3EEE6;' + (isSel || isChecked ? 'background:#F4F8F4;' : 'background:#FFFFFF;'),
+        avatarStyle: 'width:34px;height:34px;flex-shrink:0;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;background:' + av[0] + ';color:' + av[1],
+        avatarBig: 'width:52px;height:52px;flex-shrink:0;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;background:' + av[0] + ';color:' + av[1],
+        statusStyle: 'display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:' + s.color,
+        statusDot: 'width:8px;height:8px;border-radius:999px;background:' + s.dot,
+        price: prices[r.plan] ? fmt(prices[r.plan]) : '—',
+        priceMonth: prices[r.plan] ? fmt(prices[r.plan]) + ' / mes' : '—',
+        withFee: prices[r.plan] ? fmt(Math.round(prices[r.plan] * 1.1)) : '—',
+        hasDebt: r.status === 'Vencido'
+      });
+    });
+    const sel = rows.find((r) => r.id === st.selected) || rows[0];
+    const nChecked = Object.keys(checked).length;
+    const allChecked = nChecked === rows.length;
+    const filterDefs = [
+      { id: 'todos', label: 'Todos', count: 157, dot: '' },
+      { id: 'vencido', label: 'Vencidos', count: 125, dot: '#C8692E' },
+      { id: 'aldia', label: 'Al día', count: 22, dot: '#3E8A52' },
+      { id: 'sinplan', label: 'Sin plan', count: 9, dot: '#C9962E' },
+      { id: 'bonif', label: 'Bonificados', count: 1, dot: '#A39C90' },
+      { id: 'porvencer', label: 'Por vencer', count: 0, dot: '#2F6F9F' }
+    ];
+    const filters = filterDefs.map((f) => {
+      const active = (st.filter || 'todos') === f.id;
+      return Object.assign({}, f, {
+        active,
+        pick: () => this.setState({ filter: f.id }),
+        style: 'height:38px;padding:0 14px;border-radius:999px;font-size:14px;display:inline-flex;align-items:center;gap:8px;' + (active ? 'background:#2B2A26;color:#FFFFFF;border:1px solid #2B2A26;font-weight:600' : 'background:#FFFFFF;color:#3A3832;border:1px solid #E2D9CC') + (f.count === 0 && !active ? ';opacity:0.55' : ''),
+        dotStyle: f.dot ? 'width:8px;height:8px;border-radius:999px;background:' + f.dot : 'display:none',
+        countStyle: 'font-size:12px;font-weight:600;' + (active ? 'color:rgba(255,255,255,0.75)' : 'color:#6B6459')
+      });
+    });
+    return {
+      accent,
+      rows,
+      sel,
+      filters,
+      hasSelected: !!st.selected,
+      closePanel: () => this.setState({ selected: null }),
+      anyChecked: nChecked > 0,
+      checkedLabel: nChecked === 1 ? '1 seleccionado' : nChecked + ' seleccionados',
+      allChecked,
+      toggleAll: () => {
+        if (allChecked) { this.setState({ checked: {} }); return; }
+        const all = {};
+        rows.forEach((r) => { all[r.id] = true; });
+        this.setState({ checked: all });
+      },
+      clearChecked: () => this.setState({ checked: {} })
+    };
+  }
+}
+</script>
+</body>
+</html>
