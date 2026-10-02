@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Itara · Alumnos (celular)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400;1,9..144,500&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#3F5B46}a:hover{color:#2F4A36}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 1000px; box-sizing: border-box; background: #FFFFFF; font-family: 'Work Sans', system-ui, sans-serif; color: #2B2A26; font-variant-numeric: tabular-nums; overflow: hidden">
+  <div style="padding: 24px 18px 110px; display: flex; flex-direction: column; gap: 14px">
+    <header style="display: flex; align-items: baseline; justify-content: space-between">
+      <h1 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 400; font-size: 32px; line-height: 1.1">Alumnos</h1>
+      <span style="font-size: 13px; color: #6B6459">157 activos</span>
+    </header>
+
+    <label style="display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 14px; border: 1px solid #E2D9CC; border-radius: 12px; color: #6B6459">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      <input type="search" placeholder="Buscar alumno" aria-label="Buscar alumno" style="border: none; outline: none; background: transparent; font-size: 15px; color: #2B2A26; flex-grow: 1; min-width: 0">
+    </label>
+
+    <div style="display: flex; gap: 8px; overflow-x: auto; margin: 0 -18px; padding: 0 18px 2px">
+      <sc-for list="{{filters}}" as="f" hint-placeholder-count="5">
+        <button type="button" onClick="{{f.pick}}" style="{{f.style}}">{{f.label}} <span style="{{f.countStyle}}">{{f.count}}</span></button>
+      </sc-for>
+    </div>
+
+    <section aria-label="Lista de alumnos" style="display: flex; flex-direction: column; border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05); overflow: hidden">
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="9">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid #F3EEE6; min-height: 52px">
+          <span style="{{r.avatarStyle}}">{{r.initials}}</span>
+          <a href="#" style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0; text-decoration: none; color: inherit">
+            <span style="font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.name}}</span>
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #6B6459">
+              <span style="{{r.statusStyle}}"><span style="{{r.statusDot}}"></span>{{r.status}}</span>· {{r.plan}}
+            </span>
+          </a>
+          <button type="button" aria-label="Escribir por WhatsApp a {{r.name}}" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #3F5B46; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8.5 8.5 0 0 1-12.6 7.4L3 21l1.6-5.2A8.5 8.5 0 1 1 21 12z"></path></svg>
+          </button>
+        </div>
+      </sc-for>
+    </section>
+  </div>
+
+  <button type="button" aria-label="Nuevo alumno" style="position: absolute; right: 18px; bottom: 96px; width: 56px; height: 56px; border-radius: 18px; border: none; background: {{accent}}; color: #FFFFFF; box-shadow: 0 6px 18px rgba(43,42,38,0.2); display: flex; align-items: center; justify-content: center">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+  </button>
+
+  <nav aria-label="Navegación principal" style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; background: #FFFFFF; border-top: 1px solid #EEE8DF; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding-bottom: 8px; box-sizing: border-box">
+    <a href="Mobile.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-decoration: none; color: #6B6459; font-size: 11px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>Inicio</a>
+    <a href="#" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-decoration: none; color: #6B6459; font-size: 11px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>Horarios</a>
+    <a href="#" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-decoration: none; color: {{accent}}; font-size: 11px; font-weight: 600">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.8.7 3 2.5 3.5 5.2"></path></svg>Alumnos</a>
+    <a href="#" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-decoration: none; color: #6B6459; font-size: 11px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"></rect><path d="M3 10h18M16 15h2"></path></svg>Pagos</a>
+    <a href="#" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-decoration: none; color: #6B6459; font-size: 11px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h.01M12 12h.01M19 12h.01"></path></svg>Más</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#4F6B55","options":["#4F6B55","#3F5B46","#6B5B45"]},"$preview":{"width":390,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { filter: 'todos' };
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#4F6B55';
+    const st = this.state || {};
+    const statuses = {
+      'Al día':     { color: '#2F6B3E', dot: '#3E8A52' },
+      'Vencido':    { color: '#9A4A1E', dot: '#C8692E' },
+      'Bonificado': { color: '#5E584F', dot: '#A39C90' }
+    };
+    const avatarBgs = [['#E4ECE5', '#2F4A36'], ['#F3E6DB', '#7A4429'], ['#E2ECF5', '#255377'], ['#EFE6DA', '#6E4A30'], ['#EDE6F1', '#5B3F72']];
+    const base = [
+      { name: 'Karina Horianski', plan: '3x', status: 'Vencido' },
+      { name: 'Sandra Cardozo', plan: '2x', status: 'Vencido' },
+      { name: 'Margarita Barrientos', plan: '2x', status: 'Vencido' },
+      { name: 'Silvia Imbach', plan: '2x', status: 'Vencido' },
+      { name: 'Valentina Weichzel', plan: '3x', status: 'Vencido' },
+      { name: 'Nidia Báez', plan: '2x', status: 'Vencido' },
+      { name: 'Carmen Karg', plan: '2x', status: 'Al día' },
+      { name: 'Marcio Klauk', plan: '1x', status: 'Al día' },
+      { name: 'Valentina Silva Pollock', plan: '2x', status: 'Bonificado' }
+    ];
+    const rows = base.map((r, i) => {
+      const s = statuses[r.status];
+      const av = avatarBgs[i % avatarBgs.length];
+      return Object.assign({}, r, {
+        plan: r.plan + ' por semana',
+        initials: r.name.split(' ').map((p) => p[0]).slice(0, 2).join(''),
+        avatarStyle: 'width:38px;height:38px;flex-shrink:0;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;background:' + av[0] + ';color:' + av[1],
+        statusStyle: 'display:inline-flex;align-items:center;gap:5px;font-weight:600;color:' + s.color,
+        statusDot: 'width:7px;height:7px;border-radius:999px;background:' + s.dot
+      });
+    });
+    const defs = [
+      { id: 'todos', label: 'Todos', count: 157 },
+      { id: 'vencido', label: 'Vencidos', count: 125 },
+      { id: 'aldia', label: 'Al día', count: 22 },
+      { id: 'sinplan', label: 'Sin plan', count: 9 },
+      { id: 'bonif', label: 'Bonificados', count: 1 }
+    ];
+    const filters = defs.map((f) => {
+      const active = (st.filter || 'todos') === f.id;
+      return Object.assign({}, f, {
+        pick: () => this.setState({ filter: f.id }),
+        style: 'flex-shrink:0;height:38px;padding:0 14px;border-radius:999px;font-size:14px;white-space:nowrap;' + (active ? 'background:#2B2A26;color:#FFFFFF;border:1px solid #2B2A26;font-weight:600' : 'background:#FFFFFF;color:#3A3832;border:1px solid #E2D9CC'),
+        countStyle: 'font-size:12px;font-weight:600;' + (active ? 'color:rgba(255,255,255,0.75)' : 'color:#6B6459')
+      });
+    });
+    return { accent, rows, filters };
+  }
+}
+</script>
+</body>
+</html>
