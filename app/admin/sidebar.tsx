@@ -3,66 +3,42 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, UserCog, CalendarDays, CreditCard, Wallet, Bell, BarChart3, Megaphone, Instagram, LogOut, Eye } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { Search } from 'lucide-react'
 import { getNotificationCounts } from './notification-counts'
 import { NotificationBell } from './notification-bell'
+import { NAV_GROUPS, isNavActive } from './nav-config'
+import { UserMenu } from './user-menu'
 import type { InboxItem } from './notification-types'
 
 export function Sidebar({
   fullName,
-  pendingCount: initialPendingCount = 0,
-  birthdaysToday: initialBirthdaysToday = 0,
   pendingSignups: initialPendingSignups = 0,
+  overdueCount = 0,
   isDeveloper = false,
   notifications = [],
 }: {
   fullName: string
-  pendingCount?: number
-  birthdaysToday?: number
   pendingSignups?: number
+  overdueCount?: number
   isDeveloper?: boolean
   notifications?: InboxItem[]
 }) {
   const pathname = usePathname()
-  const router = useRouter()
-  const supabase = createClient()
-  const [pendingCount, setPendingCount] = useState(initialPendingCount)
-  const [birthdaysToday, setBirthdaysToday] = useState(initialBirthdaysToday)
   const [pendingSignups, setPendingSignups] = useState(initialPendingSignups)
 
   useEffect(() => {
     const interval = setInterval(async () => {
       const counts = await getNotificationCounts()
-      setPendingCount(counts.pendingCount)
-      setBirthdaysToday(counts.birthdaysToday)
       setPendingSignups(counts.pendingSignups)
     }, 5 * 60 * 1000) // cada 5 minutos
     return () => clearInterval(interval)
   }, [])
 
-  const NAV_ITEMS = [
-    { href: '/admin', label: 'Inicio', icon: LayoutDashboard, exact: true, badge: birthdaysToday },
-    { href: '/admin/alumnos', label: 'Alumnos', icon: Users, badge: pendingSignups },
-    { href: '/admin/instructores', label: 'Equipo', icon: UserCog, badge: 0 },
-    { href: '/admin/horarios', label: 'Horarios', icon: CalendarDays, badge: 0 },
-    { href: '/admin/planes', label: 'Planes', icon: CreditCard, badge: 0 },
-    { href: '/admin/pagos', label: 'Pagos', icon: Wallet, badge: 0 },
-    { href: '/admin/avisos', label: 'Avisos', icon: Bell, badge: pendingCount },
-    { href: '/admin/reportes', label: 'Reportes', icon: BarChart3, badge: 0 },
-    { href: '/admin/notificaciones', label: 'Notificaciones', icon: Megaphone, badge: 0 },
-  ]
-
-  async function handleLogout() {
-    await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
-  }
+  const badges = { signups: pendingSignups, overdue: overdueCount }
 
   return (
-    <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-sand bg-white">
-      <div className="flex items-center justify-between px-6 py-6">
+    <aside className="sticky top-0 flex h-screen w-[248px] shrink-0 flex-col border-r border-edge bg-white">
+      <div className="flex items-center justify-between px-5 py-5">
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-emblem.png" alt="Itara Pilates" className="h-10 w-10 object-contain" />
@@ -74,84 +50,55 @@ export function Sidebar({
         <NotificationBell initialItems={notifications} align="left" />
       </div>
 
-      <nav className="flex-1 space-y-1 px-3">
-        {NAV_ITEMS.map(({ href, label, icon: Icon, exact, badge }) => {
-          const isActive = exact ? pathname === href : pathname.startsWith(href)
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${
-                isActive
-                  ? 'bg-moss text-white shadow-sm'
-                  : 'text-ink/60 hover:bg-linen hover:text-ink'
-              }`}
-            >
-              <Icon size={17} strokeWidth={2} />
-              <span className="flex-1">{label}</span>
-              {badge > 0 && (
-                <span
-                  className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[11px] font-medium ${
-                    isActive ? 'bg-white text-moss' : 'bg-clay text-white'
-                  }`}
-                >
-                  {href === '/admin' ? '🎂' : badge}
-                </span>
-              )}
-            </Link>
-          )
-        })}
+      {/* TODO: buscador global. Por ahora lleva a Alumnos con el campo de búsqueda activo. */}
+      <div className="px-3">
+        <Link
+          href="/admin/alumnos?buscar=1"
+          className="flex min-h-[40px] items-center gap-2.5 rounded-[10px] border border-edge-strong bg-white px-3 text-sm text-muted transition hover:border-moss hover:text-ink"
+        >
+          <Search size={15} />
+          Buscar alumno
+        </Link>
+      </div>
 
-        {isDeveloper && (
-          <div className="mt-4 border-t border-sand pt-4">
-            <p className="px-3 pb-1.5 text-[10px] font-medium uppercase tracking-[0.2em] text-ink/30">
-              Ver como
-            </p>
-            <Link
-              href="/alumno"
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-ink/60 transition hover:bg-linen hover:text-ink"
-            >
-              <Eye size={17} strokeWidth={2} />
-              <span className="flex-1">Alumno</span>
-            </Link>
-            <Link
-              href="/instructor"
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-ink/60 transition hover:bg-linen hover:text-ink"
-            >
-              <Eye size={17} strokeWidth={2} />
-              <span className="flex-1">Instructor</span>
-            </Link>
+      <nav aria-label="Menú principal" className="mt-4 flex-1 space-y-5 overflow-y-auto px-3 pb-3">
+        {NAV_GROUPS.map((group) => (
+          <div key={group.label}>
+            <p className="px-3 pb-1.5 text-xs font-medium text-muted">{group.label}</p>
+            <div className="space-y-0.5">
+              {group.items.map((item) => {
+                const active = isNavActive(pathname, item)
+                const badge = item.badge ? badges[item.badge] : 0
+                const Icon = item.icon
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={active ? 'page' : undefined}
+                    className={`flex h-10 items-center gap-3 rounded-[10px] px-3 text-sm font-medium transition ${
+                      active ? 'bg-moss text-white' : 'text-ink/70 hover:bg-moss-soft hover:text-ink'
+                    }`}
+                  >
+                    <Icon size={17} strokeWidth={2} />
+                    <span className="flex-1">{item.label}</span>
+                    {badge > 0 && (
+                      <span
+                        className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold tabular-nums ${
+                          active ? 'bg-white text-moss-dark' : 'bg-danger text-white'
+                        }`}
+                      >
+                        {badge}
+                      </span>
+                    )}
+                  </Link>
+                )
+              })}
+            </div>
           </div>
-        )}
+        ))}
       </nav>
 
-      <div className="border-t border-sand px-3 py-4">
-        <Link
-          href="/admin/perfil"
-          className="flex items-center gap-3 rounded-xl px-3 py-2 transition hover:bg-linen"
-        >
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blush text-xs font-medium text-ink">
-            {fullName.slice(0, 1).toUpperCase()}
-          </div>
-          <p className="flex-1 truncate text-sm text-ink">{fullName}</p>
-        </Link>
-        <button
-          onClick={handleLogout}
-          className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-ink/50 transition hover:bg-linen hover:text-clay"
-        >
-          <LogOut size={17} strokeWidth={2} />
-          Cerrar sesión
-        </button>
-        <a
-          href="https://www.instagram.com/itara_estudio_de_pilates/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-ink/50 transition hover:bg-linen hover:text-moss"
-        >
-          <Instagram size={17} strokeWidth={2} />
-          Instagram
-        </a>
-      </div>
+      <UserMenu fullName={fullName} isDeveloper={isDeveloper} />
     </aside>
   )
 }

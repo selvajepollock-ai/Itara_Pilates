@@ -114,6 +114,7 @@ export function StudentsList({ students }: { students: Student[] }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar por nombre o email..."
+            autoFocus={searchParams.get('buscar') === '1'}
             className="w-full rounded-full border border-sand bg-white py-2.5 pl-10 pr-4 text-sm text-ink outline-none focus:border-moss"
           />
         </div>
