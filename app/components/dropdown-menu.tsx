@@ -25,10 +25,13 @@ export function DropdownMenu({
   label,
   items,
   buttonClassName = 'h-[34px] w-[34px]',
+  openUp = false,
 }: {
   label: string
   items: MenuItem[]
   buttonClassName?: string
+  /** Abre hacia arriba (para botones pegados al borde inferior). */
+  openUp?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -61,7 +64,7 @@ export function DropdownMenu({
       </button>
 
       {open && (
-        <div role="menu" className="surface-card absolute right-0 top-full z-30 mt-1 w-52 p-1.5">
+        <div role="menu" className={`surface-card absolute right-0 z-30 w-52 p-1.5 ${openUp ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
           {items.map((item) => {
             const tone = item.danger ? 'text-danger hover:!bg-danger-soft' : 'text-ink/80'
             const cls = `${ITEM} ${tone} ${item.className ?? ''}`

@@ -138,9 +138,7 @@ export default async function AdminDashboard() {
   for (const e of enrollmentsData ?? []) {
     enrollCountByClass.set(e.class_id, (enrollCountByClass.get(e.class_id) ?? 0) + 1)
   }
-  const reformerClasses = (classesData ?? []).filter(
-    (c) => !(c.class_types as unknown as { name: string } | null)?.name?.toLowerCase().includes('fuerza')
-  )
+  const reformerClasses = classesData ?? []
   const occupancyByDay = [1, 2, 3, 4, 5].map((day) => {
     const dayClasses = reformerClasses.filter((c) => c.day_of_week === day)
     const capacity = dayClasses.reduce((sum, c) => sum + c.capacity, 0)

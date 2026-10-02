@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Itara · Horario fijo (escritorio)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400;1,9..144,500&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#3F5B46}a:hover{color:#2F4A36}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+.alumno:hover{background:#E1EBE2 !important;color:#2F4A36 !important;text-decoration:underline}
+</style>
+</helmet>
+<div style="display: flex; min-height: 1650px; background: #FFFFFF; font-family: 'Work Sans', system-ui, sans-serif; color: #2B2A26; font-variant-numeric: tabular-nums; position: relative">
+
+  <sc-if value="{{hasSel}}" hint-placeholder-val="{{ true }}">
+    <aside aria-label="Ficha del alumno" style="position: absolute; top: 0; right: 0; width: 400px; height: 900px; background: #FFFFFF; border-left: 1px solid #EEE8DF; border-bottom: 1px solid #EEE8DF; border-bottom-left-radius: 16px; box-shadow: -12px 0 32px rgba(43,42,38,0.08); display: flex; flex-direction: column; z-index: 5">
+      <div style="padding: 20px 24px 18px; display: flex; flex-direction: column; gap: 14px; border-bottom: 1px solid #EEE8DF">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between">
+          <div style="display: flex; align-items: center; gap: 14px">
+            <span style="width: 52px; height: 52px; border-radius: 999px; background: #E4ECE5; color: #2F4A36; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 600">{{sel.initials}}</span>
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 24px; line-height: 1.1">{{sel.full}}</span>
+              <span style="font-size: 13px; color: #6B6459">{{sel.perWeek}}</span>
+            </div>
+          </div>
+          <button type="button" onClick="{{closeSel}}" aria-label="Cerrar ficha" style="width: 36px; height: 36px; border-radius: 10px; border: none; background: transparent; color: #6B6459; font-size: 18px">✕</button>
+        </div>
+        <div style="display: flex; gap: 8px">
+          <a href="Alumnos.dc.html" style="flex-grow: 1; height: 42px; border-radius: 12px; background: {{accent}}; color: #FFFFFF; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; text-decoration: none">Ver ficha completa</a>
+          <button type="button" style="flex-grow: 1; height: 42px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #2B2A26; font-size: 14px">WhatsApp</button>
+        </div>
+      </div>
+      <div style="padding: 20px 24px; display: flex; flex-direction: column; gap: 18px">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <span style="font-size: 13px; font-weight: 600">Sus horarios fijos</span>
+          <sc-for list="{{sel.slots}}" as="s" hint-placeholder-count="2">
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border: 1px solid #EEE8DF; border-radius: 12px">
+              <span style="font-size: 14px; font-weight: 500">{{s.day}} · {{s.hour}}</span>
+              <span style="font-size: 13px; color: #6B6459">{{s.count}} en la clase</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px">
+          <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #6B6459">Plan</span><span style="font-size: 14px; font-weight: 500">[plan]</span></div>
+          <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #6B6459">Estado de cuota</span><span style="font-size: 14px; font-weight: 500">[estado]</span></div>
+          <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #6B6459">Profesor</span><span style="font-size: 14px; font-weight: 500">[profesor]</span></div>
+          <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #6B6459">Último pago</span><span style="font-size: 14px; font-weight: 500">[fecha]</span></div>
+        </div>
+      </div>
+    </aside>
+  </sc-if>
+
+  <aside style="width: 248px; flex-shrink: 0; box-sizing: border-box; background: #FFFFFF; border-right: 1px solid #EEE8DF; padding: 22px 16px; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+      <div style="width: 36px; height: 36px; border-radius: 999px; background: #E9DFD0; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 18px; color: #8A5A3C">I</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 20px; line-height: 1">Itara</span>
+        <span style="font-size: 10px; letter-spacing: 0.18em; color: #6B6459; margin-top: 3px">PILATES</span>
+      </div>
+    </div>
+    <nav aria-label="Navegación principal" style="display: flex; flex-direction: column; gap: 18px">
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">OPERACIÓN</span>
+        <a href="Main.dc.html" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>Inicio</a>
+        <a href="#" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; background: {{accent}}; color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 500">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>Horarios</a>
+        <a href="Alumnos.dc.html" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.8.7 3 2.5 3.5 5.2"></path></svg>Alumnos</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">FINANZAS</span>
+        <a href="#" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"></rect><path d="M3 10h18M16 15h2"></path></svg>
+          <span style="flex-grow: 1">Pagos</span>
+          <span style="font-size: 11px; font-weight: 600; background: #F3DCD3; color: #8E3A24; border-radius: 999px; padding: 2px 8px">125</span></a>
+        <a href="#" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V11M10 20V5M16 20v-8M2 20h20"></path></svg>Reportes</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">COMUNICACIÓN</span>
+        <a href="#" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15 9a4 4 0 0 1 0 6M18 6a8 8 0 0 1 0 12"></path></svg>Comunicados</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">CONFIGURACIÓN</span>
+        <a href="#" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 8l10 5 10-5zM2 13l10 5 10-5"></path></svg>Planes</a>
+        <a href="#" style="display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg>Equipo</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main style="flex-grow: 1; min-width: 0; padding: 32px 40px 48px; box-sizing: border-box">
+    <div style="max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px">
+
+      <header style="display: flex; flex-direction: column; gap: 16px">
+        <h1 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 400; font-size: 38px; line-height: 1.1">Horarios</h1>
+        <div role="tablist" aria-label="Vistas de horarios" style="display: flex; gap: 28px; border-bottom: 1px solid #EEE8DF">
+          <a href="#" role="tab" aria-selected="false" style="padding: 0 0 12px; font-size: 15px; color: #6B6459; text-decoration: none">Esta semana</a>
+          <a href="#" role="tab" aria-selected="true" style="padding: 0 0 12px; font-size: 15px; font-weight: 600; color: #2B2A26; text-decoration: none; border-bottom: 2px solid {{accent}}; margin-bottom: -1px">Horario fijo</a>
+        </div>
+      </header>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 14px; color: #4A463F">Quién tiene lugar fijo en cada clase. No incluye cancelaciones ni recuperaciones.</span>
+          <span style="font-size: 14px; color: #2B2A26"><strong style="font-weight: 600">{{totalTaken}}</strong> lugares fijos ocupados de {{totalCap}} · <strong style="font-weight: 600; color: #3F5B46">{{totalFree}} libres</strong></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px">
+          <label style="display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 14px; border: 1px solid #E2D9CC; border-radius: 12px; width: 280px; box-sizing: border-box; color: #6B6459">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+            <input type="search" value="{{query}}" onInput="{{onQuery}}" placeholder="Buscar alumno en la grilla" aria-label="Buscar alumno en la grilla" style="border: none; outline: none; background: transparent; font-size: 14px; color: #2B2A26; flex-grow: 1; min-width: 0">
+          </label>
+          <sc-if value="{{hasQuery}}" hint-placeholder-val="{{ false }}">
+            <span style="font-size: 13px; color: #3F5B46; font-weight: 600">{{matchLabel}}</span>
+          </sc-if>
+        </div>
+      </div>
+
+      <section aria-label="Grilla del horario fijo" style="border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05); overflow: hidden">
+        <div style="display: grid; grid-template-columns: 64px repeat(5, minmax(0, 1fr)); background: #FAF8F5; border-bottom: 1px solid #EEE8DF; position: sticky; top: 0">
+          <span></span>
+          <sc-for list="{{days}}" as="d" hint-placeholder-count="5">
+            <div style="padding: 12px 12px; border-left: 1px solid #EEE8DF; display: flex; align-items: baseline; justify-content: space-between">
+              <span style="font-size: 14px; font-weight: 600">{{d.name}}</span>
+              <span style="font-size: 12px; color: #6B6459">{{d.summary}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <sc-for list="{{rows}}" as="row" hint-placeholder-count="11">
+          <sc-if value="{{row.gapBefore}}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 8px 16px; background: #FAF8F5; border-bottom: 1px solid #EEE8DF; font-size: 12px; color: #6B6459">Sin clases de 11 a 14 h</div>
+          </sc-if>
+          <div style="display: grid; grid-template-columns: 64px repeat(5, minmax(0, 1fr)); border-bottom: 1px solid #EEE8DF">
+            <div style="padding: 12px 0 0 14px; font-size: 14px; font-weight: 600">{{row.hour}}</div>
+            <sc-for list="{{row.cells}}" as="c" hint-placeholder-count="5">
+              <div style="{{c.cellStyle}}">
+                <sc-if value="{{c.exists}}" hint-placeholder-val="{{ true }}">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px">
+                    <span style="font-size: 12px; font-weight: 600; color: #4A463F">{{c.count}}</span>
+                    <span style="{{c.badgeStyle}}">{{c.badge}}</span>
+                  </div>
+                  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 8px">
+                    <sc-for list="{{c.people}}" as="p" hint-placeholder-count="6">
+                      <button type="button" class="alumno" title="{{p.full}}" onClick="{{p.open}}" onMouseEnter="{{p.enter}}" onMouseLeave="{{p.leave}}" style="{{p.style}}">{{p.label}}</button>
+                    </sc-for>
+                    <sc-for list="{{c.free}}" as="f" hint-placeholder-count="2">
+                      <span style="font-size: 12.5px; line-height: 20px; color: #9C9589; border: 1px dashed #DDD4C6; border-radius: 6px; padding: 0 6px">Libre</span>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{c.empty}}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size: 12px; color: #A39C90">Sin clase</span>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#4F6B55","options":["#4F6B55","#3F5B46","#6B5B45"]},"$preview":{"width":1440,"height":1650}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { query: '', hover: null, sel: 'Karina Horianski' };
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#4F6B55';
+    const query = ((this.state && this.state.query) || '').trim().toLowerCase();
+    const first = ['Karina','Sandra','Margarita','Silvia','Valentina','Nidia','Carmen','Marcio','Laura','Mónica','Gabriela','Patricia','Andrea','Claudia','Florencia','Lucía','Mariana','Paula','Romina','Verónica','Natalia','Graciela','Norma','Susana','Liliana','Cecilia','Daniela','Julieta','Sofía','Elena','Rosa','Mirta','Analía','Viviana','Gustavo','Pablo'];
+    const last = ['Horianski','Cardozo','Barrientos','Imbach','Weichzel','Báez','Karg','Klauk','Pereyra','Ramírez','Gómez','Benítez','Schulz','Duarte','Fernández','Acosta','López'];
+    const dayNames = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
+    const hours = ['07:00','08:00','09:00','10:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'];
+    const fixed = {
+      '07:00': [6, null, 5, null, 4],
+      '08:00': [8, 8, 8, 7, 7],
+      '09:00': [6, 6, 6, 6, 6],
+      '10:00': [8, 8, 8, 8, null],
+      '14:00': [5, 5, 7, 5, 5],
+      '15:00': [4, 5, null, 5, null],
+      '16:00': [7, 8, 8, 7, null],
+      '17:00': [8, 7, 8, 8, 8],
+      '18:00': [7, 7, 7, 8, 8],
+      '19:00': [8, 7, 8, 7, 5],
+      '20:00': [8, 8, 7, 7, null]
+    };
+    const CAP = 8;
+    const hoverName = (this.state && this.state.hover) || null;
+    const selName = (this.state && this.state.sel) || null;
+    const selSlots = [];
+    let totalTaken = 0, totalCap = 0, matches = 0;
+    const dayTaken = [0,0,0,0,0], dayCap = [0,0,0,0,0];
+    const rows = hours.map((h, hi) => {
+      const cells = fixed[h].map((n, di) => {
+        if (n === null) {
+          return { exists: false, empty: true, cellStyle: 'padding:12px;border-left:1px solid #EEE8DF;background:#FCFBF9;min-height:60px' };
+        }
+        totalTaken += n; totalCap += CAP; dayTaken[di] += n; dayCap[di] += CAP;
+        const people = [];
+        for (let i = 0; i < n; i++) {
+          const fi = (di * 7 + hi * 5 + i * 3) % first.length;
+          const li = (di * 3 + hi * 2 + i * 5) % last.length;
+          const full = first[fi] + ' ' + last[li];
+          const hit = query && full.toLowerCase().indexOf(query) !== -1;
+          if (hit) matches++;
+          if (full === selName) selSlots.push({ day: dayNames[di], hour: h, count: n + '/' + CAP });
+          const isHover = hoverName === full;
+          const isSel = selName === full;
+          let look = 'background:transparent;color:#2B2A26';
+          if (query && !hit) look = 'background:transparent;color:#B5AEA2';
+          if (hit) look = 'background:#FCE7A6;color:#2B2A26;font-weight:600';
+          if (isHover) look = 'background:#E1EBE2;color:#2F4A36;font-weight:600';
+          if (isSel) look = 'background:' + accent + ';color:#FFFFFF;font-weight:600';
+          people.push({
+            full,
+            label: first[fi] + ' ' + last[li][0] + '.',
+            open: () => this.setState({ sel: full }),
+            enter: () => this.setState({ hover: full }),
+            leave: () => this.setState({ hover: null }),
+            style: 'border:none;cursor:pointer;text-align:left;font-family:inherit;font-size:12.5px;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:6px;padding:0 6px;' + look
+          });
+        }
+        const freeN = CAP - n;
+        const free = [];
+        for (let i = 0; i < freeN; i++) free.push({ i });
+        const full = freeN === 0;
+        return {
+          exists: true,
+          empty: false,
+          people,
+          free,
+          count: n + '/' + CAP,
+          badge: full ? 'Completa' : (freeN === 1 ? '1 libre' : freeN + ' libres'),
+          badgeStyle: 'font-size:11px;font-weight:600;border-radius:999px;padding:1px 8px;' + (full ? 'background:#F1EDE6;color:#5E584F' : 'background:#E1EBE2;color:#2F4A36'),
+          cellStyle: 'padding:12px;border-left:1px solid #EEE8DF;background:#FFFFFF'
+        };
+      });
+      return { hour: h.slice(0, 2) + ' h', cells, gapBefore: h === '14:00' };
+    });
+    const days = dayNames.map((name, i) => ({ name, summary: dayTaken[i] + '/' + dayCap[i] }));
+    return {
+      accent,
+      rows,
+      days,
+      totalTaken,
+      totalCap,
+      totalFree: totalCap - totalTaken,
+      query: (this.state && this.state.query) || '',
+      onQuery: (e) => this.setState({ query: e.target.value }),
+      hasQuery: !!query,
+      hasSel: !!selName,
+      sel: selName ? {
+        full: selName,
+        initials: selName.split(' ').map((p) => p[0]).slice(0, 2).join(''),
+        perWeek: selSlots.length === 1 ? '1 clase fija por semana' : selSlots.length + ' clases fijas por semana',
+        slots: selSlots
+      } : { full: '', initials: '', perWeek: '', slots: [] },
+      closeSel: () => this.setState({ sel: null }),
+      matchLabel: matches === 0 ? 'Sin coincidencias' : (matches === 1 ? 'Está en 1 horario' : 'Está en ' + matches + ' horarios')
+    };
+  }
+}
+</script>
+</body>
+</html>
