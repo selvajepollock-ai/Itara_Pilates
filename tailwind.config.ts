@@ -31,6 +31,14 @@ const config: Config = {
           free: "#A39C90", "free-ink": "#5E584F",
         },
         alert: { soft: "#FBF1EA", edge: "#F1DCCD" },
+        // Rediseno de Horarios: lugares de una clase.
+        slot: {
+          free: "#E1EBE2", "free-ink": "#2F4A36",
+          freed: "#FBEFC9", "freed-ink": "#7A5A0E", "freed-soft": "#FDF6E1", "freed-edge": "#F0DFA8",
+          full: "#F1EDE6", "full-ink": "#5E584F",
+          cancel: "#F5E1DC", "cancel-ink": "#9A3420", "cancel-stripe": "#FAF3F1",
+          empty: "#FCFBF9", track: "#EFE9DF", hit: "#FCE7A6", dim: "#B5AEA2", line: "#DDD4C6",
+        },
         muted: "#6B6459",
         danger: { DEFAULT: "#A1432C", soft: "#F3DCD3", ink: "#8E3A24" },
         warning: { soft: "#F6EDDA", ink: "#8A5A12" },

@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { MessageCircle, Wallet, X } from 'lucide-react'
 import { Avatar } from '@/app/components/avatar'
 import { StatusDot } from '@/app/components/status-dot'
 import { DropdownMenu } from '@/app/components/dropdown-menu'
+import { useSidePanel } from '@/app/components/use-side-panel'
 import { RegisterPaymentDialog } from '../inicio/register-payment-dialog'
 import { GrantAccessForm } from './[id]/grant-access-form'
 import { useStudentMenuItems } from './row-actions'
@@ -37,60 +38,24 @@ export function StudentDrawer({
   dueDay,
   isMobile,
   onClose,
+  extra,
+  fullHref,
 }: {
   student: StudentRow
   dueDay: number
   isMobile: boolean
   onClose: () => void
+  /** Bloque extra arriba del resumen (ej: "Sus horarios fijos" en Horarios). */
+  extra?: React.ReactNode
+  /** A dónde lleva "Ver ficha completa". Por defecto, la ficha del alumno. */
+  fullHref?: string
 }) {
   const router = useRouter()
   const panelRef = useRef<HTMLElement>(null)
   const menuItems = useStudentMenuItems(student, onClose)
   const wa = whatsappLink(student.phone)
 
-  // Escape cierra la ficha (salvo que esté abierto el modal de pago, que lo maneja solo).
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return
-      if (document.querySelector('[role="dialog"][aria-label="Registrar un pago"]')) return
-      onClose()
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [onClose])
-
-  // Celular: pantalla completa => se bloquea el scroll de atrás y el foco queda adentro.
-  useEffect(() => {
-    const panel = panelRef.current
-    if (!panel) return
-    panel.focus()
-    if (!isMobile) return
-
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return
-      const focusable = panel.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      )
-      if (focusable.length === 0) return
-      const first = focusable[0]
-      const last = focusable[focusable.length - 1]
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault()
-        last.focus()
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault()
-        first.focus()
-      }
-    }
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.body.style.overflow = prevOverflow
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [isMobile, student.id])
+  useSidePanel(panelRef, { isMobile, onClose, resetKey: student.id })
 
   const isOverdue = student.status === 'vencido' && !student.comp
   const dueDate = student.endDate ? addDays(student.endDate, 1) : null
@@ -191,6 +156,7 @@ export function StudentDrawer({
       </div>
 
       <div className="space-y-5 px-5 py-5">
+        {extra}
         {isOverdue && (
           <div className="rounded-[14px] border border-alert-edge bg-alert-soft p-4">
             <p className="text-xs text-state-due-ink">
@@ -262,7 +228,7 @@ export function StudentDrawer({
         </section>
 
         <Link
-          href={`/admin/alumnos/${student.id}`}
+          href={fullHref ?? `/admin/alumnos/${student.id}`}
           className="inline-block text-[13px] font-medium text-moss hover:text-moss-dark"
         >
           Ver ficha completa →

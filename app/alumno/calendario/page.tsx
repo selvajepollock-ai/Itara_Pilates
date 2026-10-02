@@ -54,8 +54,7 @@ export default async function AlumnoCalendarioPage({
         .lte('session_date', toISODate(sunday)),
     ])
 
-  const allClasses = (classesData ?? []) as unknown as ClassRow[]
-  const classes = allClasses.filter((c) => !c.class_types?.name?.toLowerCase().includes('fuerza'))
+  const classes = (classesData ?? []) as unknown as ClassRow[]
   const myClassIds = new Set((myEnrollments ?? []).map((e) => e.class_id))
   const countByClass = new Map<string, number>()
   for (const e of enrollmentsAll ?? []) {
