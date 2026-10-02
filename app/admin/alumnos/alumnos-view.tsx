@@ -69,7 +69,15 @@ export function AlumnosView({
   /** Bloque que va entre el encabezado y los filtros (solicitudes nuevas de registro). */
   children?: React.ReactNode
 }) {
-  const searchParams = useSearchParams()
+  // Copia local de los parámetros de la URL: no depende de que Next detecte los cambios de history.
+  const initialParams = useSearchParams()
+  const [search, setSearch] = useState(() => initialParams.toString())
+  const searchParams = useMemo(() => new URLSearchParams(search), [search])
+  useEffect(() => {
+    const onPop = () => setSearch(window.location.search.replace(/^\?/, ''))
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
   const isMobile = useMediaQuery('(max-width: 1023px)')
 
   // ── La URL es la única fuente de verdad de filtros, orden, página y ficha abierta ──────────
@@ -105,7 +113,8 @@ export function AlumnosView({
     const qs = next.toString()
     const url = window.location.pathname + (qs ? `?${qs}` : '')
     if (mode === 'push') window.history.pushState({ __alumnoDrawer: true }, '', url)
-    else window.history.replaceState({ ...window.history.state }, '', url)
+    else window.history.replaceState(window.history.state, '', url)
+    setSearch(qs)
   }, [])
 
   function setFilter(changes: Record<string, string | null>) {
