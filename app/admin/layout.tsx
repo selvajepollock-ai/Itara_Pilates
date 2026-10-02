@@ -1,8 +1,9 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { daysUntilNextBirthday } from '@/lib/birthdays'
+import { countOverdueSubscriptions } from '@/lib/overdue'
 import { Sidebar } from './sidebar'
-import { TopNav } from './top-nav'
+import { MobileHeader } from './mobile-header'
+import { BottomNav } from './bottom-nav'
 import { getNotificationInbox } from './notification-counts'
 
 export default async function AdminLayout({
@@ -29,65 +30,38 @@ export default async function AdminLayout({
 
   const isDeveloper = profile?.roles?.includes('developer') ?? false
 
-  const [
-    { count: pendingRecoveries },
-    { count: pendingPlanRequests },
-    { count: newCancellations },
-    { count: pendingSignups },
-    { data: birthdayProfiles },
-  ] = await Promise.all([
-    supabase
-      .from('recovery_credits')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'requested'),
-    supabase
-      .from('plan_change_requests')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'pending'),
-    supabase
-      .from('session_cancellations')
-      .select('id', { count: 'exact', head: true })
-      .eq('acknowledged', false),
+  const [{ count: pendingSignups }, { data: subscriptions }] = await Promise.all([
     supabase
       .from('signup_requests')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending'),
-    supabase
-      .from('profiles')
-      .select('birth_date')
-      .contains('roles', ['student'])
-      .not('birth_date', 'is', null),
+    // Para el badge de Pagos (cuotas vencidas): mismo cálculo que el Inicio.
+    supabase.from('subscriptions').select('student_id, end_date, comp').eq('status', 'active'),
   ])
 
-  const pendingCount = (pendingRecoveries ?? 0) + (pendingPlanRequests ?? 0) + (newCancellations ?? 0)
-  const birthdaysToday = (birthdayProfiles ?? []).filter(
-    (p) => p.birth_date && daysUntilNextBirthday(p.birth_date) <= 5
-  ).length
-
+  const overdueCount = countOverdueSubscriptions(subscriptions ?? [])
   const { items: notifications } = await getNotificationInbox()
 
   return (
-    <div className="flex min-h-screen flex-col bg-linen md:flex-row">
-      <TopNav
-        fullName={profile.full_name}
-        pendingCount={pendingCount}
-        birthdaysToday={birthdaysToday}
-        pendingSignups={pendingSignups ?? 0}
-        notifications={notifications}
-      />
-      <div className="hidden md:block">
+    <div className="flex min-h-screen bg-white">
+      <div className="hidden lg:block">
         <Sidebar
           fullName={profile.full_name}
-          pendingCount={pendingCount}
-          birthdaysToday={birthdaysToday}
           pendingSignups={pendingSignups ?? 0}
+          overdueCount={overdueCount}
           isDeveloper={isDeveloper}
           notifications={notifications}
         />
       </div>
-      <main className="flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-8 md:px-10 md:py-10 lg:px-14">
-        <div className="mx-auto max-w-6xl">{children}</div>
-      </main>
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <MobileHeader notifications={notifications} />
+        <main className="flex-1 px-4 py-6 pb-[calc(88px+env(safe-area-inset-bottom))] sm:px-8 sm:py-8 lg:px-12 lg:py-10 lg:pb-10">
+          <div className="mx-auto max-w-6xl">{children}</div>
+        </main>
+      </div>
+
+      <BottomNav pendingSignups={pendingSignups ?? 0} overdueCount={overdueCount} isDeveloper={isDeveloper} />
     </div>
   )
 }

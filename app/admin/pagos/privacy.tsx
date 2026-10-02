@@ -39,12 +39,12 @@ export function PrivacyToggleButton() {
  * Tapa un monto en línea con guiones fijos (como el saldo de un banco) en vez de
  * blurear el texto real: blureado se seguía notando la cantidad de dígitos/forma.
  */
-export function Private({ children }: { children: React.ReactNode }) {
+export function Private({ children, mask = '• • • • • •' }: { children: React.ReactNode; mask?: string }) {
   const hidden = useMoneyHidden()
   if (!hidden) return <>{children}</>
   return (
     <span className="text-ink/30" aria-hidden>
-      • • • • • •
+      {mask}
     </span>
   )
 }
