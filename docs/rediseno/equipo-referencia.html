@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Itara · Equipo (escritorio)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400;1,9..144,500&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#3F5B46}a:hover{color:#2F4A36}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="display: flex; min-height: 1000px; background: #FFFFFF; font-family: 'Work Sans', system-ui, sans-serif; color: #2B2A26; font-variant-numeric: tabular-nums">
+
+  <aside style="width: 248px; flex-shrink: 0; box-sizing: border-box; background: #FFFFFF; border-right: 1px solid #EEE8DF; padding: 22px 16px; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+      <div style="width: 36px; height: 36px; border-radius: 999px; background: #E9DFD0; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 18px; color: #8A5A3C">I</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 20px; line-height: 1">Itara</span>
+        <span style="font-size: 10px; letter-spacing: 0.18em; color: #6B6459; margin-top: 3px">PILATES</span>
+      </div>
+    </div>
+    <nav aria-label="Navegación principal" style="display: flex; flex-direction: column; gap: 18px">
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">OPERACIÓN</span>
+        <a href="Main.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Inicio</a>
+        <a href="Semana.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Horarios</a>
+        <a href="Alumnos.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Alumnos</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">FINANZAS</span>
+        <a href="PagosResumen.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Pagos</a>
+        <a href="Reportes.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Reportes</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">COMUNICACIÓN</span>
+        <a href="Comunicados.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Comunicados</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">CONFIGURACIÓN</span>
+        <a href="Planes.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Planes</a>
+        <a href="#" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; background: {{accent}}; color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 500">Equipo</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main style="flex-grow: 1; min-width: 0; padding: 32px 40px 48px; box-sizing: border-box">
+    <div style="max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px">
+
+      <header style="display: flex; align-items: flex-end; justify-content: space-between">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <h1 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 400; font-size: 38px; line-height: 1.1">Equipo</h1>
+          <span style="font-size: 14px; color: #4A463F">Quiénes trabajan en el estudio y qué puede ver cada uno.</span>
+        </div>
+        <div style="display: flex; gap: 10px">
+          <button type="button" style="height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #2B2A26; font-size: 14px">+ Nuevo administrador</button>
+          <button type="button" style="height: 44px; padding: 0 18px; border-radius: 12px; border: none; background: {{accent}}; color: #FFFFFF; font-size: 14px; font-weight: 600">+ Nuevo instructor</button>
+        </div>
+      </header>
+
+      <section aria-label="Alumnos por profesor" style="padding: 18px 20px; border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05); display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; align-items: baseline; justify-content: space-between">
+          <h2 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 500; font-size: 22px">Alumnos por profesor</h2>
+          <a href="Alumnos.dc.html" style="font-size: 13px; font-weight: 500; text-decoration: none">4 sin profesor · Asignar →</a>
+        </div>
+        <div style="display: flex; height: 14px; border-radius: 999px; overflow: hidden; gap: 2px">
+          <sc-for list="{{load}}" as="l" hint-placeholder-count="4">
+            <span style="{{l.barStyle}}"></span>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 22px; flex-wrap: wrap">
+          <sc-for list="{{load}}" as="l" hint-placeholder-count="4">
+            <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px"><span style="{{l.dotStyle}}"></span>{{l.name}} <strong style="font-weight: 600">{{l.n}}</strong></span>
+          </sc-for>
+        </div>
+      </section>
+
+      <sc-for list="{{groups}}" as="g" hint-placeholder-count="2">
+        <section aria-label="{{g.title}}" style="display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <h2 style="margin: 0; font-size: 16px; font-weight: 600">{{g.title}}</h2>
+            <span style="font-size: 13px; color: #6B6459">{{g.desc}}</span>
+          </div>
+          <div style="border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05); overflow: hidden">
+            <sc-for list="{{g.people}}" as="p" hint-placeholder-count="2">
+              <div style="display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(0, 1.2fr) minmax(0, 1fr) 140px 52px; gap: 14px; align-items: center; padding: 0 20px; height: 68px; border-bottom: 1px solid #F3EEE6">
+                <div style="display: flex; align-items: center; gap: 12px; min-width: 0">
+                  <span style="{{p.avatarStyle}}">{{p.initial}}</span>
+                  <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+                    <div style="display: flex; align-items: center; gap: 8px">
+                      <span style="font-size: 15px; font-weight: 500">{{p.name}}</span>
+                      <sc-for list="{{p.roles}}" as="r" hint-placeholder-count="1">
+                        <span style="{{r.style}}">{{r.label}}</span>
+                      </sc-for>
+                    </div>
+                    <span style="font-size: 12.5px; color: #6B6459">Usuario: {{p.user}}</span>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px">
+                  <sc-if value="{{p.hasPhone}}" hint-placeholder-val="{{ true }}">
+                    <span style="font-size: 14px; color: #3A3832">{{p.phone}}</span>
+                    <button type="button" aria-label="WhatsApp a {{p.name}}" style="width: 32px; height: 32px; border-radius: 9px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #3F5B46; display: flex; align-items: center; justify-content: center">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8.5 8.5 0 0 1-12.6 7.4L3 21l1.6-5.2A8.5 8.5 0 1 1 21 12z"></path></svg>
+                    </button>
+                  </sc-if>
+                  <sc-if value="{{p.noPhone}}" hint-placeholder-val="{{ false }}">
+                    <button type="button" style="border: none; background: transparent; padding: 0; font-size: 13px; color: #3F5B46; font-weight: 500">+ Agregar teléfono</button>
+                  </sc-if>
+                </div>
+                <span style="font-size: 14px; color: #4A463F">{{p.students}}</span>
+                <span style="font-size: 13px; color: #6B6459">{{p.extra}}</span>
+                <button type="button" aria-label="Acciones de {{p.name}}: editar o eliminar" style="width: 36px; height: 36px; border-radius: 10px; border: none; background: transparent; color: #6B6459; justify-self: end">⋯</button>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </sc-for>
+
+      <section aria-label="Permisos por rol" style="border: 1px solid #EEE8DF; border-radius: 16px; overflow: hidden">
+        <button type="button" onClick="{{togglePerms}}" aria-expanded="{{permsOpen}}" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border: none; background: #FFFFFF; text-align: left; font-size: 14px">
+          <span><strong style="font-weight: 600">¿Qué puede hacer cada rol?</strong></span>
+          <span style="color: #6B6459">{{permsChevron}}</span>
+        </button>
+        <sc-if value="{{permsOpen}}" hint-placeholder-val="{{ true }}">
+          <div style="border-top: 1px solid #EEE8DF">
+            <div style="display: grid; grid-template-columns: minmax(0, 2fr) 140px 140px; padding: 0 20px; height: 40px; align-items: center; background: #FAF8F5; font-size: 12px; font-weight: 600; color: #6B6459">
+              <span>Acceso</span><span style="text-align: center">Administrador</span><span style="text-align: center">Instructor</span>
+            </div>
+            <sc-for list="{{perms}}" as="r" hint-placeholder-count="6">
+              <div style="display: grid; grid-template-columns: minmax(0, 2fr) 140px 140px; padding: 0 20px; height: 44px; align-items: center; border-top: 1px solid #F3EEE6; font-size: 14px">
+                <span>{{r.label}}</span>
+                <span style="{{r.adminStyle}}">{{r.admin}}</span>
+                <span style="{{r.instStyle}}">{{r.inst}}</span>
+              </div>
+            </sc-for>
+            <div style="padding: 12px 20px; border-top: 1px solid #F3EEE6; font-size: 13px; color: #6B6459">Un administrador que también da clases lleva la etiqueta "Instructor" y aparece en la agenda.</div>
+          </div>
+        </sc-if>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#4F6B55","options":["#4F6B55","#3F5B46","#6B5B45"]},"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { perms: true };
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#4F6B55';
+    const st = this.state || {};
+    const role = (label) => ({ label, style: 'font-size:11px;font-weight:600;border-radius:999px;padding:2px 8px;' + (label === 'Admin' ? 'background:#EFE6DA;color:#6E4A30' : 'background:#E1EBE2;color:#2F4A36') });
+    const avs = { R: ['#E4ECE5', '#2F4A36'], V: ['#F3E6DB', '#7A4429'], F: ['#E2ECF5', '#255377'], Y: ['#EDE6F1', '#5B3F72'] };
+    const mk = (name, user, phone, roles, students, extra) => {
+      const i = name[0];
+      return {
+        name, user, phone: phone || '', hasPhone: !!phone, noPhone: !phone,
+        roles: roles.map(role), students, extra, initial: i,
+        avatarStyle: 'width:40px;height:40px;flex-shrink:0;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;background:' + avs[i][0] + ';color:' + avs[i][1]
+      };
+    };
+    const groups = [
+      {
+        title: 'Administradores',
+        desc: 'Acceso total: alumnos, pagos, reportes, horarios y configuración.',
+        people: [
+          mk('Rodrigo Schulz', 'rodrischulz', '', ['Admin', 'Instructor'], '121 alumnos', 'Dueño · sin comisión'),
+          mk('Vanesa Saldaña', 'vanesalda', '3751 52-5946', ['Admin'], '—', 'Registra pagos')
+        ]
+      },
+      {
+        title: 'Instructores',
+        desc: 'Ven solo su agenda y pueden marcar asistencia. Sin acceso a pagos, reportes ni datos de otros alumnos.',
+        people: [
+          mk('Fabi', 'fabi_instructor', '3757 64-9426', ['Instructor'], '7 alumnos', 'Comisión 60%'),
+          mk('Yanina Cervino', 'yani123', '379 467-8267', ['Instructor'], '16 alumnos', 'Comisión 60%')
+        ]
+      }
+    ];
+    const loadRaw = [['Rodrigo', 121, accent], ['Yanina', 16, '#8DB0CE'], ['Fabi', 7, '#C9962E'], ['Sin profesor', 4, '#D9D3C8']];
+    const load = loadRaw.map((l) => ({
+      name: l[0], n: l[1],
+      barStyle: 'display:block;height:100%;flex-grow:' + l[1] + ';flex-basis:0;min-width:6px;background:' + l[2],
+      dotStyle: 'width:10px;height:10px;border-radius:999px;background:' + l[2]
+    }));
+    const yes = 'text-align:center;color:#2F6B3E;font-weight:600';
+    const no = 'text-align:center;color:#A39C90';
+    const permRaw = [
+      ['Su agenda y marcar asistencia', true, true],
+      ['Todos los horarios y alumnos', true, false],
+      ['Pagos y liquidación', true, false],
+      ['Reportes', true, false],
+      ['Comunicados', true, false],
+      ['Planes y equipo', true, false]
+    ];
+    const perms = permRaw.map((p) => ({ label: p[0], admin: p[1] ? '✓ Sí' : '—', inst: p[2] ? '✓ Sí' : '—', adminStyle: p[1] ? yes : no, instStyle: p[2] ? yes : no }));
+    return {
+      accent,
+      groups,
+      load,
+      perms,
+      permsOpen: !!st.perms,
+      permsChevron: st.perms ? '▴' : '▾',
+      togglePerms: () => this.setState({ perms: !st.perms })
+    };
+  }
+}
+</script>
+</body>
+</html>
