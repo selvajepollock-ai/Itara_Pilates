@@ -2,6 +2,7 @@
 
 import { useRouter, usePathname } from 'next/navigation'
 import { useSearchParams } from 'next/navigation'
+import { monthLabel } from './month-label'
 
 /** Selector de mes en es-AR ("Octubre 2026"). Cambia el parámetro de la URL y recarga los datos. */
 export function MonthPicker({
