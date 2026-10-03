@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { MessageCircle, Wallet, X } from 'lucide-react'
@@ -14,6 +14,8 @@ import { useStudentMenuItems } from './row-actions'
 import { suggestNextDueDate } from '@/lib/billing'
 import { formatARS } from '@/lib/currency'
 import { whatsappLink } from '@/lib/whatsapp'
+import { getStudentDrawerData, type DrawerData } from './drawer-actions'
+import { ClasesPanel, NotasPanel, PagosPanel } from './drawer-tab-panels'
 import { addDays, dayMonth, shortDate } from './format'
 import type { StudentRow } from './types'
 
@@ -56,6 +58,28 @@ export function StudentDrawer({
   const wa = whatsappLink(student.phone)
 
   useSidePanel(panelRef, { isMobile, onClose, resetKey: student.id })
+
+  // Pestañas: Resumen viene con la lista; Pagos, Clases y Notas se leen al abrirlas (y se releen si cambian los datos).
+  const [tab, setTab] = useState<'resumen' | 'pagos' | 'clases' | 'notas'>('resumen')
+  const [data, setData] = useState<DrawerData | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  useEffect(() => {
+    setTab('resumen')
+    setData(null)
+  }, [student.id])
+  useEffect(() => {
+    if (tab === 'resumen') return
+    let active = true
+    setLoadError(null)
+    getStudentDrawerData(student.id).then((res) => {
+      if (!active) return
+      if (res.error || !res.data) setLoadError(res.error ?? 'No se pudieron cargar los datos.')
+      else setData(res.data)
+    })
+    return () => {
+      active = false
+    }
+  }, [tab, student])
 
   const isOverdue = student.status === 'vencido' && !student.comp
   const dueDate = student.endDate ? addDays(student.endDate, 1) : null
@@ -128,33 +152,47 @@ export function StudentDrawer({
         <DropdownMenu label={`Más acciones para ${student.fullName}`} items={menuItems} />
       </div>
 
-      {/* TODO: pestañas Pagos, Clases y Notas. Los datos viven hoy en la ficha completa
-          (/admin/alumnos/[id]); por ahora se muestran deshabilitadas. */}
       <div role="tablist" aria-label="Secciones de la ficha" className="flex gap-1 border-b border-edge px-5">
-        <button
-          type="button"
-          role="tab"
-          aria-selected
-          className="-mb-px border-b-2 border-moss px-3 py-2.5 text-sm font-semibold text-ink"
-        >
-          Resumen
-        </button>
-        {['Pagos', 'Clases', 'Notas'].map((t) => (
+        {(
+          [
+            ['resumen', 'Resumen'],
+            ['pagos', 'Pagos'],
+            ['clases', 'Clases'],
+            ['notas', 'Notas'],
+          ] as const
+        ).map(([key, label]) => (
           <button
-            key={t}
+            key={key}
             type="button"
             role="tab"
-            aria-selected={false}
-            aria-disabled
-            disabled
-            title="Próximamente. Por ahora está en la ficha completa."
-            className="px-3 py-2.5 text-sm text-muted/60"
+            aria-selected={tab === key}
+            onClick={() => setTab(key)}
+            className={`-mb-px min-h-[44px] border-b-2 px-3 py-2.5 text-sm transition ${
+              tab === key ? 'border-moss font-semibold text-ink' : 'border-transparent text-muted hover:text-ink'
+            }`}
           >
-            {t}
+            {label}
           </button>
         ))}
       </div>
 
+      {tab !== 'resumen' && (
+        <div className="px-5 py-5">
+          {loadError ? (
+            <p className="text-sm text-danger">{loadError}</p>
+          ) : !data ? (
+            <p className="text-sm text-muted">Cargando…</p>
+          ) : tab === 'pagos' ? (
+            <PagosPanel data={data} studentName={student.fullName} />
+          ) : tab === 'clases' ? (
+            <ClasesPanel data={data} />
+          ) : (
+            <NotasPanel data={data} fullHref={`/admin/alumnos/${student.id}`} />
+          )}
+        </div>
+      )}
+
+      {tab === 'resumen' && (
       <div className="space-y-5 px-5 py-5">
         {extra}
         {isOverdue && (
@@ -234,6 +272,7 @@ export function StudentDrawer({
           Ver ficha completa →
         </Link>
       </div>
+      )}
     </aside>
   )
 }
