@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { X, Share, Plus } from 'lucide-react'
 
 const DISMISS_KEY = 'itara-install-dismissed-at'
@@ -15,6 +16,7 @@ function wasRecentlyDismissed() {
 }
 
 export function InstallPrompt() {
+  const pathname = usePathname()
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [showAndroid, setShowAndroid] = useState(false)
   const [showIOS, setShowIOS] = useState(false)
@@ -61,6 +63,9 @@ export function InstallPrompt() {
     setDeferredPrompt(null)
     setShowAndroid(false)
   }
+
+  // En el panel del alumno el aviso se muestra como tarjeta al final de la página (no flotante).
+  if (pathname === '/alumno') return null
 
   if (showAndroid) {
     return (

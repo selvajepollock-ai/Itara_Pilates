@@ -1,13 +1,23 @@
 import Link from 'next/link'
-import { CalendarX, RefreshCw, Flower2, CalendarDays, Clock, AlertTriangle } from 'lucide-react'
+import { AlertTriangle, CalendarDays } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
-import { subscriptionStatus, STATUS_LABEL, STATUS_CLASSES } from '@/lib/billing'
-import { getMonday, dateForDayOfWeek, toISODate, isInPast, hoursUntil } from '@/lib/sessions'
+import { formatTime } from '@/lib/day-names'
+import { subscriptionStatus } from '@/lib/billing'
+import { hoursUntil, isInPast } from '@/lib/sessions'
 import { getDailyQuote } from '@/lib/quotes'
-import { displayClassType } from '@/lib/class-type-display'
-import { ReprogramarButton } from './reprogramar-button'
-import { RequestPlanChangeForm } from './request-plan-change-form'
+import { AnnouncementsBanner } from '@/app/components/announcements-banner'
+import { addDaysISO, mondayOf, todayART } from '../admin/horarios/slots'
+import { shortDate } from '../admin/alumnos/format'
+import { ActivityList } from './activity-list'
+import { ClassesSection } from './classes-section'
+import { cap, dayDate, dayDateCap, dayName, deadlineText, dowOf, formatHours, monthName, rangeText, whenLabel } from './format'
+import { Greeting } from './greeting'
+import { InstallCard } from './install-card'
+import { NextClassCard } from './next-class-card'
+import { PlanCard } from './plan-card'
+import { RecoveriesSection } from './recoveries-section'
+import { StreakCard } from './streak-card'
+import type { ActivityItem, ClassRowData, ClassState, ClassWeek, NextClassData, RecoveryCardData } from './types'
 
 type MyClassRow = {
   id: string
@@ -22,6 +32,30 @@ type MyClassRow = {
   } | null
 }
 
+type RecoveryAttendance = {
+  id: string
+  class_id: string
+  session_date: string
+  recovery_credit_id: string | null
+  classes: {
+    room: string
+    day_of_week: number
+    start_time: string
+    class_types: { name: string } | null
+    profiles: { full_name: string } | null
+  } | null
+}
+
+type Credit = {
+  id: string
+  status: string
+  week_end: string
+  requested_session_date: string | null
+  requested: { start_time: string; day_of_week: number } | null
+}
+
+const dateForDow = (monday: string, dow: number) => addDaysISO(monday, dow === 0 ? 6 : dow - 1)
+
 export default async function AlumnoDashboard() {
   const supabase = await createClient()
   const {
@@ -29,32 +63,26 @@ export default async function AlumnoDashboard() {
   } = await supabase.auth.getUser()
 
   const studentId = user?.id ?? ''
-  const thisMonday = getMonday(new Date())
-  const nextMonday = new Date(thisMonday)
-  nextMonday.setDate(nextMonday.getDate() + 7)
-  const nextSunday = new Date(nextMonday)
-  nextSunday.setDate(nextSunday.getDate() + 6)
-  const todayISO = toISODate(new Date())
+  const today = todayART()
+  const thisMonday = mondayOf(today)
+  const nextMonday = addDaysISO(thisMonday, 7)
+  const nextSunday = addDaysISO(nextMonday, 6)
+  const since = addDaysISO(thisMonday, -14)
 
   const [
-    { data },
+    { data: enrollmentsData },
     { data: profile },
     { data: subscription },
     { data: settings },
-    { data: cancellations },
-    { data: credits },
-    { data: recentCancellations },
-    { data: recentRecoveries },
+    { data: cancellationsData },
+    { data: creditsData },
     { data: activePlans },
-    { data: upcomingRecoveries },
-    { data: requestedCredits },
+    { data: recoveriesData },
     { data: studioCancellations },
   ] = await Promise.all([
     supabase
       .from('enrollments')
-      .select(
-        'id, class_id, classes(room, day_of_week, start_time, end_time, class_types(name), profiles(full_name))'
-      )
+      .select('id, class_id, classes(room, day_of_week, start_time, end_time, class_types(name), profiles(full_name))')
       .eq('student_id', studentId)
       .eq('status', 'active'),
     supabase.from('profiles').select('full_name').eq('id', studentId).single(),
@@ -67,57 +95,30 @@ export default async function AlumnoDashboard() {
     supabase.from('studio_settings').select('payment_reminder_days_before, cancellation_min_hours, payment_due_day').single(),
     supabase
       .from('session_cancellations')
-      .select('enrollment_id, session_date')
+      .select('id, enrollment_id, session_date, within_deadline, recovery_credit_id')
       .eq('student_id', studentId)
-      .gte('session_date', toISODate(thisMonday))
-      .lte('session_date', toISODate(nextSunday)),
+      .gte('session_date', since)
+      .lte('session_date', nextSunday),
     supabase
       .from('recovery_credits')
-      .select('id, class_type_id, week_end, class_types(name)')
+      .select('id, status, week_end, requested_session_date, requested:requested_class_id(start_time, day_of_week)')
       .eq('student_id', studentId)
-      .eq('status', 'available')
-      .gte('week_end', todayISO),
-    supabase
-      .from('session_cancellations')
-      .select('id, session_date, within_deadline, classes(class_types(name))')
-      .eq('student_id', studentId)
-      .order('cancelled_at', { ascending: false })
-      .limit(3),
-    supabase
-      .from('attendance')
-      .select('id, session_date, classes(class_types(name))')
-      .eq('student_id', studentId)
-      .not('recovery_credit_id', 'is', null)
-      .order('created_at', { ascending: false })
-      .limit(3),
+      .gte('week_end', since),
     supabase.from('plans').select('id, name, price').eq('active', true).order('price'),
     supabase
       .from('attendance')
-      .select('id, class_id, session_date, classes(room, start_time, class_types(name), profiles(full_name))')
+      .select('id, class_id, session_date, recovery_credit_id, classes(room, day_of_week, start_time, class_types(name), profiles(full_name))')
       .eq('student_id', studentId)
       .not('recovery_credit_id', 'is', null)
-      .gte('session_date', todayISO)
-      .order('session_date', { ascending: true }),
-    supabase
-      .from('recovery_credits')
-      .select(
-        'id, requested_session_date, class_types(name), classes:requested_class_id(start_time, day_of_week)'
-      )
-      .eq('student_id', studentId)
-      .eq('status', 'requested'),
-    supabase
-      .from('class_cancellations')
-      .select('class_id, session_date')
-      .gte('session_date', toISODate(thisMonday))
-      .lte('session_date', toISODate(nextSunday)),
+      .gte('session_date', since)
+      .lte('session_date', nextSunday),
+    supabase.from('class_cancellations').select('class_id, session_date, reason').gte('session_date', since).lte('session_date', nextSunday),
   ])
 
-  const firstName = profile?.full_name?.split(' ')[0]
-  const quote = getDailyQuote(studentId)
+  const firstName = profile?.full_name?.split(' ')[0] ?? null
+  // El plazo sale de la configuración del estudio. El 12 es solo el valor de respaldo que usa también la acción de avisar.
   const minHours = settings?.cancellation_min_hours ?? 12
-
-  // A diferencia del panel del admin, aquí sí se usa el margen de gracia real:
-  // no está "vencida" hasta que pasan los días de gracia (por defecto, día 10).
+  const minHoursText = formatHours(minHours)
   const status = subscriptionStatus(
     subscription ?? null,
     settings?.payment_reminder_days_before ?? 3,
@@ -125,68 +126,249 @@ export default async function AlumnoDashboard() {
   )
   const planInfo = subscription?.plans as unknown as { name: string } | null
 
-  const enrollments = (data ?? []) as unknown as MyClassRow[]
-  const cancelledKeys = new Set(
-    (cancellations ?? []).map((c) => `${c.enrollment_id}_${c.session_date}`)
-  )
-  const studioCancelledKeys = new Set(
-    (studioCancellations ?? []).map((c) => `${c.class_id}_${c.session_date}`)
-  )
+  const enrollments = (enrollmentsData ?? []) as unknown as MyClassRow[]
+  const cancellations = cancellationsData ?? []
+  const credits = (creditsData ?? []) as unknown as Credit[]
+  const recoveries = (recoveriesData ?? []) as unknown as RecoveryAttendance[]
 
-  function buildWeek(monday: Date) {
-    const byDay = new Map<number, MyClassRow[]>()
-    for (const day of DAY_ORDER) byDay.set(day, [])
-    for (const e of enrollments) {
-      if (!e.classes) continue
-      byDay.get(e.classes.day_of_week)?.push(e)
+  const creditById = new Map(credits.map((c) => [c.id, c]))
+  const cancByKey = new Map(cancellations.map((c) => [`${c.enrollment_id}_${c.session_date}`, c]))
+  const cancByCredit = new Map(cancellations.filter((c) => c.recovery_credit_id).map((c) => [c.recovery_credit_id as string, c]))
+  const recoveryByCredit = new Map(recoveries.filter((r) => r.recovery_credit_id).map((r) => [r.recovery_credit_id as string, r]))
+  const studioByKey = new Map((studioCancellations ?? []).map((c) => [`${c.class_id}_${c.session_date}`, c.reason as string | null]))
+
+  const isExpired = (c: Credit) => c.status === 'available' && c.week_end < today
+  const fridayOf = (weekEnd: string) => addDaysISO(weekEnd, -2)
+  const creditUntilFor = (date: string) => dayDate(addDaysISO(mondayOf(date), 4))
+
+  /** Nota y acciones según el estado del crédito de un aviso (o de una clase cancelada por el estudio). */
+  function creditState(creditId: string | null | undefined): { state: ClassState; note: string; chooseCreditId?: string } {
+    const credit = creditId ? creditById.get(creditId) : undefined
+    if (!credit) return { state: 'tarde', note: '' }
+    if (credit.status === 'requested') {
+      const r = credit.requested
+      return {
+        state: 'avisaste-pedido',
+        note:
+          r && credit.requested_session_date
+            ? `Pediste recuperar el ${dayDate(credit.requested_session_date)} a las ${formatTime(r.start_time)}`
+            : 'Pediste una recuperación',
+      }
     }
-    for (const list of byDay.values()) {
-      list.sort((a, b) => (a.classes?.start_time ?? '').localeCompare(b.classes?.start_time ?? ''))
+    if (credit.status === 'used') {
+      const att = recoveryByCredit.get(credit.id)
+      return {
+        state: 'avisaste-usada',
+        note: att ? `Recuperaste el ${dayDate(att.session_date)} a las ${formatTime(att.classes?.start_time ?? '')}` : 'Ya usaste esta recuperación',
+      }
     }
-    const days = DAY_ORDER.filter((day) => (byDay.get(day)?.length ?? 0) > 0)
-    return { monday, byDay, days }
+    if (isExpired(credit)) return { state: 'avisaste-vencida', note: 'La recuperación venció' }
+    return {
+      state: 'avisaste-credito',
+      note: `Tenés recuperación hasta el ${dayDate(fridayOf(credit.week_end))}`,
+      chooseCreditId: credit.id,
+    }
   }
 
-  const weeks = [buildWeek(thisMonday), buildWeek(nextMonday)]
+  // ── Tus clases ────────────────────────────────────────────────────────────────────────────
+  const buildWeek = (monday: string, title: string): ClassWeek => {
+    const rows: ClassRowData[] = []
 
-  type ActivityItem =
-    | { kind: 'cancel'; at: string; typeName?: string; withinDeadline: boolean }
-    | { kind: 'recover'; at: string; typeName?: string }
+    for (const e of enrollments) {
+      const c = e.classes
+      if (!c) continue
+      const date = dateForDow(monday, c.day_of_week)
+      const start = formatTime(c.start_time)
+      const past = isInPast(date, c.start_time)
+      const canc = cancByKey.get(`${e.id}_${date}`)
+      const studioReason = studioByKey.get(`${e.class_id}_${date}`)
+      const studioCancelled = studioByKey.has(`${e.class_id}_${date}`)
+      const base = {
+        key: `${e.id}_${date}`,
+        date,
+        dow: c.day_of_week,
+        isToday: date === today,
+        past,
+        start,
+        typeName: c.class_types?.name ?? 'Clase',
+        instructor: c.profiles?.full_name ?? null,
+      }
 
-  const activity: ActivityItem[] = [
-    ...(recentCancellations ?? []).map((c): ActivityItem => ({
-      kind: 'cancel',
-      at: c.session_date,
-      typeName: displayClassType(
-        (c.classes as unknown as { class_types: { name: string } | null } | null)?.class_types?.name
-      ),
-      withinDeadline: c.within_deadline,
+      if (studioCancelled) {
+        const cs = canc ? creditState(canc.recovery_credit_id) : null
+        const detail = studioReason ? `${studioReason} · ` : ''
+        rows.push({
+          ...base,
+          state: 'studio',
+          note:
+            cs && cs.state !== 'tarde' && cs.state !== 'avisaste-vencida' && cs.state !== 'avisaste-credito'
+              ? `${detail}${cs.note}`
+              : cs?.chooseCreditId
+                ? `${detail}tenés recuperación disponible`
+                : studioReason ?? 'Sin clase ese día',
+          chooseCreditId: cs?.chooseCreditId,
+        })
+        continue
+      }
+
+      if (canc) {
+        if (!canc.within_deadline) {
+          rows.push({ ...base, state: 'tarde', note: `Sin recuperación: avisaste con menos de ${minHoursText}` })
+          continue
+        }
+        const cs = creditState(canc.recovery_credit_id)
+        rows.push({
+          ...base,
+          state: cs.state === 'tarde' ? 'avisaste-vencida' : cs.state,
+          note: cs.note || 'Avisaste que no ibas',
+          chooseCreditId: cs.chooseCreditId,
+          undo:
+            cs.state === 'avisaste-credito' && !past
+              ? { enrollmentId: e.id, classId: e.class_id, sessionDate: date }
+              : undefined,
+        })
+        continue
+      }
+
+      if (past) {
+        rows.push({ ...base, state: 'past', note: 'Ya pasó' })
+        continue
+      }
+
+      // Mismo criterio que usa la acción de avisar para decidir si está a tiempo.
+      const onTime = hoursUntil(date, c.start_time) >= minHours
+      rows.push({
+        ...base,
+        state: onTime ? 'future' : 'late-window',
+        note: onTime ? `Podés avisar hasta ${deadlineText(start, minHours)}` : 'Ya no se puede avisar con recuperación',
+        avoid: {
+          enrollmentId: e.id,
+          classId: e.class_id,
+          sessionDate: date,
+          typeName: c.class_types?.name ?? 'Clase',
+          whenLabel: whenLabel(date, today),
+          start,
+          onTime,
+          creditUntil: creditUntilFor(date),
+        },
+      })
+    }
+
+    // Recuperaciones aprobadas de esta semana.
+    for (const r of recoveries) {
+      if (r.session_date < monday || r.session_date > addDaysISO(monday, 6) || !r.classes) continue
+      const origin = r.recovery_credit_id ? cancByCredit.get(r.recovery_credit_id) : undefined
+      const start = formatTime(r.classes.start_time)
+      const past = isInPast(r.session_date, r.classes.start_time)
+      rows.push({
+        key: `rec_${r.id}`,
+        date: r.session_date,
+        dow: dowOf(r.session_date),
+        isToday: r.session_date === today,
+        past,
+        start,
+        typeName: r.classes.class_types?.name ?? 'Clase',
+        instructor: r.classes.profiles?.full_name ?? null,
+        state: 'recovery',
+        note: origin ? `Por tu clase del ${dayDate(origin.session_date)}` : 'Recuperación aprobada',
+        // TODO: "Avisar que no voy" en una recuperación: la acción necesita una inscripción fija y acá no hay.
+      })
+    }
+
+    rows.sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start))
+    const hasWeekend = rows.some((r) => r.dow === 0 || r.dow === 6)
+    return { title, range: rangeText(monday, addDaysISO(monday, hasWeekend ? 6 : 4)), rows }
+  }
+
+  const weeks = [buildWeek(thisMonday, 'Esta semana'), buildWeek(nextMonday, 'Semana que viene')]
+
+  // ── Próxima clase confirmada ──────────────────────────────────────────────────────────────
+  const upcoming = weeks
+    .flatMap((w) => w.rows)
+    .filter((r) => !r.past && (r.state === 'future' || r.state === 'late-window' || r.state === 'recovery'))
+    .sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start))[0]
+  const daysTo = (date: string) =>
+    Math.round((new Date(`${date}T12:00:00Z`).getTime() - new Date(`${today}T12:00:00Z`).getTime()) / 86_400_000)
+  const nextClass: NextClassData | null = upcoming
+    ? {
+        dayLabel: dayDateCap(upcoming.date),
+        start: upcoming.start,
+        chip: daysTo(upcoming.date) === 0 ? 'Hoy' : daysTo(upcoming.date) === 1 ? 'Mañana' : `En ${daysTo(upcoming.date)} días`,
+        typeName: upcoming.typeName,
+        instructor: upcoming.instructor,
+      }
+    : null
+
+  // ── Tus recuperaciones ────────────────────────────────────────────────────────────────────
+  const originText = (creditId: string) => {
+    const c = cancByCredit.get(creditId)
+    if (!c) return 'Por una clase que no pudiste tomar'
+    const enrollment = enrollments.find((e) => e.id === c.enrollment_id)
+    const studio = enrollment ? studioByKey.has(`${enrollment.class_id}_${c.session_date}`) : false
+    if (studio) return `Por la clase del ${dayDate(c.session_date)}, cancelada por el estudio`
+    return c.session_date === today ? `Por tu clase de hoy, ${dayDate(c.session_date)}` : `Por tu clase del ${dayDate(c.session_date)}`
+  }
+  const recoveryCards: RecoveryCardData[] = credits
+    .filter((c) => c.status === 'requested' || (c.status === 'available' && !isExpired(c)))
+    .sort((a, b) => Number(b.status === 'requested') - Number(a.status === 'requested') || a.week_end.localeCompare(b.week_end))
+    .map((c) => ({
+      id: c.id,
+      status: c.status === 'requested' ? ('requested' as const) : ('available' as const),
+      title:
+        c.status === 'requested' && c.requested && c.requested_session_date
+          ? `${dayDateCap(c.requested_session_date)} · ${formatTime(c.requested.start_time)}`
+          : 'Elegí una clase esta semana',
+      origin: originText(c.id),
+      until: dayDate(fridayOf(c.week_end)),
+    }))
+
+  // ── Actividad reciente ────────────────────────────────────────────────────────────────────
+  // TODO: los rechazos no se registran (el crédito vuelve a "disponible" sin dejar rastro), así que no aparecen acá.
+  const events: (ActivityItem & { sort: string })[] = [
+    ...cancellations.map((c) => ({
+      text: c.within_deadline ? `Avisaste que no ibas a la clase del ${dayDate(c.session_date)}` : `Avisaste tarde para la clase del ${dayDate(c.session_date)}`,
+      tone: 'yellow' as const,
+      date: shortDate(c.session_date) ?? '',
+      sort: c.session_date,
     })),
-    ...(recentRecoveries ?? []).map((r): ActivityItem => ({
-      kind: 'recover',
-      at: r.session_date,
-      typeName: displayClassType(
-        (r.classes as unknown as { class_types: { name: string } | null } | null)?.class_types?.name
-      ),
+    ...credits
+      .filter((c) => c.status === 'requested' && c.requested_session_date)
+      .map((c) => ({
+        text: `Pediste recuperar el ${dayDate(c.requested_session_date!)}`,
+        tone: 'yellow' as const,
+        date: shortDate(c.requested_session_date!) ?? '',
+        sort: c.requested_session_date!,
+      })),
+    ...recoveries.map((r) => ({
+      text: `Tu recuperación del ${dayDate(r.session_date)} fue aprobada`,
+      tone: 'green' as const,
+      date: shortDate(r.session_date) ?? '',
+      sort: r.session_date,
     })),
+    ...credits
+      .filter(isExpired)
+      .map((c) => ({
+        text: 'Venció una recuperación sin usar',
+        tone: 'red' as const,
+        date: shortDate(fridayOf(c.week_end)) ?? '',
+        sort: fridayOf(c.week_end),
+      })),
   ]
-    .sort((a, b) => b.at.localeCompare(a.at))
+    .sort((a, b) => b.sort.localeCompare(a.sort))
     .slice(0, 4)
 
+  const dateText = `${cap(dayName(dowOf(today)))} ${Number(today.slice(8, 10))} de ${monthName(today)}`
+  const endDateText = subscription?.end_date
+    ? new Date(`${subscription.end_date}T00:00:00`).toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })
+    : null
+
   return (
-    <div>
-      <p className="eyebrow">Mi semana</p>
-      <div className="mt-2 flex items-center gap-2">
-        <Flower2 size={22} strokeWidth={1.5} className="text-moss" />
-        <h1 className="font-display text-3xl italic text-ink sm:text-4xl">
-          {firstName ? `Hola, ${firstName}` : 'Tu horario'}
-        </h1>
-      </div>
-      <p className="mt-1.5 text-sm italic text-ink/50">{quote}</p>
+    <div className="space-y-6">
+      <AnnouncementsBanner />
 
       {(status === 'vencido' || status === 'por_vencer') && (
         <div
-          className={`mt-4 flex items-start gap-2.5 rounded-2xl border px-4 py-3 text-sm ${
+          className={`flex items-start gap-2.5 rounded-2xl border px-4 py-3 text-sm ${
             status === 'vencido' ? 'border-clay/40 bg-clay/10 text-clay' : 'border-amber-300 bg-amber-50 text-amber-800'
           }`}
         >
@@ -194,8 +376,8 @@ export default async function AlumnoDashboard() {
           <p>
             {status === 'vencido' ? (
               <>
-                Tu cuota está <span className="font-medium">vencida</span> y tiene recargo. Si ya la pagaste, avisale
-                al estudio; si no, hacelo cuanto antes.
+                Tu cuota está <span className="font-medium">vencida</span> y tiene recargo. Si ya la pagaste, avisale al
+                estudio; si no, hacelo cuanto antes.
               </>
             ) : (
               <>
@@ -206,284 +388,42 @@ export default async function AlumnoDashboard() {
         </div>
       )}
 
-      <div className="mt-6 rounded-2xl border border-sand bg-white px-5 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-wide text-ink/40">Tu cuota</p>
-            <p className="mt-0.5 font-display italic text-ink">
-              {planInfo?.name ?? 'Sin plan asignado'}
-            </p>
-            {subscription?.end_date && (
-              <p className="text-xs text-ink/40">
-                Pagado hasta{' '}
-                {new Date(`${subscription.end_date}T00:00:00`).toLocaleDateString('es-AR', {
-                  day: 'numeric',
-                  month: 'long',
-                })}
-              </p>
-            )}
-          </div>
-          <span className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_CLASSES[status]}`}>
-            {STATUS_LABEL[status]}
-          </span>
+      <div className="grid gap-6 lg:grid-cols-[1.55fr_1fr] lg:grid-rows-[auto_auto_1fr] lg:items-start">
+        <div className="lg:col-start-1 lg:row-start-1">
+          <Greeting dateText={dateText} firstName={firstName} quote={getDailyQuote(studentId)} />
         </div>
-        <div className="mt-3 border-t border-sand pt-3">
-          <RequestPlanChangeForm plans={activePlans ?? []} />
+        <div className="lg:col-start-2 lg:row-start-1 lg:h-full">
+          <NextClassCard data={nextClass} minHoursText={minHoursText} />
+        </div>
+
+        <div className="lg:col-start-2 lg:row-start-2 empty:hidden">
+          <RecoveriesSection items={recoveryCards} />
+        </div>
+
+        <div className="lg:col-start-1 lg:row-span-2 lg:row-start-2">
+          <ClassesSection weeks={weeks} studentId={studentId} minHoursText={minHoursText} />
+        </div>
+
+        <div className="space-y-6 lg:col-start-2 lg:row-start-3">
+          <Link
+            href="/alumno/calendario"
+            className="flex min-h-[56px] items-center justify-between rounded-2xl border border-edge bg-white px-5 py-4 transition hover:border-moss"
+          >
+            <span className="flex items-center gap-2.5 text-sm font-medium text-ink">
+              <CalendarDays size={18} className="text-moss" />
+              Ver calendario del estudio
+            </span>
+            <span className="text-muted" aria-hidden>
+              →
+            </span>
+          </Link>
+          <StreakCard />
+          <PlanCard planName={planInfo?.name ?? null} endDateText={endDateText} status={status} plans={activePlans ?? []} />
         </div>
       </div>
 
-      <Link
-        href="/alumno/calendario"
-        className="mt-4 flex items-center justify-between rounded-2xl border border-sand bg-white px-5 py-4 transition hover:border-moss"
-      >
-        <div className="flex items-center gap-2.5">
-          <CalendarDays size={18} className="text-moss" />
-          <span className="text-sm font-medium text-ink">Ver calendario completo del estudio</span>
-        </div>
-        <span className="text-xs text-ink/40">Todas las semanas →</span>
-      </Link>
-
-      {(upcomingRecoveries && upcomingRecoveries.length > 0) ||
-      (requestedCredits && requestedCredits.length > 0) ||
-      (credits && credits.length > 0) ? (
-        <div className="mt-4 rounded-2xl border border-sand bg-white px-5 py-4">
-          <p className="eyebrow">Recuperaciones</p>
-
-          {upcomingRecoveries && upcomingRecoveries.length > 0 && (
-            <div className="mt-3">
-              <p className="text-xs font-medium text-ink/40">Confirmadas</p>
-              <ul className="mt-1.5 space-y-2">
-                {upcomingRecoveries.map((r) => {
-                  const cls = r.classes as unknown as {
-                    room: string
-                    start_time: string
-                    class_types: { name: string } | null
-                    profiles: { full_name: string } | null
-                  } | null
-                  return (
-                    <li
-                      key={r.id}
-                      className="flex items-center justify-between rounded-xl bg-moss/5 px-3 py-2 text-sm"
-                    >
-                      <span className="text-ink">
-                        <span className="font-medium">{displayClassType(cls?.class_types?.name)}</span> —{' '}
-                        {new Date(`${r.session_date}T00:00:00`).toLocaleDateString('es-AR', {
-                          weekday: 'short',
-                          day: 'numeric',
-                          month: 'short',
-                        })}
-                        , {formatTime(cls?.start_time ?? '')}
-                      </span>
-                      <span className="text-xs text-moss">✓</span>
-                    </li>
-                  )
-                })}
-              </ul>
-            </div>
-          )}
-
-          {requestedCredits && requestedCredits.length > 0 && (
-            <div
-              className={
-                upcomingRecoveries && upcomingRecoveries.length > 0
-                  ? 'mt-4 border-t border-sand pt-4'
-                  : 'mt-3'
-              }
-            >
-              <p className="flex items-center gap-1.5 text-xs font-medium text-clay">
-                <Clock size={13} />
-                Esperando aprobación
-              </p>
-              <ul className="mt-1.5 space-y-2">
-                {requestedCredits.map((c) => {
-                  const cls = c.classes as unknown as { start_time: string; day_of_week: number } | null
-                  return (
-                    <li key={c.id} className="rounded-xl bg-clay/5 px-3 py-2 text-sm text-ink">
-                      <span className="font-medium">
-                        {displayClassType((c.class_types as unknown as { name: string } | null)?.name)}
-                      </span>{' '}
-                      — pediste pasarte al{' '}
-                      {cls && `${DAY_NAMES[cls.day_of_week]} ${formatTime(cls.start_time)}`}
-                      {c.requested_session_date &&
-                        ` (${new Date(`${c.requested_session_date}T00:00:00`).toLocaleDateString('es-AR', {
-                          day: 'numeric',
-                          month: 'short',
-                        })})`}
-                      <span className="ml-1 text-xs text-clay/70">— esperando el OK del estudio</span>
-                    </li>
-                  )
-                })}
-              </ul>
-            </div>
-          )}
-
-          {credits && credits.length > 0 && (
-            <div
-              className={
-                (upcomingRecoveries && upcomingRecoveries.length > 0) ||
-                (requestedCredits && requestedCredits.length > 0)
-                  ? 'mt-4 border-t border-sand pt-4'
-                  : 'mt-3'
-              }
-            >
-              <p className="text-xs font-medium text-clay">
-                Pendientes de solicitar recuperación ({credits.length})
-              </p>
-              <ul className="mt-1.5 space-y-2">
-                {credits.map((c, i) => (
-                  <li
-                    key={c.id}
-                    className="flex items-center justify-between rounded-xl bg-clay/5 px-3 py-2 text-sm"
-                  >
-                    <span className="text-ink">
-                      {displayClassType((c.class_types as unknown as { name: string } | null)?.name)}
-                      {credits.length > 1 ? ` #${i + 1}` : ''} — hasta el{' '}
-                      {new Date(`${c.week_end}T00:00:00`).toLocaleDateString('es-AR', {
-                        day: 'numeric',
-                        month: 'short',
-                      })}
-                    </span>
-                    <Link
-                      href={`/alumno/recuperar/${c.id}`}
-                      className="btn-primary-sm whitespace-nowrap"
-                    >
-                      Elegir clase
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      ) : null}
-
-      {weeks.map((week, weekIndex) => (
-        <div key={weekIndex} className="mt-8">
-          <p className="text-sm font-medium uppercase tracking-wide text-ink/50">
-            {weekIndex === 0 ? 'Esta semana' : 'Semana que viene'}
-          </p>
-
-          {week.days.length === 0 ? (
-            <div className="mt-3 rounded-2xl border border-dashed border-sand bg-white/50 px-6 py-10 text-center">
-              <p className="text-sm text-ink/50">Sin clases asignadas.</p>
-            </div>
-          ) : (
-            <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-              {week.days.map((day) => {
-                const dayDate = dateForDayOfWeek(week.monday, day)
-                return (
-                  <section key={day} className="lg:min-w-0">
-                    <h2 className="text-sm font-medium uppercase tracking-wide text-ink/50">
-                      {DAY_NAMES[day]} <span className="text-ink/30">{dayDate.getDate()}</span>
-                    </h2>
-                    <div className="mt-2 space-y-3">
-                      {week.byDay.get(day)?.map((e) => {
-                        const sessionDate = toISODate(dateForDayOfWeek(week.monday, day))
-                        const key = `${e.id}_${sessionDate}`
-                        const alreadyCancelled = cancelledKeys.has(key)
-                        const studioCancelled = studioCancelledKeys.has(`${e.class_id}_${sessionDate}`)
-                        const past = isInPast(sessionDate, e.classes?.start_time ?? '23:59:00')
-                        const isToday = sessionDate === todayISO
-
-                        return (
-                          <div
-                            key={e.id}
-                            className={`rounded-2xl border bg-white px-4 py-4 shadow-[0_2px_12px_rgba(46,43,38,0.04)] ${
-                              past || studioCancelled ? 'border-sand/60 opacity-60' : 'border-sand'
-                            }`}
-                          >
-                            <div className="flex items-start justify-between gap-2">
-                              <p className="font-display text-lg italic leading-tight text-ink">
-                                {displayClassType(e.classes?.class_types?.name)}
-                              </p>
-                              <span className="whitespace-nowrap rounded-full bg-blush px-2.5 py-1 text-xs tabular-nums text-ink">
-                                {formatTime(e.classes?.start_time ?? '')}
-                              </span>
-                            </div>
-                            <p className="mt-1.5 text-xs text-ink/50">
-                              {e.classes?.room} · {e.classes?.profiles?.full_name ?? 'Sin instructor'}
-                            </p>
-
-                            <div className="mt-2.5 border-t border-sand pt-2.5">
-                              {studioCancelled ? (
-                                <p className="text-xs font-medium text-clay">
-                                  Cancelada por el estudio — ya tenés recuperación disponible
-                                </p>
-                              ) : past ? (
-                                <p className="text-xs text-ink/35">
-                                  {alreadyCancelled ? 'No fuiste (avisada)' : 'Ya pasó'}
-                                </p>
-                              ) : alreadyCancelled ? (
-                                <p className="text-xs text-ink/40">Ya avisaste que no vas</p>
-                              ) : (
-                                <div className="flex items-center justify-between">
-                                  {isToday && (
-                                    <span className="text-xs font-medium text-moss">Hoy</span>
-                                  )}
-                                  <ReprogramarButton
-                                    studentId={studentId}
-                                    enrollmentId={e.id}
-                                    classId={e.class_id}
-                                    sessionDate={sessionDate}
-                                    classTypeName={displayClassType(e.classes?.class_types?.name)}
-                                    dayLabel={DAY_NAMES[day]}
-                                    startTime={formatTime(e.classes?.start_time ?? '')}
-                                    room={e.classes?.room ?? ''}
-                                    instructorName={e.classes?.profiles?.full_name ?? 'Sin instructor'}
-                                    hoursLeft={hoursUntil(sessionDate, e.classes?.start_time ?? '00:00:00')}
-                                    minHours={minHours}
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </section>
-                )
-              })}
-            </div>
-          )}
-        </div>
-      ))}
-
-      <p className="mt-4 text-center text-xs text-ink/30">
-        Podés reprogramar hasta {minHours} hs antes de tu clase.
-      </p>
-
-      {activity.length > 0 && (
-        <div className="mt-8">
-          <p className="text-sm font-medium uppercase tracking-wide text-ink/50">
-            Actividad reciente
-          </p>
-          <ul className="mt-3 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
-            {activity.map((item, i) => (
-              <li key={i} className="flex items-center gap-3 px-5 py-3.5">
-                <div
-                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
-                    item.kind === 'cancel' ? 'bg-clay/10 text-clay' : 'bg-moss/10 text-moss'
-                  }`}
-                >
-                  {item.kind === 'cancel' ? <CalendarX size={13} /> : <RefreshCw size={13} />}
-                </div>
-                <p className="text-sm text-ink/70">
-                  {item.kind === 'cancel'
-                    ? `Avisaste que no ibas a ${item.typeName ?? 'una clase'}`
-                    : `Te anotaste a recuperar ${item.typeName ?? 'una clase'}`}{' '}
-                  <span className="text-ink/40">
-                    ·{' '}
-                    {new Date(`${item.at}T00:00:00`).toLocaleDateString('es-AR', {
-                      day: 'numeric',
-                      month: 'short',
-                    })}
-                  </span>
-                </p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <ActivityList items={events} />
+      <InstallCard />
     </div>
   )
 }
