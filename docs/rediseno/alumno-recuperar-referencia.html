@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Itara · Elegir clase para recuperar (escritorio)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400;1,9..144,500&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#3F5B46}a:hover{color:#2F4A36}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; min-height: 1000px; background: #FFFFFF; font-family: 'Work Sans', system-ui, sans-serif; color: #2B2A26; font-variant-numeric: tabular-nums">
+
+  <header style="border-bottom: 1px solid #F0EAE1">
+    <div style="max-width: 1120px; margin: 0 auto; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; box-sizing: border-box">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div style="width: 38px; height: 38px; border-radius: 999px; background: #E9DFD0; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 18px; color: #8A5A3C">I</div>
+        <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 22px">Itara Pilates</span>
+      </div>
+      <button type="button" aria-label="Mi perfil y cerrar sesión" style="height: 40px; padding: 0 6px 0 14px; border-radius: 999px; border: 1px solid #E2D9CC; background: #FFFFFF; display: flex; align-items: center; gap: 10px; font-size: 14px; color: #2B2A26">Mi perfil
+        <span style="width: 30px; height: 30px; border-radius: 999px; background: #EFE6DA; color: #6E4A30; font-weight: 600; font-size: 13px; display: flex; align-items: center; justify-content: center">V</span>
+      </button>
+    </div>
+  </header>
+
+  <main style="max-width: 820px; margin: 0 auto; padding: 28px 32px 140px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+    <a href="AlumnoDesktop.dc.html" style="font-size: 14px; font-weight: 500; text-decoration: none; align-self: flex-start">← Volver a Inicio</a>
+
+    <sc-if value="{{notSent}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 20px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <h1 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 400; font-size: 40px; line-height: 1.1">Elegí una clase para recuperar</h1>
+          <span style="font-size: 15px; color: #4A463F">Por la clase del lunes 12, cancelada por el estudio.</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+          <div style="padding: 14px; border-radius: 14px; background: #FAF8F5; display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 12px; color: #6B6459">Tenés hasta</span>
+            <span style="font-size: 16px; font-weight: 600">el viernes 16</span>
+          </div>
+          <div style="padding: 14px; border-radius: 14px; background: #FAF8F5; display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 12px; color: #6B6459">Clase</span>
+            <span style="font-size: 16px; font-weight: 600">Reformer</span>
+          </div>
+          <div style="padding: 14px; border-radius: 14px; background: #FAF8F5; display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 12px; color: #6B6459">Profesor</span>
+            <span style="font-size: 16px; font-weight: 600">[profesor]</span>
+          </div>
+        </div>
+
+        <span style="font-size: 13.5px; color: #6B6459">Solo se muestran clases con lugar, del mismo tipo y con tu mismo profesor. El estudio tiene que aprobar el horario que elijas.</span>
+
+        <sc-for list="{{days}}" as="d" hint-placeholder-count="4">
+          <section aria-label="{{d.title}}" style="display: flex; flex-direction: column; gap: 10px">
+            <h2 style="margin: 0; font-size: 15px; font-weight: 600">{{d.title}}</h2>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap">
+              <sc-for list="{{d.slots}}" as="s" hint-placeholder-count="3">
+                <button type="button" onClick="{{s.pick}}" aria-pressed="{{s.selected}}" style="{{s.style}}">
+                  <span style="font-size: 18px; font-weight: 600">{{s.hour}}</span>
+                  <span style="{{s.subStyle}}">{{s.spots}}</span>
+                </button>
+              </sc-for>
+              <sc-if value="{{d.empty}}" hint-placeholder-val="{{ false }}">
+                <span style="font-size: 14px; color: #A39C90; padding: 10px 0">Sin lugares este día</span>
+              </sc-if>
+            </div>
+          </section>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{sent}}" hint-placeholder-val="{{ false }}">
+      <section aria-label="Pedido enviado" style="padding: 28px; border-radius: 22px; background: #FDF8EE; border: 1px solid #F0E3C4; display: flex; flex-direction: column; gap: 12px; align-items: flex-start">
+        <span style="font-size: 12px; font-weight: 600; background: #FBEFC9; color: #7A5A0E; border-radius: 999px; padding: 3px 10px">Esperando aprobación</span>
+        <h1 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 400; font-size: 34px; line-height: 1.15">Pediste {{pickText}}</h1>
+        <span style="font-size: 15px; color: #4A463F; line-height: 1.5">El estudio lo tiene que aprobar. Vas a ver la respuesta en tu panel: si lo aprueban queda en "Tus clases"; si no, podés elegir otro horario.</span>
+        <a href="AlumnoDesktop.dc.html" style="height: 46px; padding: 0 20px; border-radius: 12px; background: #2B2A26; color: #FFFFFF; font-size: 14px; font-weight: 600; display: flex; align-items: center; text-decoration: none; margin-top: 6px">Volver a Inicio</a>
+      </section>
+    </sc-if>
+  </main>
+
+  <sc-if value="{{hasPick}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 0; border-top: 1px solid #EEE8DF; background: #FFFFFF; box-shadow: 0 -8px 24px rgba(43,42,38,0.08)">
+      <div style="max-width: 820px; margin: 0 auto; padding: 16px 32px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 13px; color: #6B6459">Vas a pedir</span>
+          <span style="font-size: 17px; font-weight: 600">{{pickText}}</span>
+        </div>
+        <button type="button" onClick="{{send}}" style="height: 48px; padding: 0 22px; border-radius: 12px; border: none; background: #2B2A26; color: #FFFFFF; font-size: 15px; font-weight: 600">Pedir esta clase</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#4F6B55","options":["#4F6B55","#3F5B46","#6B5B45"]},"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { pick: null, pickText: '', sent: false };
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#4F6B55';
+    const st = this.state || {};
+    const data = [
+      ['Martes 13', 'el martes 13', [['09:00', 2], ['14:00', 3], ['15:00', 3]]],
+      ['Miércoles 14', 'el miércoles 14', [['09:00', 2], ['20:00', 1]]],
+      ['Jueves 15', 'el jueves 15', [['08:00', 1], ['15:00', 3], ['16:00', 1]]],
+      ['Viernes 16', 'el viernes 16', [['07:00', 4], ['09:00', 2], ['14:00', 3]]]
+    ];
+    const days = data.map((d) => ({
+      title: d[0],
+      empty: d[2].length === 0,
+      slots: d[2].map((s) => {
+        const key = d[0] + s[0];
+        const selected = st.pick === key;
+        return {
+          hour: s[0], selected,
+          spots: s[1] === 1 ? '1 lugar' : s[1] + ' lugares',
+          pick: () => this.setState({ pick: selected ? null : key, pickText: d[1] + ' a las ' + s[0] }),
+          style: 'width:120px;height:68px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0;' + (selected ? 'background:' + accent + ';color:#FFFFFF;border:1px solid ' + accent : 'background:#FFFFFF;color:#2B2A26;border:1px solid #E2D9CC'),
+          subStyle: 'font-size:12px;' + (selected ? 'color:rgba(255,255,255,0.85)' : 'color:#3F5B46')
+        };
+      })
+    }));
+    return {
+      accent,
+      days,
+      notSent: !st.sent,
+      sent: !!st.sent,
+      hasPick: !!st.pick && !st.sent,
+      pickText: st.pickText || '',
+      send: () => this.setState({ sent: true })
+    };
+  }
+}
+</script>
+</body>
+</html>

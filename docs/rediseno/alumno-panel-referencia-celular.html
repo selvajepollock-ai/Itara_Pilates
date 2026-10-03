@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Itara · Panel del alumno (celular)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400;1,9..144,500&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#3F5B46}a:hover{color:#2F4A36}
+button{font-family:inherit;cursor:pointer}
+@keyframes itaraBreath{0%,100%{transform:scale(0.82);opacity:0.55}50%{transform:scale(1);opacity:1}}
+@keyframes itaraBreath2{0%,100%{transform:scale(0.7);opacity:0.35}50%{transform:scale(0.92);opacity:0.8}}
+.breath1{animation:itaraBreath 6s ease-in-out infinite}
+.breath2{animation:itaraBreath2 6s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.breath1,.breath2{animation:none}}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 2200px; box-sizing: border-box; background: #FFFFFF; font-family: 'Work Sans', system-ui, sans-serif; color: #2B2A26; font-variant-numeric: tabular-nums; overflow: hidden">
+
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid #F0EAE1">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <div style="width: 34px; height: 34px; border-radius: 999px; background: #E9DFD0; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 16px; color: #8A5A3C">I</div>
+      <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 19px">Itara Pilates</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px">
+      <a href="#" aria-label="Instagram del estudio" style="width: 40px; height: 40px; border-radius: 999px; border: 1px solid #E2D9CC; display: flex; align-items: center; justify-content: center; color: #3A3832">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><path d="M17.5 6.5h.01"></path></svg>
+      </a>
+      <button type="button" aria-label="Mi perfil y cerrar sesión" style="width: 40px; height: 40px; border-radius: 999px; border: none; background: #EFE6DA; color: #6E4A30; font-weight: 600; font-size: 14px">V</button>
+    </div>
+  </header>
+
+  <div style="padding: 18px 18px 40px; display: flex; flex-direction: column; gap: 16px">
+
+    <section aria-label="Saludo y frase del día" style="position: relative; border-radius: 22px; padding: 22px 20px 20px; background: linear-gradient(150deg, #F7EFE5 0%, #EEF3EE 100%); overflow: hidden; display: flex; flex-direction: column; gap: 14px">
+      <div aria-hidden="true" style="position: absolute; right: -26px; top: -26px; width: 150px; height: 150px; display: flex; align-items: center; justify-content: center">
+        <div class="breath2" style="position: absolute; width: 150px; height: 150px; border-radius: 999px; background: rgba(79,107,85,0.10)"></div>
+        <div class="breath1" style="position: absolute; width: 104px; height: 104px; border-radius: 999px; background: rgba(79,107,85,0.16)"></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px; position: relative">
+        <span style="font-size: 13px; color: #6B6459">Lunes 5 de octubre</span>
+        <h1 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 400; font-size: 34px; line-height: 1.1">Hola, Victoria</h1>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: stretch; position: relative">
+        <div style="width: 3px; border-radius: 999px; background: #C9A27A; flex-shrink: 0"></div>
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: #8A5A3C">FRASE DEL DÍA</span>
+          <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 19px; line-height: 1.35">La perfección está sobrevalorada.</span>
+        </div>
+      </div>
+    </section>
+
+    <section aria-label="Tu próxima clase" style="border-radius: 20px; background: #2F4A36; color: #FFFFFF; padding: 20px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 8px 24px rgba(47,74,54,0.22)">
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: rgba(255,255,255,0.75)">TU PRÓXIMA CLASE</span>
+        <span style="font-size: 12px; font-weight: 600; background: rgba(255,255,255,0.16); border-radius: 999px; padding: 3px 10px">{{nextWhen}}</span>
+      </div>
+      <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 28px; line-height: 1.1">{{nextTitle}}</span>
+      <span style="font-size: 14px; color: rgba(255,255,255,0.8)">Reformer · con [profesor]</span>
+    </section>
+
+    <section aria-label="Tus recuperaciones" style="display: flex; flex-direction: column; gap: 10px">
+      <h2 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 500; font-size: 22px">Tus recuperaciones</h2>
+      <sc-for list="{{recs}}" as="r" hint-placeholder-count="2">
+        <div style="{{r.boxStyle}}">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+            <span style="{{r.chipStyle}}">{{r.chip}}</span>
+            <span style="font-size: 12px; color: #6B6459">{{r.deadline}}</span>
+          </div>
+          <span style="font-size: 16px; font-weight: 600">{{r.title}}</span>
+          <span style="font-size: 13px; color: #4A463F">{{r.origin}}</span>
+          <sc-if value="{{r.canPick}}" hint-placeholder-val="{{ false }}">
+            <a href="RecuperarMobile.dc.html" style="height: 44px; border-radius: 12px; background: #2B2A26; color: #FFFFFF; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; text-decoration: none; margin-top: 4px">Elegir clase</a>
+          </sc-if>
+        </div>
+      </sc-for>
+    </section>
+
+    <section aria-label="Tus clases" style="border: 1px solid #EEE8DF; border-radius: 18px; padding: 14px 14px 6px; display: flex; flex-direction: column; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05)">
+      <h2 style="margin: 2px 4px; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 500; font-size: 22px">Tus clases</h2>
+      <sc-for list="{{weeks}}" as="w" hint-placeholder-count="2">
+        <div style="display: flex; flex-direction: column">
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: #6B6459; padding: 12px 4px 4px">{{w.title}}</span>
+          <sc-for list="{{w.items}}" as="c" hint-placeholder-count="2">
+            <div style="{{c.rowStyle}}">
+              <div style="display: flex; align-items: center; gap: 12px">
+                <div style="width: 44px; display: flex; flex-direction: column; align-items: center; flex-shrink: 0">
+                  <span style="{{c.wdStyle}}">{{c.wd}}</span>
+                  <span style="{{c.numStyle}}">{{c.num}}</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+                  <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap">
+                    <span style="{{c.titleStyle}}">Reformer · 18:00</span>
+                    <sc-if value="{{c.hasChip}}" hint-placeholder-val="{{ false }}">
+                      <span style="{{c.chipStyle}}">{{c.chip}}</span>
+                    </sc-if>
+                  </div>
+                  <span style="{{c.noteStyle}}">{{c.note}}</span>
+                </div>
+              </div>
+              <sc-if value="{{c.canSkip}}" hint-placeholder-val="{{ false }}">
+                <button type="button" onClick="{{c.skip}}" style="height: 42px; border-radius: 11px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #2B2A26; font-size: 14px">Avisar que no voy</button>
+              </sc-if>
+              <sc-if value="{{c.canUndo}}" hint-placeholder-val="{{ false }}">
+                <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+                  <button type="button" onClick="{{c.undo}}" style="height: 42px; border-radius: 11px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #3F5B46; font-size: 14px; font-weight: 600">Al final voy</button>
+                  <a href="RecuperarMobile.dc.html" style="height: 42px; border-radius: 11px; background: #2B2A26; color: #FFFFFF; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; text-decoration: none">Elegir clase</a>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </sc-for>
+    </section>
+
+    <a href="#" style="display: flex; align-items: center; gap: 12px; padding: 16px; border: 1px solid #EEE8DF; border-radius: 16px; text-decoration: none; color: #2B2A26">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3F5B46" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>
+      <span style="flex-grow: 1; font-size: 14.5px; font-weight: 500">Ver calendario del estudio</span>
+      <span style="color: #6B6459">→</span>
+    </a>
+
+    <section aria-label="Racha de asistencia, próximamente" style="border-radius: 18px; padding: 16px; border: 1px solid #EEE8DF; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <span style="font-size: 14.5px; font-weight: 600">Tu racha de asistencia</span>
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.04em; background: #2B2A26; color: #FFFFFF; border-radius: 999px; padding: 3px 9px">MUY PRONTO</span>
+      </div>
+      <div aria-hidden="true" style="display: flex; gap: 6px">
+        <sc-for list="{{streak}}" as="b" hint-placeholder-count="8">
+          <span style="{{b}}"></span>
+        </sc-for>
+      </div>
+      <span style="font-size: 13px; color: #4A463F">La constancia también se entrena.</span>
+    </section>
+
+    <section aria-label="Tu cuota" style="border: 1px solid #EEE8DF; border-radius: 18px; padding: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px">
+      <div style="display: flex; flex-direction: column; gap: 3px">
+        <span style="font-size: 12px; color: #6B6459">Tu plan</span>
+        <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 20px">2x por semana</span>
+        <a href="#" style="font-size: 13px; font-weight: 500; text-decoration: none">Solicitar cambio de plan</a>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px">
+        <span style="font-size: 12px; font-weight: 600; background: #EFE6DA; color: #6E4A30; border-radius: 999px; padding: 3px 10px">Bonificado</span>
+        <span style="font-size: 12px; color: #6B6459">Hasta el 31 de dic</span>
+      </div>
+    </section>
+
+    <section aria-label="Actividad reciente" style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 14px; font-weight: 600; color: #4A463F">Actividad reciente</h2>
+      <sc-for list="{{activity}}" as="a" hint-placeholder-count="3">
+        <div style="display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border: 1px solid #EEE8DF; border-radius: 14px">
+          <span style="{{a.dot}}"></span>
+          <span style="font-size: 13.5px; color: #3A3832; flex-grow: 1; line-height: 1.4">{{a.text}}</span>
+          <span style="font-size: 12px; color: #6B6459; white-space: nowrap">{{a.when}}</span>
+        </div>
+      </sc-for>
+    </section>
+  </div>
+
+  <sc-if value="{{dialogOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: rgba(43,42,38,0.35); display: flex; align-items: flex-end">
+      <div role="dialog" aria-modal="true" aria-label="Avisar que no voy" style="width: 100%; background: #FFFFFF; border-radius: 22px 22px 0 0; padding: 22px 20px 30px; display: flex; flex-direction: column; gap: 14px; box-sizing: border-box">
+        <span style="width: 40px; height: 4px; border-radius: 999px; background: #E2D9CC; align-self: center"></span>
+        <h2 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 500; font-size: 24px">¿No vas {{dialogDay}} a las 18:00?</h2>
+        <div style="padding: 12px 14px; border-radius: 12px; background: #F4F8F4; font-size: 14px; color: #2F4A36; line-height: 1.5">Estás a tiempo: tu lugar se libera y ganás <strong style="font-weight: 600">una recuperación hasta el {{dialogDeadline}}</strong>, en otra clase de Reformer con tu profesor.</div>
+        <span style="font-size: 13px; color: #6B6459; line-height: 1.5">Si avisás con menos de 2 h de anticipación, el lugar se libera igual pero no hay recuperación.</span>
+        <button type="button" onClick="{{confirmSkip}}" style="height: 50px; border-radius: 14px; border: none; background: #2B2A26; color: #FFFFFF; font-size: 15px; font-weight: 600">Sí, aviso que no voy</button>
+        <button type="button" onClick="{{closeDialog}}" style="height: 50px; border-radius: 14px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #2B2A26; font-size: 15px">Volver</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#4F6B55","options":["#4F6B55","#3F5B46","#6B5B45"]},"$preview":{"width":390,"height":2200}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { l5: 'ok', m14: 'ok', dialog: null };
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#4F6B55';
+    const st = this.state || {};
+    const l5 = st.l5 || 'ok';
+    const m14 = st.m14 || 'ok';
+    const chip = (bg, fg) => 'font-size:11px;font-weight:600;border-radius:999px;padding:2px 8px;white-space:nowrap;background:' + bg + ';color:' + fg;
+    const rowBase = 'display:flex;flex-direction:column;gap:10px;padding:12px 4px;border-top:1px solid #F3EEE6;';
+    const base = (o) => Object.assign({ hasChip: false, chip: '', chipStyle: '', note: '', canSkip: false, canUndo: false, wdStyle: 'font-size:11px;color:#6B6459', numStyle: 'font-size:20px;font-weight:600', titleStyle: 'font-size:15px;font-weight:500', noteStyle: 'font-size:13px;color:#6B6459', rowStyle: rowBase }, o);
+    const struck = 'font-size:15px;font-weight:500;text-decoration:line-through;color:#8A8378';
+    const ok = 'font-size:13px;color:#2F6B3E;font-weight:500';
+    const lunes5 = l5 === 'ok'
+      ? base({ wd: 'Hoy', num: '5', note: 'Podés avisar hasta las 16:00', canSkip: true, skip: () => this.setState({ dialog: { id: 'l5', day: 'hoy', deadline: 'viernes 9' } }), wdStyle: 'font-size:11px;color:' + accent + ';font-weight:600' })
+      : base({ wd: 'Hoy', num: '5', hasChip: true, chip: 'Avisaste', chipStyle: chip('#FBEFC9', '#7A5A0E'), note: 'Tenés recuperación hasta el viernes 9', noteStyle: ok, titleStyle: struck, canUndo: true, undo: () => this.setState({ l5: 'ok' }) });
+    const mie7 = base({ wd: 'Mié', num: '7', hasChip: true, chip: 'Avisaste', chipStyle: chip('#FBEFC9', '#7A5A0E'), note: 'Pediste recuperar el jueves 8 a las 15:00', titleStyle: struck });
+    const lun12 = base({ wd: 'Lun', num: '12', hasChip: true, chip: 'Cancelada por el estudio', chipStyle: chip('#F5E1DC', '#9A3420'), note: 'Feriado · tenés recuperación disponible', noteStyle: ok, titleStyle: struck });
+    const mie14 = m14 === 'ok'
+      ? base({ wd: 'Mié', num: '14', note: 'Podés avisar hasta 2 h antes', canSkip: true, skip: () => this.setState({ dialog: { id: 'm14', day: 'el miércoles 14', deadline: 'viernes 16' } }) })
+      : base({ wd: 'Mié', num: '14', hasChip: true, chip: 'Avisaste', chipStyle: chip('#FBEFC9', '#7A5A0E'), note: 'Tenés recuperación hasta el viernes 16', noteStyle: ok, titleStyle: struck, canUndo: true, undo: () => this.setState({ m14: 'ok' }) });
+    const weeks = [
+      { title: 'ESTA SEMANA · 5 AL 9 OCT', items: [lunes5, mie7] },
+      { title: 'SEMANA QUE VIENE · 12 AL 16 OCT', items: [lun12, mie14] }
+    ];
+    const recBox = (bg, border) => 'display:flex;flex-direction:column;gap:4px;padding:14px;border-radius:16px;background:' + bg + ';border:1px solid ' + border;
+    const recs = [{ chip: 'Esperando aprobación', chipStyle: chip('#FBEFC9', '#7A5A0E'), deadline: 'Te avisamos acá', title: 'Jueves 8 · 15:00', origin: 'Por tu clase del miércoles 7', canPick: false, boxStyle: recBox('#FDF8EE', '#F0E3C4') }];
+    if (l5 !== 'ok') recs.push({ chip: 'Disponible', chipStyle: chip('#E1EBE2', '#2F4A36'), deadline: 'Hasta el viernes 9', title: 'Elegí una clase esta semana', origin: 'Por tu clase de hoy, lunes 5', canPick: true, boxStyle: recBox('#F4F8F4', '#DCE7DE') });
+    recs.push({ chip: 'Disponible', chipStyle: chip('#E1EBE2', '#2F4A36'), deadline: 'Hasta el viernes 16', title: 'Elegí una clase del 13 al 16', origin: 'Por la clase del lunes 12, cancelada por el estudio', canPick: true, boxStyle: recBox('#F4F8F4', '#DCE7DE') });
+    if (m14 !== 'ok') recs.push({ chip: 'Disponible', chipStyle: chip('#E1EBE2', '#2F4A36'), deadline: 'Hasta el viernes 16', title: 'Elegí una clase del 12 al 16', origin: 'Por tu clase del miércoles 14', canPick: true, boxStyle: recBox('#F4F8F4', '#DCE7DE') });
+    const dot = (c) => 'width:8px;height:8px;margin-top:6px;border-radius:999px;flex-shrink:0;background:' + c;
+    const activity = [];
+    if (l5 !== 'ok') activity.push({ text: 'Avisaste que no ibas hoy · ganaste una recuperación', when: 'ahora', dot: dot('#C9962E') });
+    activity.push({ text: 'Pediste recuperar el jueves 8 a las 15:00', when: 'sáb 3', dot: dot('#C9962E') });
+    activity.push({ text: 'El estudio canceló la clase del lunes 12 (feriado)', when: 'vie 2', dot: dot('#3E8A52') });
+    activity.push({ text: 'Avisaste que no ibas el miércoles 7', when: 'vie 2', dot: dot('#C9962E') });
+    const streak = [];
+    for (let i = 0; i < 8; i++) streak.push('flex:1 1 0;height:8px;border-radius:999px;background:' + (i < 5 ? '#EADDBD' : '#F3EBD8'));
+    const dlg = st.dialog;
+    return {
+      accent,
+      nextTitle: l5 === 'ok' ? 'Hoy · 18:00' : (m14 === 'ok' ? 'Miércoles 14 · 18:00' : 'Sin clases confirmadas'),
+      nextWhen: l5 === 'ok' ? 'Hoy' : 'En 9 días',
+      weeks, recs, activity: activity.slice(0, 4), streak,
+      dialogOpen: !!dlg,
+      dialogDay: dlg ? dlg.day : '',
+      dialogDeadline: dlg ? dlg.deadline : '',
+      closeDialog: () => this.setState({ dialog: null }),
+      confirmSkip: () => { const u = { dialog: null }; if (dlg) u[dlg.id] = 'avisada'; this.setState(u); }
+    };
+  }
+}
+</script>
+</body>
+</html>
