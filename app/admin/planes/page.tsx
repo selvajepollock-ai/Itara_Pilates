@@ -1,35 +1,36 @@
 import { createClient } from '@/lib/supabase/server'
-import { NewPlanForm } from './new-plan-form'
-import { PlanCard } from './plan-card'
+import { PlansView } from './plans-view'
+import type { PlanItem } from './plan-math'
 
 export default async function PlanesPage() {
   const supabase = await createClient()
-  const { data: plans } = await supabase
-    .from('plans')
-    .select('id, name, price, active, category, classes_per_week')
-    .order('active', { ascending: false })
-    .order('price')
+  const [{ data: plans }, { data: subs }, { data: students }] = await Promise.all([
+    supabase.from('plans').select('id, name, price, active, category, classes_per_week').order('price'),
+    // Solo lectura: suscripciones activas, para contar alumnos por plan.
+    supabase.from('subscriptions').select('student_id, plan_id, comp').eq('status', 'active'),
+    supabase.from('profiles').select('id, active').contains('roles', ['student']),
+  ])
 
-  return (
-    <div>
-      <p className="eyebrow">Estudio</p>
-      <h1 className="page-title mt-2">Planes</h1>
-      <p className="mt-2 text-sm text-ink/60">Los tipos de mensualidad que ofrece el estudio.</p>
+  const activeStudents = new Set((students ?? []).filter((s) => s.active !== false).map((s) => s.id as string))
+  const counts = new Map<string, { students: number; paying: number }>()
+  for (const s of subs ?? []) {
+    if (!s.plan_id || !activeStudents.has(s.student_id as string)) continue
+    const cur = counts.get(s.plan_id as string) ?? { students: 0, paying: 0 }
+    cur.students++
+    if (!s.comp) cur.paying++
+    counts.set(s.plan_id as string, cur)
+  }
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {plans?.map((p) => (
-          <PlanCard key={p.id} plan={p} />
-        ))}
-        {(!plans || plans.length === 0) && (
-          <p className="col-span-full py-10 text-center text-sm text-ink/40">
-            Todavía no hay planes cargados.
-          </p>
-        )}
-      </div>
+  const items: PlanItem[] = (plans ?? []).map((p) => ({
+    id: p.id as string,
+    name: p.name as string,
+    price: Number(p.price),
+    active: Boolean(p.active),
+    category: (p.category as string) ?? 'reformer',
+    classesPerWeek: (p.classes_per_week as number | null) ?? null,
+    students: counts.get(p.id as string)?.students ?? 0,
+    paying: counts.get(p.id as string)?.paying ?? 0,
+  }))
 
-      <div className="mt-6 max-w-2xl">
-        <NewPlanForm />
-      </div>
-    </div>
-  )
+  return <PlansView plans={items} />
 }
