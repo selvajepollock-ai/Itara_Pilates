@@ -10,7 +10,7 @@ import { shortDate } from '../alumnos/format'
 import { whatsappLink } from '@/lib/whatsapp'
 import { Private, useMoneyHidden } from './privacy'
 import { ChargePaidToggle } from './sueltas/charge-paid-toggle'
-import { monthLabel } from './month-picker'
+import { monthLabel } from './month-label'
 
 type Students = Parameters<typeof RegisterPaymentDialog>[0]['students']
 

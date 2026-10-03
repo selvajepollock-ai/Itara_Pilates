@@ -2,14 +2,7 @@
 
 import { useRouter, usePathname } from 'next/navigation'
 import { useSearchParams } from 'next/navigation'
-
-const MONTHS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
-
-export function monthLabel(ym: string) {
-  const [y, m] = ym.split('-').map(Number)
-  const name = MONTHS[m - 1]
-  return `${name[0].toUpperCase()}${name.slice(1)} ${y}`
-}
+import { monthLabel } from './month-label'
 
 /** Selector de mes en es-AR ("Octubre 2026"). Cambia el parámetro de la URL y recarga los datos. */
 export function MonthPicker({
