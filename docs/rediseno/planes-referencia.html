@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Itara · Planes (escritorio)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400;1,9..144,500&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#3F5B46}a:hover{color:#2F4A36}
+button,input,select{font-family:inherit}
+button{cursor:pointer}
+</style>
+</helmet>
+<div style="display: flex; min-height: 960px; background: #FFFFFF; font-family: 'Work Sans', system-ui, sans-serif; color: #2B2A26; font-variant-numeric: tabular-nums; position: relative">
+
+  <aside style="width: 248px; flex-shrink: 0; box-sizing: border-box; background: #FFFFFF; border-right: 1px solid #EEE8DF; padding: 22px 16px; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+      <div style="width: 36px; height: 36px; border-radius: 999px; background: #E9DFD0; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 18px; color: #8A5A3C">I</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 20px; line-height: 1">Itara</span>
+        <span style="font-size: 10px; letter-spacing: 0.18em; color: #6B6459; margin-top: 3px">PILATES</span>
+      </div>
+    </div>
+    <nav aria-label="Navegación principal" style="display: flex; flex-direction: column; gap: 18px">
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">OPERACIÓN</span>
+        <a href="Main.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Inicio</a>
+        <a href="Semana.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Horarios</a>
+        <a href="Alumnos.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Alumnos</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">FINANZAS</span>
+        <a href="PagosResumen.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Pagos</a>
+        <a href="Reportes.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Reportes</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">COMUNICACIÓN</span>
+        <a href="Comunicados.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Comunicados</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">CONFIGURACIÓN</span>
+        <a href="#" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; background: {{accent}}; color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 500">Planes</a>
+        <a href="Equipo.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Equipo</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main style="flex-grow: 1; min-width: 0; padding: 32px 40px 48px; box-sizing: border-box">
+    <div style="max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px">
+
+      <header style="display: flex; align-items: flex-end; justify-content: space-between">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <h1 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 400; font-size: 38px; line-height: 1.1">Planes</h1>
+          <span style="font-size: 14px; color: #4A463F">Las mensualidades que ofrece el estudio.</span>
+        </div>
+        <button type="button" onClick="{{openModal}}" style="height: 44px; padding: 0 18px; border-radius: 12px; border: none; background: {{accent}}; color: #FFFFFF; font-size: 14px; font-weight: 600">+ Nuevo plan</button>
+      </header>
+
+      <section aria-label="Planes activos" style="border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05); overflow: hidden">
+        <div style="display: grid; grid-template-columns: minmax(0, 1.6fr) 120px 150px 130px minmax(0, 1.4fr) 150px 52px; gap: 12px; align-items: center; padding: 0 20px; height: 44px; background: #FAF8F5; border-bottom: 1px solid #EEE8DF; font-size: 12px; font-weight: 600; color: #6B6459">
+          <span>Plan</span><span>Clases / semana</span><span style="text-align: right">Precio mensual</span><span style="text-align: right">Por clase</span><span>Alumnos</span><span style="text-align: right">Ingreso estimado</span><span></span>
+        </div>
+        <sc-for list="{{plans}}" as="p" hint-placeholder-count="6">
+          <div style="display: grid; grid-template-columns: minmax(0, 1.6fr) 120px 150px 130px minmax(0, 1.4fr) 150px 52px; gap: 12px; align-items: center; padding: 0 20px; height: 60px; border-bottom: 1px solid #F3EEE6; font-size: 14px">
+            <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 18px">{{p.name}}</span>
+            <span style="color: #4A463F">{{p.perWeek}}</span>
+            <span style="text-align: right; font-weight: 600">{{p.price}}</span>
+            <span style="text-align: right; color: #4A463F">{{p.perClass}}</span>
+            <div style="display: flex; align-items: center; gap: 10px">
+              <div style="flex-grow: 1; height: 6px; border-radius: 999px; background: #EFE9DF; overflow: hidden"><div style="{{p.barStyle}}"></div></div>
+              <a href="Alumnos.dc.html" style="width: 34px; text-align: right; font-weight: 600; text-decoration: none">{{p.students}}</a>
+            </div>
+            <span style="text-align: right; color: #4A463F">{{p.income}}</span>
+            <button type="button" aria-label="Acciones de {{p.name}}: editar o desactivar" style="width: 36px; height: 36px; border-radius: 10px; border: none; background: transparent; color: #6B6459; justify-self: end">⋯</button>
+          </div>
+        </sc-for>
+        <div style="display: grid; grid-template-columns: minmax(0, 1.6fr) 120px 150px 130px minmax(0, 1.4fr) 150px 52px; gap: 12px; align-items: center; padding: 0 20px; height: 52px; background: #FAF8F5; font-size: 14px; font-weight: 600">
+          <span>Total</span><span></span><span></span><span></span>
+          <span style="text-align: right; padding-right: 0">{{totalStudents}} alumnos</span>
+          <span style="text-align: right">{{totalIncome}}</span><span></span>
+        </div>
+      </section>
+
+      <span style="font-size: 13px; color: #6B6459">"Por clase" toma 4 semanas por mes. "Ingreso estimado" es precio × alumnos activos en el plan, sin bonificados ni recargos.</span>
+
+      <section aria-label="Planes desactivados" style="border: 1px solid #EEE8DF; border-radius: 16px; overflow: hidden">
+        <button type="button" onClick="{{toggleInactive}}" aria-expanded="{{inactiveOpen}}" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border: none; background: #FFFFFF; font-size: 14px; color: #4A463F; text-align: left">
+          <span><strong style="font-weight: 600; color: #2B2A26">Desactivados</strong> · no se pueden asignar a alumnos nuevos</span>
+          <span>{{inactiveChevron}}</span>
+        </button>
+        <sc-if value="{{inactiveOpen}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 20px; border-top: 1px solid #EEE8DF; font-size: 14px; color: #6B6459; text-align: center">No hay planes desactivados.</div>
+        </sc-if>
+      </section>
+    </div>
+  </main>
+
+  <sc-if value="{{modalOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: rgba(43,42,38,0.32); display: flex; align-items: flex-start; justify-content: center; padding-top: 110px; z-index: 20">
+      <div role="dialog" aria-modal="true" aria-label="Nuevo plan" style="width: 480px; background: #FFFFFF; border-radius: 18px; box-shadow: 0 24px 60px rgba(43,42,38,0.25); padding: 24px; display: flex; flex-direction: column; gap: 18px">
+        <div style="display: flex; align-items: center; justify-content: space-between">
+          <h2 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 500; font-size: 24px">Nuevo plan</h2>
+          <button type="button" onClick="{{closeModal}}" aria-label="Cerrar" style="width: 36px; height: 36px; border-radius: 10px; border: none; background: transparent; color: #6B6459; font-size: 18px">✕</button>
+        </div>
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Nombre
+          <input type="text" placeholder="Ej: 3x por semana" style="height: 44px; padding: 0 12px; border: 1px solid #E2D9CC; border-radius: 12px; font-size: 15px; font-weight: 400">
+        </label>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Clases por semana
+            <input type="number" min="1" value="{{mPer}}" onInput="{{onPer}}" style="height: 44px; padding: 0 12px; border: 1px solid #E2D9CC; border-radius: 12px; font-size: 15px; font-weight: 400">
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Precio mensual
+            <div style="display: flex; align-items: center; height: 44px; padding: 0 12px; border: 1px solid #E2D9CC; border-radius: 12px; gap: 6px; font-weight: 400">
+              <span style="color: #6B6459">$</span>
+              <input type="number" min="0" value="{{mPrice}}" onInput="{{onPrice}}" style="border: none; outline: none; font-size: 15px; flex-grow: 1; min-width: 0">
+            </div>
+          </label>
+        </div>
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Categoría
+          <select style="height: 44px; padding: 0 10px; border: 1px solid #E2D9CC; border-radius: 12px; font-size: 15px; font-weight: 400; background: #FFFFFF"><option>Pilates</option></select>
+        </label>
+        <div style="padding: 12px 14px; border-radius: 12px; background: #F4F8F4; font-size: 14px; color: #2F4A36">{{mHint}}</div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px">
+          <button type="button" onClick="{{closeModal}}" style="height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; font-size: 14px">Cancelar</button>
+          <button type="button" style="height: 44px; padding: 0 18px; border-radius: 12px; border: none; background: {{accent}}; color: #FFFFFF; font-size: 14px; font-weight: 600">Crear plan</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#4F6B55","options":["#4F6B55","#3F5B46","#6B5B45"]},"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { modal: false, inactive: false, per: '3', price: '46000' };
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#4F6B55';
+    const st = this.state || {};
+    const fmt = (n) => '$ ' + Math.round(n).toLocaleString('es-AR');
+    const raw = [
+      ['1x clase', null, 10000, 1],
+      ['1x por semana', 1, 28000, 18],
+      ['2x por semana', 2, 38000, 88],
+      ['3x por semana', 3, 46000, 38],
+      ['4x por semana', 4, 74000, 2],
+      ['5x por semana', 5, 84000, 0]
+    ];
+    const maxS = 88;
+    let totS = 0, totI = 0;
+    const plans = raw.map((r) => {
+      totS += r[3]; totI += r[2] * r[3];
+      return {
+        name: r[0],
+        perWeek: r[1] ? String(r[1]) : '—',
+        price: fmt(r[2]) + ' / mes',
+        perClass: r[1] ? fmt(r[2] / (r[1] * 4)) : '—',
+        students: String(r[3]),
+        barStyle: 'height:100%;border-radius:999px;width:' + Math.round(r[3] / maxS * 100) + '%;background:' + accent,
+        income: r[3] ? fmt(r[2] * r[3]) : '—'
+      };
+    });
+    const per = parseInt(st.per, 10);
+    const price = parseInt(st.price, 10);
+    const hint = per > 0 && price > 0 ? 'Equivale a ' + fmt(price / (per * 4)) + ' por clase (4 semanas por mes).' : 'Completá clases y precio para ver cuánto sale cada clase.';
+    return {
+      accent,
+      plans,
+      totalStudents: totS,
+      totalIncome: fmt(totI),
+      inactiveOpen: !!st.inactive,
+      inactiveChevron: st.inactive ? '▴' : '▾',
+      toggleInactive: () => this.setState({ inactive: !st.inactive }),
+      modalOpen: !!st.modal,
+      openModal: () => this.setState({ modal: true }),
+      closeModal: () => this.setState({ modal: false }),
+      mPer: st.per,
+      mPrice: st.price,
+      onPer: (e) => this.setState({ per: e.target.value }),
+      onPrice: (e) => this.setState({ price: e.target.value }),
+      mHint: hint
+    };
+  }
+}
+</script>
+</body>
+</html>
