@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useTransition } from 'react'
+import { useMemo, useRef, useState, useTransition } from 'react'
 import { Search } from 'lucide-react'
 import { registerPayment } from './pagos/actions'
 import { formatARS } from '@/lib/currency'
@@ -28,6 +28,8 @@ export function QuickPayment({
     () => students.find((s) => s.id === initialStudentId) ?? null
   )
   const [isPending, startTransition] = useTransition()
+  // Candado: un doble click (o Enter repetido) no tiene que registrar el pago dos veces.
+  const submittingRef = useRef(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
@@ -45,16 +47,21 @@ export function QuickPayment({
   }
 
   function handleSubmit(formData: FormData) {
-    if (!selected?.subscriptionId) return
+    if (!selected?.subscriptionId || submittingRef.current) return
+    submittingRef.current = true
     setError(null)
     setSuccess(false)
     startTransition(async () => {
-      const result = await registerPayment(selected.subscriptionId!, selected.id, formData)
-      if (result?.error) {
-        setError(result.error)
-        return
+      try {
+        const result = await registerPayment(selected.subscriptionId!, selected.id, formData)
+        if (result?.error) {
+          setError(result.error)
+          return
+        }
+        setSuccess(true)
+      } finally {
+        submittingRef.current = false
       }
-      setSuccess(true)
     })
   }
 

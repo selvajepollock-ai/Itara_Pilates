@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import { registerPayment } from '../../pagos/actions'
 
 export function RegisterPaymentForm({
@@ -15,19 +15,26 @@ export function RegisterPaymentForm({
   suggestedNextDate: string
 }) {
   const [isPending, startTransition] = useTransition()
+  const submittingRef = useRef(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
   function handleSubmit(formData: FormData) {
+    if (submittingRef.current) return
+    submittingRef.current = true
     setError(null)
     setSuccess(false)
     startTransition(async () => {
-      const result = await registerPayment(subscriptionId, studentId, formData)
-      if (result?.error) {
-        setError(result.error)
-        return
+      try {
+        const result = await registerPayment(subscriptionId, studentId, formData)
+        if (result?.error) {
+          setError(result.error)
+          return
+        }
+        setSuccess(true)
+      } finally {
+        submittingRef.current = false
       }
-      setSuccess(true)
     })
   }
 

@@ -45,6 +45,18 @@ export async function recordPayment({
     .eq('id', subscriptionId)
     .maybeSingle()
 
+  // Defensa contra el doble envío (doble click, red lenta): un pago idéntico de hace menos de 2 minutos no se repite.
+  const since = new Date(Date.now() - 2 * 60 * 1000).toISOString()
+  const { data: recent } = await supabase
+    .from('payments')
+    .select('id')
+    .eq('subscription_id', subscriptionId)
+    .eq('amount', amount || 0)
+    .is('voided_at', null)
+    .gte('paid_at', since)
+    .limit(1)
+  if (recent && recent.length > 0) return {}
+
   const { error: payError } = await supabase.from('payments').insert({
     subscription_id: subscriptionId,
     amount: amount || 0,
