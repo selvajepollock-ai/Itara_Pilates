@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Pencil, Ban } from 'lucide-react'
 import { formatARS } from '@/lib/currency'
+import { DropdownMenu } from '@/app/components/dropdown-menu'
 import { annulPayment, editPayment } from '../actions'
 
 export function PaymentRowActions({
@@ -11,11 +12,14 @@ export function PaymentRowActions({
   amount,
   notes,
   paidAt,
+  label,
 }: {
   paymentId: string
   amount: number
   notes: string
   paidAt?: string
+  /** Texto accesible del botón "⋯" (ej: "Más acciones del pago de Ana"). */
+  label?: string
 }) {
   const paidDate = paidAt
     ? new Date(paidAt).toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
@@ -55,22 +59,13 @@ export function PaymentRowActions({
 
   return (
     <div className="inline-flex items-center gap-1">
-      <button
-        onClick={() => setOpen('edit')}
-        className="rounded-full p-1.5 text-ink/40 hover:bg-linen hover:text-ink"
-        aria-label="Editar pago"
-        title="Editar"
-      >
-        <Pencil size={14} />
-      </button>
-      <button
-        onClick={() => setOpen('void')}
-        className="rounded-full p-1.5 text-ink/40 hover:bg-clay/10 hover:text-clay"
-        aria-label="Anular pago"
-        title="Anular"
-      >
-        <Ban size={14} />
-      </button>
+      <DropdownMenu
+        label={label ?? 'Más acciones del pago'}
+        items={[
+          { key: 'edit', label: 'Editar', icon: <Pencil size={15} />, onSelect: () => setOpen('edit') },
+          { key: 'void', label: 'Anular', icon: <Ban size={15} />, danger: true, onSelect: () => setOpen('void') },
+        ]}
+      />
 
       {(open === 'edit' || open === 'void') && (
         <>

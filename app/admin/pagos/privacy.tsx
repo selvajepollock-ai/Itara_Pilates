@@ -27,10 +27,11 @@ export function PrivacyToggleButton() {
     <button
       type="button"
       onClick={() => setHidden(!hidden)}
-      className="flex items-center gap-1.5 rounded-full border border-sand px-3.5 py-1.5 text-xs font-medium text-ink/60 transition hover:border-moss hover:text-moss"
+      aria-pressed={hidden}
+      className="inline-flex h-11 items-center gap-2 rounded-[12px] border border-edge-strong bg-white px-3.5 text-sm font-medium text-ink transition hover:border-moss hover:text-moss"
     >
       {hidden ? <EyeOff size={14} /> : <Eye size={14} />}
-      {hidden ? 'Montos ocultos' : 'Montos visibles'}
+      {hidden ? 'Mostrar montos' : 'Ocultar montos'}
     </button>
   )
 }
@@ -43,8 +44,9 @@ export function Private({ children, mask = '• • • • • •' }: { childr
   const hidden = useMoneyHidden()
   if (!hidden) return <>{children}</>
   return (
-    <span className="text-ink/30" aria-hidden>
-      {mask}
+    <span className="text-ink/30">
+      <span aria-hidden>{mask}</span>
+      <span className="sr-only">monto oculto</span>
     </span>
   )
 }

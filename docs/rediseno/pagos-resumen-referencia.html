@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Itara · Pagos, resumen (escritorio)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400;1,9..144,500&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#3F5B46}a:hover{color:#2F4A36}
+button{font-family:inherit;cursor:pointer}
+.seg:hover{filter:brightness(0.96)}
+</style>
+</helmet>
+<div style="display: flex; min-height: 1150px; background: #FFFFFF; font-family: 'Work Sans', system-ui, sans-serif; color: #2B2A26; font-variant-numeric: tabular-nums">
+
+  <aside style="width: 248px; flex-shrink: 0; box-sizing: border-box; background: #FFFFFF; border-right: 1px solid #EEE8DF; padding: 22px 16px; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+      <div style="width: 36px; height: 36px; border-radius: 999px; background: #E9DFD0; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 18px; color: #8A5A3C">I</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 20px; line-height: 1">Itara</span>
+        <span style="font-size: 10px; letter-spacing: 0.18em; color: #6B6459; margin-top: 3px">PILATES</span>
+      </div>
+    </div>
+    <nav aria-label="Navegación principal" style="display: flex; flex-direction: column; gap: 18px">
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">OPERACIÓN</span>
+        <a href="Main.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Inicio</a>
+        <a href="Semana.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Horarios</a>
+        <a href="Alumnos.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Alumnos</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">FINANZAS</span>
+        <a href="#" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; background: {{accent}}; color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 500"><span style="flex-grow: 1">Pagos</span><span style="font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.9); color: #2F4A36; border-radius: 999px; padding: 2px 8px">118</span></a>
+        <a href="#" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Reportes</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #6B6459; padding: 0 12px 6px">CONFIGURACIÓN</span>
+        <a href="#" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Planes</a>
+        <a href="#" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Equipo</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main style="flex-grow: 1; min-width: 0; padding: 32px 40px 48px; box-sizing: border-box">
+    <div style="max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px">
+
+      <header style="display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; align-items: flex-end; justify-content: space-between">
+          <h1 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 400; font-size: 38px; line-height: 1.1">Pagos</h1>
+          <div style="display: flex; gap: 10px; align-items: center">
+            <button type="button" onClick="{{toggleHidden}}" style="height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #2B2A26; font-size: 14px">{{toggleLabel}}</button>
+            <button type="button" style="height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #2B2A26; font-size: 14px">Octubre 2026 ▾</button>
+            <button type="button" style="height: 44px; padding: 0 18px; border-radius: 12px; border: none; background: {{accent}}; color: #FFFFFF; font-size: 14px; font-weight: 600">+ Registrar pago</button>
+          </div>
+        </div>
+        <div role="tablist" aria-label="Secciones de pagos" style="display: flex; gap: 28px; border-bottom: 1px solid #EEE8DF">
+          <a href="#" role="tab" aria-selected="true" style="padding: 0 0 12px; font-size: 15px; font-weight: 600; color: #2B2A26; text-decoration: none; border-bottom: 2px solid {{accent}}; margin-bottom: -1px">Resumen</a>
+          <a href="PagosRegistro.dc.html" role="tab" aria-selected="false" style="padding: 0 0 12px; font-size: 15px; color: #6B6459; text-decoration: none">Registro diario</a>
+          <a href="PagosLiquidacion.dc.html" role="tab" aria-selected="false" style="padding: 0 0 12px; font-size: 15px; color: #6B6459; text-decoration: none">Liquidación</a>
+        </div>
+      </header>
+
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 6px; padding: 20px; border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05)">
+          <span style="font-size: 13px; color: #6B6459; font-weight: 500">Cobrado en octubre</span>
+          <span style="font-size: 30px; font-weight: 600">{{cobrado}}</span>
+          <div style="height: 6px; border-radius: 999px; background: #EFE9DF; overflow: hidden"><div style="height: 100%; width: 13%; border-radius: 999px; background: {{accent}}"></div></div>
+          <span style="font-size: 13px; color: #6B6459">13% de {{esperado}} · 19 pagos</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px; padding: 20px; border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05)">
+          <span style="font-size: 13px; color: #6B6459; font-weight: 500">Falta cobrar</span>
+          <span style="font-size: 30px; font-weight: 600">{{falta}}</span>
+          <span style="font-size: 13px; color: #6B6459">Estimado según planes activos</span>
+        </div>
+        <a href="PagosRegistro.dc.html" style="display: flex; flex-direction: column; gap: 6px; padding: 20px; border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05); text-decoration: none; color: inherit">
+          <span style="font-size: 13px; color: #6B6459; font-weight: 500">Cobrado hoy</span>
+          <span style="font-size: 30px; font-weight: 600">{{hoy}}</span>
+          <span style="font-size: 13px; color: #3F5B46; font-weight: 500">8 pagos · Ver registro →</span>
+        </a>
+        <div style="display: flex; flex-direction: column; gap: 6px; padding: 20px; border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05)">
+          <span style="font-size: 13px; color: #6B6459; font-weight: 500">Recargo del 10%</span>
+          <span style="font-size: 30px; font-weight: 600">11/10</span>
+          <span style="font-size: 13px; color: #6B6459">Faltan 9 días · 118 vencidas</span>
+        </div>
+      </div>
+
+      <section aria-label="Estado de cuotas" style="padding: 18px 20px; border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05); display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; align-items: baseline; justify-content: space-between">
+          <h2 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 500; font-size: 22px">Estado de las cuotas</h2>
+          <span style="font-size: 13px; color: #6B6459">157 alumnos · tocá un estado para ver la lista</span>
+        </div>
+        <div style="display: flex; height: 14px; border-radius: 999px; overflow: hidden; gap: 2px">
+          <sc-for list="{{segments}}" as="s" hint-placeholder-count="4">
+            <a href="Alumnos.dc.html" class="seg" aria-label="{{s.label}}: {{s.count}}" style="{{s.barStyle}}"></a>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 22px; flex-wrap: wrap">
+          <sc-for list="{{segmentsAll}}" as="s" hint-placeholder-count="5">
+            <a href="Alumnos.dc.html" style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: #2B2A26; text-decoration: none">
+              <span style="{{s.dotStyle}}"></span>{{s.label}} <strong style="font-weight: 600">{{s.count}}</strong>
+            </a>
+          </sc-for>
+        </div>
+      </section>
+
+      <div style="display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 20px; align-items: start">
+        <section aria-label="Cuotas vencidas" style="border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05); overflow: hidden">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <h2 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 500; font-size: 22px">Vencidas (118)</h2>
+              <span style="font-size: 13px; color: #6B6459">Vencieron el 1/10 · sin recargo hasta el 10/10</span>
+            </div>
+            <button type="button" style="height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #E2D9CC; background: #FFFFFF; font-size: 13px; color: #2B2A26">Recordar a todos</button>
+          </div>
+          <sc-for list="{{debtors}}" as="d" hint-placeholder-count="6">
+            <div style="display: flex; align-items: center; gap: 12px; padding: 0 20px; height: 56px; border-top: 1px solid #F3EEE6">
+              <a href="Alumnos.dc.html" style="flex-grow: 1; display: flex; flex-direction: column; text-decoration: none; color: inherit; min-width: 0">
+                <span style="font-size: 14px; font-weight: 500">{{d.name}}</span>
+                <span style="font-size: 12px; color: #6B6459">{{d.plan}} · último pago {{d.last}}</span>
+              </a>
+              <span style="font-size: 14px; font-weight: 600; width: 80px; text-align: right">{{d.amount}}</span>
+              <button type="button" aria-label="Escribir por WhatsApp" style="width: 36px; height: 36px; border-radius: 10px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #3F5B46; display: flex; align-items: center; justify-content: center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8.5 8.5 0 0 1-12.6 7.4L3 21l1.6-5.2A8.5 8.5 0 1 1 21 12z"></path></svg>
+              </button>
+              <button type="button" style="height: 36px; padding: 0 12px; border-radius: 10px; border: none; background: {{accent}}; color: #FFFFFF; font-size: 13px; font-weight: 600">Cobrar</button>
+            </div>
+          </sc-for>
+          <a href="Alumnos.dc.html" style="display: block; padding: 14px 20px; border-top: 1px solid #F3EEE6; font-size: 13px; font-weight: 500; text-decoration: none">Ver los 118 en Alumnos →</a>
+        </section>
+
+        <div style="display: flex; flex-direction: column; gap: 20px">
+          <section aria-label="Cobrado por mes" style="padding: 18px 20px; border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05); display: flex; flex-direction: column; gap: 12px">
+            <h2 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 500; font-size: 22px">Cobrado por mes</h2>
+            <div style="height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border: 1px dashed #E2D9CC; border-radius: 12px; text-align: center; padding: 0 20px">
+              <span style="font-size: 14px; font-weight: 500">Todavía no hay meses anteriores</span>
+              <span style="font-size: 13px; color: #6B6459">El gráfico se arma a medida que se registran pagos. Octubre va {{cobrado}}.</span>
+            </div>
+          </section>
+
+          <section aria-label="Ingresos por plan" style="padding: 18px 20px; border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05); display: flex; flex-direction: column; gap: 12px">
+            <h2 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 500; font-size: 22px">Ingresos por plan</h2>
+            <sc-for list="{{plans}}" as="p" hint-placeholder-count="3">
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <div style="display: flex; justify-content: space-between; font-size: 14px"><span>{{p.name}}</span><span style="font-weight: 600">{{p.amount}} <span style="font-weight: 400; color: #6B6459">· {{p.pct}}</span></span></div>
+                <div style="height: 6px; border-radius: 999px; background: #EFE9DF; overflow: hidden"><div style="{{p.barStyle}}"></div></div>
+              </div>
+            </sc-for>
+          </section>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#4F6B55","options":["#4F6B55","#3F5B46","#6B5B45"]},"$preview":{"width":1440,"height":1150}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { hidden: false };
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#4F6B55';
+    const hidden = !!(this.state && this.state.hidden);
+    const fmt = (n) => hidden ? '$ ••••••' : '$ ' + n.toLocaleString('es-AR');
+    const segs = [
+      { label: 'Al día', count: 29, color: '#3E8A52' },
+      { label: 'Por vencer', count: 0, color: '#2F6F9F' },
+      { label: 'Vencidos', count: 118, color: '#C8692E' },
+      { label: 'Sin plan', count: 9, color: '#C9962E' },
+      { label: 'Bonificados', count: 1, color: '#A39C90' }
+    ];
+    const total = 157;
+    const segmentsAll = segs.map((s) => Object.assign({}, s, { dotStyle: 'width:10px;height:10px;border-radius:999px;background:' + s.color }));
+    const segments = segs.filter((s) => s.count > 0).map((s) => Object.assign({}, s, { barStyle: 'display:block;height:100%;flex-grow:' + s.count + ';flex-basis:0;min-width:6px;background:' + s.color }));
+    const debtors = [
+      ['Karina Horianski', '3x por semana', 46000, '4 sep'], ['Sandra Cardozo', '2x por semana', 38000, '2 sep'],
+      ['Margarita Barrientos', '2x por semana', 38000, '8 sep'], ['Silvia Imbach', '2x por semana', 38000, '1 sep'],
+      ['Valentina Weichzel', '3x por semana', 46000, '10 sep'], ['Nidia Báez', '2x por semana', 38000, '5 sep']
+    ].map((d) => ({ name: d[0], plan: d[1], amount: fmt(d[2]), last: d[3] }));
+    const planRaw = [['2x por semana', 456000], ['3x por semana', 230000], ['1x por semana', 56000]];
+    const planTotal = planRaw.reduce((s, p) => s + p[1], 0);
+    const plans = planRaw.map((p) => ({
+      name: p[0], amount: fmt(p[1]), pct: Math.round(p[1] / planTotal * 100) + '%',
+      barStyle: 'height:100%;border-radius:999px;width:' + Math.round(p[1] / planTotal * 100) + '%;background:' + accent
+    }));
+    return {
+      accent,
+      cobrado: fmt(742000),
+      esperado: fmt(5680000),
+      falta: fmt(4938000),
+      hoy: fmt(310000),
+      segments,
+      segmentsAll,
+      debtors,
+      plans,
+      toggleLabel: hidden ? 'Mostrar montos' : 'Ocultar montos',
+      toggleHidden: () => this.setState({ hidden: !hidden })
+    };
+  }
+}
+</script>
+</body>
+</html>
