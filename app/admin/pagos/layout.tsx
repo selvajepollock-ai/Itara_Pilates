@@ -1,12 +1,28 @@
+import { createClient } from '@/lib/supabase/server'
+import { loadQuickPaymentStudents } from '@/lib/quick-payment-students'
+import { PageHeader } from '@/app/components/page-header'
 import { PagosNav } from './pagos-nav'
+import { RegisterPaymentButton } from './register-payment-button'
+import { MoneyPrivacyProvider, PrivacyToggleButton } from './privacy'
 
-export default function PagosLayout({ children }: { children: React.ReactNode }) {
+export default async function PagosLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient()
+  const students = await loadQuickPaymentStudents(supabase)
+
   return (
-    <div>
-      <p className="eyebrow">Estudio</p>
-      <h1 className="page-title mt-2">Pagos</h1>
+    <MoneyPrivacyProvider>
+      <PageHeader
+        title="Pagos"
+        actions={
+          <>
+            <PrivacyToggleButton />
+            <RegisterPaymentButton students={students} variant="header" />
+          </>
+        }
+      />
       <PagosNav />
       <div className="mt-6">{children}</div>
-    </div>
+      <RegisterPaymentButton students={students} variant="fab" />
+    </MoneyPrivacyProvider>
   )
 }

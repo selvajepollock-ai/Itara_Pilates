@@ -9,7 +9,7 @@ export function StatCard({
   tone = 'default',
   children,
 }: {
-  label: string
+  label: React.ReactNode
   value: React.ReactNode
   hint?: React.ReactNode
   href: string

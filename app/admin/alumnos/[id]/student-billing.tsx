@@ -12,7 +12,7 @@ import Link from 'next/link'
 import { AssignPlanForm } from './assign-plan-form'
 import { RegisterPaymentForm } from './register-payment-form'
 import { PlanSectionToggle } from './plan-section-toggle'
-import { PaymentRowActions } from '../../pagos/cuotas/payment-row-actions'
+import { PaymentRowActions } from '../../pagos/registro/payment-row-actions'
 
 export async function StudentBilling({ studentId, studentName }: { studentId: string; studentName: string }) {
   const supabase = await createClient()
