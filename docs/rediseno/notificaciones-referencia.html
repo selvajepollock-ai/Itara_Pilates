@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Itara · Panel de notificaciones (campanita)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400;1,9..144,500&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#3F5B46}a:hover{color:#2F4A36}
+button{font-family:inherit;cursor:pointer}
+.notif:hover{background:#FAF8F5 !important}
+</style>
+</helmet>
+<div style="position: relative; display: flex; min-height: 960px; background: #FFFFFF; font-family: 'Work Sans', system-ui, sans-serif; color: #2B2A26; font-variant-numeric: tabular-nums">
+
+  <aside style="width: 248px; flex-shrink: 0; box-sizing: border-box; background: #FFFFFF; border-right: 1px solid #EEE8DF; padding: 22px 16px; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 4px 0 8px">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <div style="width: 36px; height: 36px; border-radius: 999px; background: #E9DFD0; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 18px; color: #8A5A3C">I</div>
+        <div style="display: flex; flex-direction: column">
+          <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 20px; line-height: 1">Itara</span>
+          <span style="font-size: 10px; letter-spacing: 0.18em; color: #6B6459; margin-top: 3px">PILATES</span>
+        </div>
+      </div>
+      <button type="button" onClick="{{toggle}}" aria-expanded="{{open}}" aria-label="{{bellLabel}}" style="{{bellStyle}}">
+        <span style="font-size: 19px; line-height: 1">🔔</span>
+        <sc-if value="{{hasUnread}}" hint-placeholder-val="{{ true }}">
+          <span style="position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: #E5484D; color: #FFFFFF; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid #FFFFFF">{{unread}}</span>
+        </sc-if>
+      </button>
+    </div>
+    <nav aria-label="Navegación principal" style="display: flex; flex-direction: column; gap: 2px">
+      <a href="Main.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; background: {{accent}}; color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 500">Inicio</a>
+      <a href="Semana.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Horarios</a>
+      <a href="Alumnos.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Alumnos</a>
+      <a href="PagosResumen.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Pagos</a>
+    </nav>
+  </aside>
+
+  <main style="flex-grow: 1; padding: 40px; box-sizing: border-box; opacity: 0.35">
+    <span style="font-size: 14px; color: #6B6459">Viernes 2 de octubre</span>
+    <h1 style="margin: 4px 0 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 400; font-size: 38px">Hola, Vic</h1>
+  </main>
+
+  <sc-if value="{{open}}" hint-placeholder-val="{{ true }}">
+    <section role="dialog" aria-label="Notificaciones" style="position: absolute; top: 70px; left: 200px; width: 420px; max-height: 860px; display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid #EEE8DF; border-radius: 20px; box-shadow: 0 20px 50px rgba(43,42,38,0.18); overflow: hidden; z-index: 10">
+      <div style="padding: 18px 20px 12px; display: flex; flex-direction: column; gap: 12px; border-bottom: 1px solid #F0EAE1">
+        <div style="display: flex; align-items: center; justify-content: space-between">
+          <h2 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 500; font-size: 24px">Notificaciones</h2>
+          <button type="button" onClick="{{markAll}}" style="border: none; background: transparent; padding: 0; font-size: 13px; font-weight: 600; color: #3F5B46">Marcar todo como leído</button>
+        </div>
+        <div role="tablist" aria-label="Filtrar" style="display: flex; gap: 6px">
+          <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+            <button type="button" role="tab" aria-selected="{{t.active}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="overflow: auto; padding: 6px 0 8px">
+        <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column">
+            <span style="font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; color: #6B6459; padding: 12px 20px 6px">{{g.title}}</span>
+            <sc-for list="{{g.items}}" as="n" hint-placeholder-count="3">
+              <div class="notif" style="{{n.rowStyle}}">
+                <span aria-hidden="true" style="{{n.bubble}}">{{n.emoji}}</span>
+                <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+                  <span style="font-size: 14px; line-height: 1.4; color: #2B2A26"><strong style="font-weight: 600">{{n.who}}</strong> {{n.text}}</span>
+                  <span style="font-size: 12px; color: #6B6459">{{n.when}}</span>
+                  <sc-if value="{{n.hasActions}}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; gap: 8px; margin-top: 6px">
+                      <button type="button" onClick="{{n.read}}" style="height: 34px; padding: 0 14px; border-radius: 10px; border: none; background: {{accent}}; color: #FFFFFF; font-size: 13px; font-weight: 600">{{n.primary}}</button>
+                      <button type="button" onClick="{{n.read}}" style="height: 34px; padding: 0 14px; border-radius: 10px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #2B2A26; font-size: 13px">{{n.secondary}}</button>
+                    </div>
+                  </sc-if>
+                </div>
+                <sc-if value="{{n.unread}}" hint-placeholder-val="{{ true }}">
+                  <span aria-label="Sin leer" style="width: 9px; height: 9px; margin-top: 6px; border-radius: 999px; background: #E5484D; flex-shrink: 0"></span>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+        <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 40px 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center">
+            <span style="font-size: 36px">✨</span>
+            <span style="font-size: 15px; font-weight: 600">Estás al día</span>
+            <span style="font-size: 13px; color: #6B6459">No hay notificaciones sin leer.</span>
+          </div>
+        </sc-if>
+      </div>
+
+      <a href="#" style="display: block; padding: 14px 20px; border-top: 1px solid #F0EAE1; font-size: 13.5px; font-weight: 600; text-decoration: none; text-align: center">Ver toda la actividad →</a>
+    </section>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#4F6B55","options":["#4F6B55","#3F5B46","#6B5B45"]},"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { open: true, tab: 'todas', read: {} };
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#4F6B55';
+    const st = this.state || {};
+    const tab = st.tab || 'todas';
+    const read = st.read || {};
+    const T = {
+      recupera:  ['🔄', '#E3EEFB'],
+      avisa:     ['🙋‍♀️', '#FDF0D5'],
+      tarde:     ['⏰', '#FDE6E1'],
+      pago:      ['💸', '#E3F4E6'],
+      plan:      ['📝', '#EFE7FB'],
+      nuevo:     ['🆕', '#E3EEFB'],
+      cumple:    ['🎂', '#FCE4EF'],
+      cancelada: ['🗓️', '#FDE6E1'],
+      aprobada:  ['✅', '#E3F4E6'],
+      comunicado:['📣', '#FDF0D5']
+    };
+    const all = [
+      { id: 1, g: 'pend', type: 'recupera', who: 'Karina Horianski', text: 'pidió recuperar el jueves 8 a las 15:00', when: 'Hace 10 min', unread: true, actions: ['Aprobar', 'Rechazar'] },
+      { id: 2, g: 'pend', type: 'plan', who: 'Sandra Cardozo', text: 'pidió cambiar a 3x por semana', when: 'Hace 1 h', unread: true, actions: ['Ver pedido', 'Más tarde'] },
+      { id: 3, g: 'hoy', type: 'avisa', who: 'Silvia Imbach', text: 'avisó que no viene el lunes 5 a las 18:00', when: 'Hace 25 min', unread: true },
+      { id: 4, g: 'hoy', type: 'tarde', who: 'Nidia Báez', text: 'avisó tarde que no viene hoy a las 19:00 (sin recuperación)', when: 'Hace 2 h', unread: true },
+      { id: 5, g: 'hoy', type: 'pago', who: 'Vanesa', text: 'registró 8 pagos por $ 310.000', when: 'Hace 3 h', unread: false },
+      { id: 6, g: 'hoy', type: 'nuevo', who: 'Lucía Pereyra', text: 'se registró con el link del estudio', when: 'Hace 4 h', unread: false },
+      { id: 7, g: 'ant', type: 'cumple', who: 'Marcio Klauk', text: 'cumple años el domingo 4', when: 'Ayer', unread: false },
+      { id: 8, g: 'ant', type: 'cancelada', who: 'Clase del lunes 12', text: 'cancelada por feriado · 7 alumnos recibieron su recuperación', when: 'Ayer', unread: false },
+      { id: 9, g: 'ant', type: 'comunicado', who: 'Comunicado', text: 'publicado para todos: cierre por feriado', when: 'Ayer', unread: false }
+    ];
+    const isUnread = (n) => n.unread && !read[n.id];
+    const filtered = all.filter((n) => tab === 'todas' || (tab === 'sinleer' && isUnread(n)) || (tab === 'pendientes' && n.g === 'pend' && !read[n.id]));
+    const titles = { pend: 'REQUIERE TU RESPUESTA', hoy: 'HOY', ant: 'AYER' };
+    const groups = ['pend', 'hoy', 'ant'].map((g) => ({
+      title: titles[g],
+      items: filtered.filter((n) => n.g === g).map((n) => {
+        const t = T[n.type];
+        const un = isUnread(n);
+        return {
+          emoji: t[0], who: n.who, text: n.text, when: n.when, unread: un,
+          hasActions: !!n.actions && !read[n.id],
+          primary: n.actions ? n.actions[0] : '', secondary: n.actions ? n.actions[1] : '',
+          read: () => { const r = Object.assign({}, read); r[n.id] = true; this.setState({ read: r }); },
+          bubble: 'width:42px;height:42px;flex-shrink:0;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1;background:' + t[1],
+          rowStyle: 'display:flex;align-items:flex-start;gap:12px;padding:12px 20px;' + (un ? 'background:#FFFCF6' : 'background:#FFFFFF')
+        };
+      })
+    })).filter((g) => g.items.length > 0);
+    const unreadCount = all.filter(isUnread).length;
+    const tabDefs = [['todas', 'Todas'], ['sinleer', 'Sin leer'], ['pendientes', 'Pendientes']];
+    return {
+      accent,
+      open: !!st.open,
+      toggle: () => this.setState({ open: !st.open }),
+      unread: unreadCount,
+      hasUnread: unreadCount > 0,
+      bellLabel: 'Notificaciones' + (unreadCount ? ', ' + unreadCount + ' sin leer' : ''),
+      bellStyle: 'position:relative;width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;' + (unreadCount ? 'background:#FFF4DB;border:1px solid #F3D98B' : 'background:#FFFFFF;border:1px solid #E2D9CC'),
+      tabs: tabDefs.map((t) => ({ label: t[1], active: tab === t[0], pick: () => this.setState({ tab: t[0] }), style: 'height:32px;padding:0 12px;border-radius:999px;font-size:13px;' + (tab === t[0] ? 'background:#2B2A26;color:#FFFFFF;border:1px solid #2B2A26;font-weight:600' : 'background:#FFFFFF;color:#3A3832;border:1px solid #E2D9CC') })),
+      groups,
+      empty: groups.length === 0,
+      markAll: () => { const r = {}; all.forEach((n) => { r[n.id] = true; }); this.setState({ read: r }); }
+    };
+  }
+}
+</script>
+</body>
+</html>
