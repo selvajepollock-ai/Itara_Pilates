@@ -23,7 +23,7 @@ export default async function InstructorLayout({
     .single()
 
   const roles: string[] = profile?.roles ?? []
-  if (!roles.includes('instructor') && !roles.includes('admin')) {
+  if (!roles.includes('instructor') && !roles.includes('admin') && !roles.includes('developer')) {
     redirect('/')
   }
 
@@ -40,7 +40,7 @@ export default async function InstructorLayout({
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
-            {roles.includes('admin') && (
+            {(roles.includes('admin') || roles.includes('developer')) && (
               <Link
                 href="/admin"
                 className="btn-secondary-sm"

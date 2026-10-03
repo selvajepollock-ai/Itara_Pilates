@@ -19,7 +19,8 @@ export default async function AlumnoLayout({
     .select('roles, full_name')
     .eq('id', user.id)
     .single()
-  const isAdmin = profile?.roles?.includes('admin') ?? false
+  // El "Volver al panel" también le sirve a quien entra como "Ver como alumno" desde el panel (rol developer).
+  const isAdmin = (profile?.roles?.includes('admin') || profile?.roles?.includes('developer')) ?? false
   const initial = (profile?.full_name ?? '?').trim().charAt(0).toUpperCase() || '?'
 
   return (

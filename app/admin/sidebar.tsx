@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Search } from 'lucide-react'
+import { Eye, Search } from 'lucide-react'
 import { getNotificationCounts } from './notification-counts'
 import { NotificationBell } from './notification-bell'
 import { NAV_GROUPS, isNavActive } from './nav-config'
@@ -96,6 +96,27 @@ export function Sidebar({
             </div>
           </div>
         ))}
+
+        {isDeveloper && (
+          <div>
+            <p className="px-3 pb-1.5 text-xs font-medium text-muted">Ver como</p>
+            <div className="space-y-0.5">
+              {[
+                { href: '/alumno', label: 'Alumno' },
+                { href: '/instructor', label: 'Instructor' },
+              ].map((l) => (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className="flex h-10 items-center gap-3 rounded-[10px] px-3 text-sm font-medium text-ink/70 transition hover:bg-moss-soft hover:text-ink"
+                >
+                  <Eye size={17} strokeWidth={2} />
+                  <span className="flex-1">{l.label}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </nav>
 
       <UserMenu fullName={fullName} isDeveloper={isDeveloper} />
