@@ -100,3 +100,18 @@
     @apply text-xs text-ink/40;
   }
 }
+
+/* Panel del alumno: círculos que "respiran" en el saludo (decorativos). */
+@keyframes itaraBreath {
+  0%, 100% { transform: scale(0.82); opacity: 0.55; }
+  50% { transform: scale(1); opacity: 1; }
+}
+@keyframes itaraBreath2 {
+  0%, 100% { transform: scale(0.7); opacity: 0.35; }
+  50% { transform: scale(0.92); opacity: 0.8; }
+}
+.itara-breath { animation: itaraBreath 6s ease-in-out infinite; }
+.itara-breath2 { animation: itaraBreath2 6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .itara-breath, .itara-breath2 { animation: none; }
+}
