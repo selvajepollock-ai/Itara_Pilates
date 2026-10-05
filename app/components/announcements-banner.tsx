@@ -20,7 +20,8 @@ export async function AnnouncementsBanner() {
   const [{ data: announcements }, { data: profile }, { data: dismissals }] = await Promise.all([
     supabase
       .from('announcements')
-      .select('id, message, target_type, target_usernames, target_class_id')
+      .select('id, message, target_type, target_usernames, target_class_id, urgent')
+      .eq('urgent', true)
       .or(`expires_at.is.null,expires_at.gte.${today}`)
       .order('created_at', { ascending: false }),
     user
@@ -65,6 +66,6 @@ export async function AnnouncementsBanner() {
 
   if (visible.length === 0) return null
 
-  // Se muestran como ventana emergente: la persona los cierra y no vuelven a aparecerle.
+  // Solo los comunicados marcados como importantes aparecen como ventana emergente (el resto va a la campanita).
   return <AnnouncementPopup items={visible.map((a) => ({ id: a.id, message: a.message }))} />
 }

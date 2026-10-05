@@ -3,6 +3,7 @@ import { ArrowLeft } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { LogoutButton } from '@/lib/supabase/logout-button'
+import { UserNotificationBell } from '@/app/components/user-notification-bell'
 
 export default async function InstructorLayout({
   children,
@@ -49,6 +50,7 @@ export default async function InstructorLayout({
                 Volver al panel
               </Link>
             )}
+            <UserNotificationBell />
             <LogoutButton />
           </div>
         </div>

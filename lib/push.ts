@@ -8,6 +8,8 @@ export type PushPayload = {
   url?: string
   /** Avisos con el mismo tag se reemplazan entre sí. */
   tag?: string
+  /** Tipo de aviso (define el ícono en la bandeja): announcement, recovery_approved, recovery_rejected, class_cancelled. */
+  kind?: string
 }
 
 let configured: boolean | null = null
@@ -28,10 +30,27 @@ function configure() {
 }
 
 /** Envía un aviso a todos los dispositivos de esas personas. Nunca lanza error: un aviso fallido no debe romper la acción que lo origina. */
-export async function notifyUsers(userIds: string[], payload: PushPayload) {
+export async function notifyUsers(userIds: string[], payload: PushPayload, options: { store?: boolean } = {}) {
   try {
     const ids = [...new Set(userIds.filter(Boolean))]
-    if (ids.length === 0 || !configure()) return
+    if (ids.length === 0) return
+
+    // Queda guardado en la bandeja de cada persona (campanita), aunque no tenga el push activado.
+    if (options.store ?? true) {
+      await createAdminClient()
+        .from('user_notifications')
+        .insert(
+          ids.map((user_id) => ({
+            user_id,
+            kind: payload.kind ?? 'info',
+            title: payload.title,
+            body: payload.body,
+            url: payload.url ?? null,
+          }))
+        )
+    }
+
+    if (!configure()) return
 
     const admin = createAdminClient()
     const { data: subs } = await admin
@@ -66,7 +85,8 @@ export async function notifyAdmins(payload: PushPayload) {
   try {
     const admin = createAdminClient()
     const { data } = await admin.from('profiles').select('id').contains('roles', ['admin'])
-    await notifyUsers((data ?? []).map((p) => p.id as string), payload)
+    // Las personas del estudio ya tienen su propia campanita (pedidos pendientes): acá solo se envía el push.
+    await notifyUsers((data ?? []).map((p) => p.id as string), payload, { store: false })
   } catch {
     // Silencioso a propósito.
   }

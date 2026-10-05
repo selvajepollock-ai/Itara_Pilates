@@ -61,6 +61,7 @@ export function NewAnnouncementForm({
   const [duration, setDuration] = useState<Duration>('forever')
   const [customDate, setCustomDate] = useState('')
   const [previewOpen, setPreviewOpen] = useState(false)
+  const [urgent, setUrgent] = useState(false)
 
   const classDays = DAY_ORDER.filter((d) => classOptions.some((c) => c.dayOfWeek === d))
   const classesOfDay = classOptions
@@ -107,6 +108,7 @@ export function NewAnnouncementForm({
     setClassId('')
     setDuration('forever')
     setCustomDate('')
+    setUrgent(false)
     setError(null)
   }
 
@@ -125,6 +127,7 @@ export function NewAnnouncementForm({
     fd.set('message', message)
     fd.set('target_type', target)
     fd.set('expires_at', expiresAt)
+    if (urgent) fd.set('urgent', '1')
     if (target === 'people') fd.set('target_usernames', selectedPeople.join(','))
     if (target === 'class') {
       fd.set('target_class_id', classId)
@@ -305,6 +308,15 @@ export function NewAnnouncementForm({
           )}
           <p className="mt-2 text-[13px] text-muted">{expiresHint}</p>
         </div>
+
+        {/* Importante: ventana emergente */}
+        <label className="mt-5 flex min-h-[44px] cursor-pointer items-start gap-3 text-sm text-ink">
+          <input type="checkbox" checked={urgent} onChange={(e) => setUrgent(e.target.checked)} className="mt-1 h-4 w-4 accent-[#5B7561]" />
+          <span>
+            <span className="font-semibold">Es importante</span>
+            <span className="block text-[13px] text-muted">Además de la campanita, aparece como ventana emergente cuando entran a la app.</span>
+          </span>
+        </label>
 
         {/* 5. Acciones */}
         <div className="mt-6 border-t border-edge-divider pt-4">
