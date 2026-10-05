@@ -11,7 +11,7 @@ import { useSidePanel } from '@/app/components/use-side-panel'
 import { RegisterPaymentDialog } from '../inicio/register-payment-dialog'
 import { GrantAccessForm } from './[id]/grant-access-form'
 import { useStudentMenuItems } from './row-actions'
-import { suggestNextDueDate } from '@/lib/billing'
+import { suggestNextPaymentDate } from '@/lib/billing'
 import { formatARS } from '@/lib/currency'
 import { whatsappLink } from '@/lib/whatsapp'
 import { getStudentDrawerData, type DrawerData } from './drawer-actions'
@@ -98,10 +98,7 @@ export function StudentDrawer({
     planName: student.planName,
     planPrice: student.planPrice,
     endDate: student.endDate,
-    suggestedNextDate: suggestNextDueDate(
-      student.endDate ? new Date(`${student.endDate}T00:00:00`) : new Date(),
-      dueDay
-    ),
+    suggestedNextDate: suggestNextPaymentDate(student.endDate),
   }
 
   return (

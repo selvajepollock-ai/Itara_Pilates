@@ -1,3 +1,5 @@
+import { classDateTime } from './dates'
+
 // Convierte el horario recurrente (day_of_week) en fechas concretas de una semana puntual.
 
 export function getMonday(date: Date) {
@@ -28,11 +30,11 @@ export function dateForDayOfWeek(monday: Date, dayOfWeek: number) {
 }
 
 export function isInPast(sessionDate: string, startTime: string) {
-  const sessionDateTime = new Date(`${sessionDate}T${startTime}`)
+  const sessionDateTime = classDateTime(sessionDate, startTime)
   return sessionDateTime.getTime() < Date.now()
 }
 
 export function hoursUntil(sessionDate: string, startTime: string) {
-  const sessionDateTime = new Date(`${sessionDate}T${startTime}`)
+  const sessionDateTime = classDateTime(sessionDate, startTime)
   return (sessionDateTime.getTime() - Date.now()) / (1000 * 60 * 60)
 }

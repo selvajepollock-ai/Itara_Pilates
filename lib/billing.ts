@@ -1,3 +1,5 @@
+import { todayART } from './dates'
+
 export type PaymentStatus = 'al_dia' | 'por_vencer' | 'vencido' | 'sin_plan' | 'bonificado'
 
 // Estado a mostrar para una suscripción, contemplando el "sin cargo" (bonificado),
@@ -22,8 +24,8 @@ export function getPaymentStatus(
 ): PaymentStatus {
   if (!endDate) return 'sin_plan'
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  // "Hoy" en hora Argentina (el servidor está en UTC).
+  const today = new Date(`${todayART()}T00:00:00`)
   const end = new Date(`${endDate}T00:00:00`)
 
   const graceDeadline = new Date(end.getFullYear(), end.getMonth() + 1, graceDay)
@@ -43,8 +45,7 @@ export function getPaymentStatus(
 export function getDisplayStatus(endDate: string | null, reminderDaysBefore: number = 3): PaymentStatus {
   if (!endDate) return 'sin_plan'
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const today = new Date(`${todayART()}T00:00:00`)
   const end = new Date(`${endDate}T00:00:00`)
 
   const diffDays = Math.round((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
@@ -89,10 +90,10 @@ export function suggestNextDueDate(fromDate: Date, _dueDay?: number): string {
 // siguiente al que ya tiene cubierto (no repite el mismo mes). Si no tiene cobertura
 // previa, cubre el mes actual (como un alta nueva).
 export function suggestNextPaymentDate(currentEndDate: string | null): string {
-  const base = currentEndDate ? new Date(`${currentEndDate}T00:00:00`) : new Date()
-  const monthsToAdd = currentEndDate ? 2 : 1
-  const endOfTargetMonth = new Date(base.getFullYear(), base.getMonth() + monthsToAdd, 0)
-  return endOfTargetMonth.toISOString().slice(0, 10)
+  const [y, m] = (currentEndDate ?? todayART()).split('-').map(Number)
+  // Con cobertura previa: fin del mes siguiente. Sin cobertura: fin del mes actual.
+  const monthsAhead = currentEndDate ? 1 : 0
+  return new Date(Date.UTC(y, m - 1 + monthsAhead + 1, 0)).toISOString().slice(0, 10)
 }
 
 // Si ya venció el margen de gracia, se le suma el recargo (10% por default) a la cuota.

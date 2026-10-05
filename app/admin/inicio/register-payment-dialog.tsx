@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { QuickPayment } from '../quick-payment'
 
@@ -43,7 +44,8 @@ export function RegisterPaymentDialog({
         {children}
       </button>
 
-      {open && (
+      {open &&
+        createPortal(
         <div
           role="dialog"
           aria-modal="true"
@@ -67,7 +69,8 @@ export function RegisterPaymentDialog({
             </button>
             <QuickPayment students={students} initialStudentId={initialStudentId} />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )

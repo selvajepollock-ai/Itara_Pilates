@@ -2,8 +2,9 @@ import Link from 'next/link'
 import { AlertCircle, CalendarPlus, Users2, Wallet } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { daysUntilNextBirthday } from '@/lib/birthdays'
-import { suggestNextDueDate, getDisplayStatus, subscriptionDisplayStatus } from '@/lib/billing'
+import { suggestNextPaymentDate, getDisplayStatus, subscriptionDisplayStatus } from '@/lib/billing'
 import { collectionSummary } from '@/lib/payments'
+import { artMonthStart, todayART } from '@/lib/dates'
 import { formatARS } from '@/lib/currency'
 import { PageHeader } from '@/app/components/page-header'
 import { StatCard } from '@/app/components/stat-card'
@@ -43,8 +44,9 @@ export default async function AdminDashboard() {
   const dateForDow = (dow: number) => weekDates[(dow + 6) % 7]
 
   // Mismo rango de mes que usa Pagos, para que "Cobrado" coincida.
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+  const [artYear, artMonth] = todayART().split('-').map(Number)
+  const monthStart = new Date(artMonthStart(artYear, artMonth))
+  const monthEnd = new Date(artMonthStart(artYear, artMonth + 1))
 
   const [
     { data: studentsData },
@@ -215,10 +217,7 @@ export default async function AdminDashboard() {
       planName: planInfo?.name ?? null,
       planPrice: planInfo?.price ?? 0,
       endDate: sub?.end_date ?? null,
-      suggestedNextDate: suggestNextDueDate(
-        sub?.end_date ? new Date(`${sub.end_date}T00:00:00`) : new Date(),
-        dueDay
-      ),
+      suggestedNextDate: suggestNextPaymentDate(sub?.end_date ?? null),
     }
   })
 
