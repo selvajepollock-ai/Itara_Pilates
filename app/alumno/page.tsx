@@ -366,6 +366,7 @@ export default async function AlumnoDashboard() {
   return (
     <div className="space-y-6">
       <AnnouncementsBanner />
+      <PushToggle hideWhenOn />
 
       {(status === 'vencido' || status === 'por_vencer') && (
         <div
@@ -424,7 +425,6 @@ export default async function AlumnoDashboard() {
       </div>
 
       <ActivityList items={events} />
-      <PushToggle />
       <InstallCard />
     </div>
   )
