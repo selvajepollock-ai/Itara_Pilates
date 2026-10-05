@@ -12,7 +12,7 @@ function urlBase64ToUint8Array(base64: string) {
   return Uint8Array.from(raw, (c) => c.charCodeAt(0))
 }
 
-type State = 'loading' | 'unsupported' | 'ios-install' | 'denied' | 'off' | 'on'
+type State = 'loading' | 'no-key' | 'unsupported' | 'old-ios' | 'no-sw' | 'ios-install' | 'denied' | 'off' | 'on'
 
 /**
  * Activar / desactivar los avisos en este dispositivo (notificaciones push).
@@ -26,22 +26,24 @@ export function PushToggle({ title = 'Avisos en tu celular', description }: { ti
   useEffect(() => {
     let active = true
     async function detect() {
-      if (!PUBLIC_KEY) return active && setState('unsupported')
+      if (!PUBLIC_KEY) return active && setState('no-key')
       const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
       const standalone =
         window.matchMedia('(display-mode: standalone)').matches ||
         (navigator as unknown as { standalone?: boolean }).standalone === true
       if (isIOS && !standalone) return active && setState('ios-install')
+      if (isIOS && !('PushManager' in window)) return active && setState('old-ios')
       if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
         return active && setState('unsupported')
       }
       if (Notification.permission === 'denied') return active && setState('denied')
       try {
-        const reg = await navigator.serviceWorker.ready
+        const reg = await Promise.race([navigator.serviceWorker.ready, new Promise<null>((r) => setTimeout(() => r(null), 5000))])
+        if (!reg) return active && setState('no-sw')
         const sub = await reg.pushManager.getSubscription()
         active && setState(sub && Notification.permission === 'granted' ? 'on' : 'off')
       } catch {
-        active && setState('unsupported')
+        active && setState('no-sw')
       }
     }
     detect()
@@ -100,7 +102,7 @@ export function PushToggle({ title = 'Avisos en tu celular', description }: { ti
     }
   }
 
-  if (state === 'loading' || state === 'unsupported') return null
+  if (state === 'loading') return null
 
   return (
     <section className="rounded-2xl border border-edge bg-white p-5">
@@ -114,13 +116,21 @@ export function PushToggle({ title = 'Avisos en tu celular', description }: { ti
         <div className="min-w-0 flex-1">
           <h2 className="text-sm font-semibold text-ink">{title}</h2>
           <p className="mt-0.5 text-[13px] text-muted">
-            {state === 'ios-install'
-              ? 'Para recibir avisos en iPhone, primero instalá la app: tocá Compartir y después "Agregar a inicio". Después abrila desde ahí y activá los avisos.'
-              : state === 'denied'
-                ? 'Los avisos están bloqueados en este dispositivo. Activalos desde los ajustes del navegador o de la app.'
-                : state === 'on'
-                  ? 'Activados en este dispositivo.'
-                  : (description ?? 'Enterate al instante cuando aprueben tu recuperación o cambie una clase.')}
+            {state === 'no-key'
+              ? 'Los avisos todavía no están configurados en esta versión de la app (falta la clave). Avisale a quien administra el sistema.'
+              : state === 'old-ios'
+                ? 'Este iPhone no permite avisos en la app. Hace falta iOS 16.4 o más: actualizá desde Ajustes, General, Actualización de software.'
+                : state === 'unsupported'
+                  ? 'Este navegador no permite avisos. Probá con Chrome (Android) o con la app instalada (iPhone).'
+                  : state === 'no-sw'
+                    ? 'No se pudo iniciar el servicio de avisos. Cerrá la app por completo y volvé a abrirla.'
+                    : state === 'ios-install'
+                      ? 'Para recibir avisos en iPhone, primero instalá la app: tocá Compartir y después "Agregar a inicio". Después abrila desde ahí y activá los avisos.'
+                      : state === 'denied'
+                        ? 'Los avisos están bloqueados en este dispositivo. Activalos desde los ajustes del navegador o de la app.'
+                        : state === 'on'
+                          ? 'Activados en este dispositivo.'
+                          : (description ?? 'Enterate al instante cuando aprueben tu recuperación o cambie una clase.')}
           </p>
           {error && <p className="mt-1.5 text-xs text-danger">{error}</p>}
         </div>
