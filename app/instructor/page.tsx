@@ -50,7 +50,7 @@ export default async function InstructorDashboard() {
     <div>
       <AnnouncementsBanner />
       <div className="mb-6">
-        <PushToggle />
+        <PushToggle hideWhenOn />
       </div>
       <p className="eyebrow">Hoy</p>
       <h1 className="mt-2 font-display text-4xl italic text-ink">Tu agenda</h1>

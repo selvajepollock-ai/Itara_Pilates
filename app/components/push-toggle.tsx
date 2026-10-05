@@ -18,7 +18,16 @@ type State = 'loading' | 'no-key' | 'unsupported' | 'old-ios' | 'no-sw' | 'ios-i
  * Activar / desactivar los avisos en este dispositivo (notificaciones push).
  * En iPhone solo funcionan si la app está instalada en la pantalla de inicio.
  */
-export function PushToggle({ title = 'Avisos en tu celular', description }: { title?: string; description?: string }) {
+export function PushToggle({
+  title = 'Avisos en tu celular',
+  description,
+  hideWhenOn = false,
+}: {
+  title?: string
+  description?: string
+  /** Una vez activado, la tarjeta se oculta (para no ocupar lugar en el panel). */
+  hideWhenOn?: boolean
+}) {
   const [state, setState] = useState<State>('loading')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -102,7 +111,7 @@ export function PushToggle({ title = 'Avisos en tu celular', description }: { ti
     }
   }
 
-  if (state === 'loading') return null
+  if (state === 'loading' || (hideWhenOn && state === 'on')) return null
 
   return (
     <section className="rounded-2xl border border-edge bg-white p-5">
