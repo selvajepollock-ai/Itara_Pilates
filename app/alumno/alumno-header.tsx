@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { ArrowLeft, ChevronDown, Instagram, LogOut, User } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { UserNotificationBell } from '@/app/components/user-notification-bell'
 
 /** Encabezado del panel del alumno: logo, Instagram y "Mi perfil" (con Cerrar sesión adentro). */
 export function AlumnoHeader({ initial, isAdmin }: { initial: string; isAdmin: boolean }) {
@@ -48,6 +49,7 @@ export function AlumnoHeader({ initial, isAdmin }: { initial: string; isAdmin: b
         </Link>
 
         <div className="flex items-center gap-2.5">
+          <UserNotificationBell />
           <a
             href="https://www.instagram.com/itara_estudio_de_pilates/"
             target="_blank"

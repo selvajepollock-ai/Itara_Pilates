@@ -20,6 +20,7 @@ export async function createAnnouncement(formData: FormData) {
   const message = String(formData.get('message') ?? '').trim()
   let expiresAt = String(formData.get('expires_at') ?? '').trim()
   const targetType = String(formData.get('target_type') ?? 'all').trim()
+  const urgent = formData.get('urgent') === '1'
 
   if (!message) return { error: 'El mensaje no puede estar vacío.' }
   if (!['all', 'people', 'class'].includes(targetType)) {
@@ -71,12 +72,14 @@ export async function createAnnouncement(formData: FormData) {
     target_usernames: targetUsernames,
     target_class_id: targetClassId,
     target_date: targetDate,
+    urgent,
   })
   if (error) return { error: error.message }
 
   const recipients = await resolveAnnouncementRecipients({ targetType, usernames: targetUsernames, classId: targetClassId })
   await notifyUsers(recipients, {
-    title: 'Comunicado del estudio 📣',
+    kind: 'announcement',
+    title: 'Comunicado del estudio',
     body: message.length > 140 ? `${message.slice(0, 137)}...` : message,
     url: '/alumno',
     tag: 'announcement',

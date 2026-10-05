@@ -528,7 +528,8 @@ export async function approveRecoveryRequest(creditId: string) {
     .eq('id', credit.requested_class_id)
     .maybeSingle()
   await notifyUsers([credit.student_id], {
-    title: 'Recuperación aprobada ✅',
+    kind: 'recovery_approved',
+    title: 'Recuperación aprobada',
     body: `Tu recuperación del ${dayDate(credit.requested_session_date)}${approvedClass ? ` a las ${String(approvedClass.start_time).slice(0, 5)}` : ''} quedó confirmada.`,
     url: '/alumno',
     tag: `recovery-${creditId}`,
@@ -557,6 +558,7 @@ export async function rejectRecoveryRequest(creditId: string) {
 
   if (rejected?.student_id) {
     await notifyUsers([rejected.student_id as string], {
+      kind: 'recovery_rejected',
       title: 'Recuperación',
       body: 'El estudio no pudo aprobar el horario que pediste. Elegí otro desde tu panel.',
       url: '/alumno',
@@ -670,6 +672,7 @@ export async function cancelClassOccurrence({
   })
 
   await notifyUsers((enrollments ?? []).map((e) => e.student_id as string), {
+    kind: 'class_cancelled',
     title: 'Clase cancelada',
     body: `Se canceló la clase de ${className} del ${dateLabel}. Ya tenés una recuperación disponible.`,
     url: '/alumno',
