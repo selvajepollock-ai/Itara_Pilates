@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getMonday, getSunday, toISODate, hoursUntil } from '@/lib/sessions'
+import { notifyAdmins, notifyUsers } from '@/lib/push'
+import { dayDate } from '../alumno/format'
 
 async function assertSelfOrAdmin(targetStudentId: string) {
   const supabase = await createClient()
@@ -321,6 +323,15 @@ export async function bookRecovery({
   if (updateError) return { error: updateError.message }
   if (!updated) return { error: 'Alguien más ya modificó esta recuperación. Refrescá la página.' }
 
+  const { data: who } = await supabase.from('profiles').select('full_name').eq('id', studentId).maybeSingle()
+  const { data: askedClass } = await supabase.from('classes').select('start_time').eq('id', classId).maybeSingle()
+  await notifyAdmins({
+    title: 'Pedido de recuperación 🔄',
+    body: `${who?.full_name ?? 'Una alumna'} pidió recuperar el ${dayDate(sessionDate)}${askedClass ? ` a las ${String(askedClass.start_time).slice(0, 5)}` : ''}.`,
+    url: '/admin/avisos',
+    tag: `recovery-request-${creditId}`,
+  })
+
   revalidatePath('/alumno')
   revalidatePath(`/admin/alumnos/${studentId}`)
   revalidatePath('/admin/avisos')
@@ -511,6 +522,18 @@ export async function approveRecoveryRequest(creditId: string) {
 
   if (error) return { error: error.message }
 
+  const { data: approvedClass } = await supabase
+    .from('classes')
+    .select('start_time')
+    .eq('id', credit.requested_class_id)
+    .maybeSingle()
+  await notifyUsers([credit.student_id], {
+    title: 'Recuperación aprobada ✅',
+    body: `Tu recuperación del ${dayDate(credit.requested_session_date)}${approvedClass ? ` a las ${String(approvedClass.start_time).slice(0, 5)}` : ''} quedó confirmada.`,
+    url: '/alumno',
+    tag: `recovery-${creditId}`,
+  })
+
   revalidatePath('/admin/avisos')
   revalidatePath('/alumno')
   return { success: true }
@@ -522,6 +545,8 @@ export async function rejectRecoveryRequest(creditId: string) {
   if (!auth.ok) return { error: auth.error }
   const { supabase } = auth
 
+  const { data: rejected } = await supabase.from('recovery_credits').select('student_id').eq('id', creditId).maybeSingle()
+
   const { error } = await supabase
     .from('recovery_credits')
     .update({ status: 'available', requested_class_id: null, requested_session_date: null })
@@ -529,6 +554,15 @@ export async function rejectRecoveryRequest(creditId: string) {
     .eq('status', 'requested')
 
   if (error) return { error: error.message }
+
+  if (rejected?.student_id) {
+    await notifyUsers([rejected.student_id as string], {
+      title: 'Recuperación',
+      body: 'El estudio no pudo aprobar el horario que pediste. Elegí otro desde tu panel.',
+      url: '/alumno',
+      tag: `recovery-${creditId}`,
+    })
+  }
 
   revalidatePath('/admin/avisos')
   revalidatePath('/alumno')
@@ -633,6 +667,13 @@ export async function cancelClassOccurrence({
     target_type: 'class',
     target_class_id: classId,
     target_date: sessionDate,
+  })
+
+  await notifyUsers((enrollments ?? []).map((e) => e.student_id as string), {
+    title: 'Clase cancelada',
+    body: `Se canceló la clase de ${className} del ${dateLabel}. Ya tenés una recuperación disponible.`,
+    url: '/alumno',
+    tag: `class-cancel-${classId}-${sessionDate}`,
   })
 
   revalidatePath('/admin/horarios')

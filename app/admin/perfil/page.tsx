@@ -1,4 +1,5 @@
 import { Settings2, User } from 'lucide-react'
+import { PushToggle } from '@/app/components/push-toggle'
 import { createClient } from '@/lib/supabase/server'
 import { EditMyProfileForm } from './edit-profile-form'
 import { SetMyPasswordForm } from './set-password-form'
@@ -48,6 +49,10 @@ export default async function PerfilPage() {
             }}
           />
         </div>
+      </div>
+
+      <div className="mt-8">
+        <PushToggle title="Avisos en este dispositivo" description="Enterate al instante cuando una alumna pida una recuperación o un cambio de plan." />
       </div>
 
       {/* Mi cuenta — una sola tarjeta con datos + contraseña adentro */}

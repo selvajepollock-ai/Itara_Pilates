@@ -3,6 +3,7 @@ import { ClipboardList } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, DAY_ORDER, formatTime } from '@/lib/day-names'
 import { AnnouncementsBanner } from '@/app/components/announcements-banner'
+import { PushToggle } from '@/app/components/push-toggle'
 
 type ClassRow = {
   id: string
@@ -48,6 +49,9 @@ export default async function InstructorDashboard() {
   return (
     <div>
       <AnnouncementsBanner />
+      <div className="mb-6">
+        <PushToggle />
+      </div>
       <p className="eyebrow">Hoy</p>
       <h1 className="mt-2 font-display text-4xl italic text-ink">Tu agenda</h1>
       <p className="mt-3 max-w-md text-sm text-ink/60">

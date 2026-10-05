@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { notifyAdmins } from '@/lib/push'
 
 export async function requestPlanChange(formData: FormData) {
   const supabase = await createClient()
@@ -23,6 +24,14 @@ export async function requestPlanChange(formData: FormData) {
   })
 
   if (error) return { error: error.message }
+
+  const { data: who } = await supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle()
+  await notifyAdmins({
+    title: 'Cambio de plan 📝',
+    body: `${who?.full_name ?? 'Una alumna'} pidió cambiar de plan.`,
+    url: '/admin/avisos',
+    tag: `plan-request-${user.id}`,
+  })
 
   revalidatePath('/alumno')
   revalidatePath('/admin/avisos')

@@ -13,6 +13,7 @@ import { ClassesSection } from './classes-section'
 import { cap, dayDate, dayDateCap, dayName, deadlineText, dowOf, formatHours, monthName, rangeText, whenLabel } from './format'
 import { Greeting } from './greeting'
 import { InstallCard } from './install-card'
+import { PushToggle } from '@/app/components/push-toggle'
 import { NextClassCard } from './next-class-card'
 import { PlanCard } from './plan-card'
 import { RecoveriesSection } from './recoveries-section'
@@ -423,6 +424,7 @@ export default async function AlumnoDashboard() {
       </div>
 
       <ActivityList items={events} />
+      <PushToggle />
       <InstallCard />
     </div>
   )
