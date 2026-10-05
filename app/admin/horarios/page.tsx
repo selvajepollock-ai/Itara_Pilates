@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { loadStudentRows } from '@/lib/student-rows'
 import { HorariosView } from './horarios-view'
 import { addDaysISO, mondayOf, todayART } from './slots'
 import type { ClassItem, OccurrenceData, Recovering } from './types'
@@ -51,7 +50,6 @@ export default async function HorariosPage({
     { data: weekCancellations },
     { data: weekRecoveries },
     { data: wholeCancellations },
-    { rows: studentRows, dueDay },
   ] = await Promise.all([
     supabase
       .from('classes')
@@ -77,7 +75,6 @@ export default async function HorariosPage({
       .select('class_id, session_date')
       .gte('session_date', monday)
       .lte('session_date', sunday),
-    loadStudentRows(supabase),
   ])
 
   const fixedByClass = new Map<string, ClassItem['fixed']>()
@@ -128,8 +125,6 @@ export default async function HorariosPage({
       classes={classes}
       occurrences={occurrences}
       holidays={holidays}
-      students={studentRows}
-      dueDay={dueDay}
       pendingExtraCapacityCount={pendingExtraCapacityCount}
     />
   )

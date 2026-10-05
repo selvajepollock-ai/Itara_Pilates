@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { loadStudentRows } from '@/lib/student-rows'
 import { RegistroView } from './registro-view'
 import { todayART } from '../../horarios/slots'
 import type { RegistroRow } from './types'
@@ -22,7 +21,7 @@ export default async function RegistroPage({ searchParams }: { searchParams: Pro
   const to = `${nextMonth}-01T00:00:00-03:00`
 
   const supabase = await createClient()
-  const [{ data: paymentsData }, { data: extrasData }, { data: profilesData }, { rows: studentRows, dueDay }] =
+  const [{ data: paymentsData }, { data: extrasData }, { data: profilesData }] =
     await Promise.all([
       supabase
         .from('payments')
@@ -42,7 +41,6 @@ export default async function RegistroPage({ searchParams }: { searchParams: Pro
         .lt('paid_at', to)
         .order('paid_at', { ascending: false }),
       supabase.from('profiles').select('id, full_name'),
-      loadStudentRows(supabase),
     ])
 
   const nameById = new Map((profilesData ?? []).map((p) => [p.id as string, p.full_name as string]))
@@ -86,5 +84,5 @@ export default async function RegistroPage({ searchParams }: { searchParams: Pro
   }
   rows.sort((a, b) => b.paidAt.localeCompare(a.paidAt))
 
-  return <RegistroView month={month} today={today} rows={rows} students={studentRows} dueDay={dueDay} />
+  return <RegistroView month={month} today={today} rows={rows} />
 }

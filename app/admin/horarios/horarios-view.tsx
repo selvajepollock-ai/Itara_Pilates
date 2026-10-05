@@ -2,12 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { ChevronLeft, ChevronRight, List, Plus, Settings2, CalendarOff } from 'lucide-react'
 import { PageHeader } from '@/app/components/page-header'
 import { DropdownMenu, type MenuItem } from '@/app/components/dropdown-menu'
-import { StudentDrawer } from '../alumnos/student-drawer'
-import type { StudentRow } from '../alumnos/types'
 import { ActivateAllExtraCapacityButton } from './activate-all-extra-capacity-button'
 import { ClassPanel } from './class-panel'
 import { FixedTab } from './fixed-tab'
@@ -35,8 +33,6 @@ export function HorariosView({
   classes,
   occurrences,
   holidays,
-  students,
-  dueDay,
   pendingExtraCapacityCount,
 }: {
   monday: string
@@ -45,8 +41,6 @@ export function HorariosView({
   classes: ClassItem[]
   occurrences: OccurrenceData
   holidays: Record<string, string>
-  students: StudentRow[]
-  dueDay: number
   pendingExtraCapacityCount: number
 }) {
   const isMobile = useMediaQuery('(max-width: 1023px)')
@@ -66,13 +60,14 @@ export function HorariosView({
   const vista: Vista = params.get('vista') === 'fijo' && isAdmin ? 'fijo' : 'semana'
   const claseId = params.get('clase')
   const fecha = params.get('fecha')
-  const alumnoId = params.get('alumno')
+  const router = useRouter()
+  const goToStudent = (id: string) => router.push(`/admin/alumnos/${id}`)
 
   // Cuántas entradas de historial agregamos al abrir paneles (para cerrar con "atrás").
   const pushed = useRef(0)
   useEffect(() => {
-    if (!claseId && !alumnoId) pushed.current = 0
-  }, [claseId, alumnoId])
+    if (!claseId) pushed.current = 0
+  }, [claseId])
 
   const updateUrl = useCallback((changes: Record<string, string | null>, mode: 'replace' | 'push' = 'replace') => {
     const next = new URLSearchParams(window.location.search)
@@ -114,7 +109,6 @@ export function HorariosView({
   }, [columns, today])
 
   const selectedClass = claseId && fecha ? classes.find((c) => c.id === claseId) ?? null : null
-  const drawerStudent = alumnoId ? students.find((s) => s.id === alumnoId) ?? null : null
 
   const weekHref = (week: string | null) => {
     const qs = new URLSearchParams()
@@ -134,11 +128,6 @@ export function HorariosView({
     { key: 'semana', label: 'Esta semana' },
     ...(isAdmin ? [{ key: 'fijo' as const, label: 'Horario fijo' }] : []),
   ]
-
-  const studentFixedSchedule = (studentId: string) =>
-    classes
-      .filter((c) => c.fixed.some((f) => f.studentId === studentId))
-      .sort((a, b) => (a.dow === 0 ? 7 : a.dow) - (b.dow === 0 ? 7 : b.dow) || a.start.localeCompare(b.start))
 
   return (
     <div>
@@ -223,8 +212,8 @@ export function HorariosView({
           <FixedTab
             classes={classes}
             days={days}
-            selectedStudentId={alumnoId}
-            onOpenStudent={(id) => updateUrl({ alumno: id }, 'push')}
+            selectedStudentId={null}
+            onOpenStudent={goToStudent}
           />
         )}
       </div>
@@ -238,46 +227,10 @@ export function HorariosView({
           weekQuery={`?week=${monday}`}
           isMobile={isMobile}
           onClose={() => closePanel({ clase: null, fecha: null })}
-          onOpenStudent={(id) => updateUrl({ alumno: id }, 'push')}
+          onOpenStudent={goToStudent}
         />
       )}
 
-      {drawerStudent && (
-        <StudentDrawer
-          student={drawerStudent}
-          dueDay={dueDay}
-          isMobile={isMobile}
-          onClose={() => closePanel({ alumno: null })}
-          fullHref={`/admin/alumnos?alumno=${drawerStudent.id}`}
-          extra={<FixedSchedule studentId={drawerStudent.id} classes={studentFixedSchedule(drawerStudent.id)} />}
-        />
-      )}
     </div>
-  )
-}
-
-/** "Sus horarios fijos": una fila por clase con lugar fijo del alumno. */
-function FixedSchedule({ studentId, classes }: { studentId: string; classes: ClassItem[] }) {
-  return (
-    <section>
-      <h3 className="text-sm font-semibold text-ink">Sus horarios fijos</h3>
-      <p className="text-[13px] text-muted">
-        {classes.length === 0 ? 'Sin clases fijas' : `${plural(classes.length, 'clase fija', 'clases fijas')} por semana`}
-      </p>
-      {classes.length > 0 && (
-        <ul className="mt-2 divide-y divide-edge-divider rounded-[12px] border border-edge-divider">
-          {classes.map((c) => (
-            <li key={`${studentId}-${c.id}`} className="flex items-center justify-between gap-3 px-3.5 py-2.5 text-sm">
-              <span className="text-ink">
-                {dayLong(c.dow)} · <span className="tabular-nums">{c.start}</span>
-              </span>
-              <span className="text-[13px] tabular-nums text-muted">
-                {c.fixed.length}/{c.capacity} en la clase
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
   )
 }

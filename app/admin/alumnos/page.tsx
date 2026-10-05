@@ -1,9 +1,12 @@
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { loadStudentRows } from '@/lib/student-rows'
 import { AlumnosView } from './alumnos-view'
 import { SignupRequestsSection } from './signup-requests-section'
 
-export default async function AlumnosPage() {
+export default async function AlumnosPage({ searchParams }: { searchParams: Promise<{ alumno?: string }> }) {
+  const { alumno } = await searchParams
+  if (alumno) redirect(`/admin/alumnos/${alumno}`)
   const supabase = await createClient()
   const [{ rows, dueDay }, { data: signupRequests }, { data: plansData }] = await Promise.all([
     loadStudentRows(supabase),

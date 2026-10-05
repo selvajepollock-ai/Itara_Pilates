@@ -84,7 +84,7 @@ export function TeacherCard({ group: g, month, defaultOpen }: { group: RepartoGr
                   return (
                     <tr key={s.studentId} className="border-t border-edge-row">
                       <td className="py-2.5 pr-3">
-                        <Link href={`/admin/alumnos?alumno=${s.studentId}`} className="text-ink hover:text-moss hover:underline">
+                        <Link href={`/admin/alumnos/${s.studentId}`} className="text-ink hover:text-moss hover:underline">
                           {s.name}
                         </Link>
                       </td>

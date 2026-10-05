@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   ChevronDown,
   ChevronLeft,
@@ -27,7 +27,6 @@ import { whatsappLink } from '@/lib/whatsapp'
 import type { PaymentStatus } from '@/lib/billing'
 import { FiltersSheet } from './filters-sheet'
 import { RowActions } from './row-actions'
-import { StudentDrawer } from './student-drawer'
 import { normalize, shortDate } from './format'
 import {
   ESTADO_FROM_PARAM,
@@ -90,18 +89,13 @@ export function AlumnosView({
   const sortKey: SortKey = sortParam && SORT_KEYS.includes(sortParam) ? sortParam : 'nombre'
   const sortDir = searchParams.get('dir') === 'desc' ? 'desc' : 'asc'
   const page = Math.max(1, parseInt(searchParams.get('pagina') ?? '1', 10) || 1)
-  const alumnoId = searchParams.get('alumno')
+  const router = useRouter()
 
   const [qInput, setQInput] = useState(q)
   useEffect(() => setQInput(q), [q])
-  useEffect(() => {
-    if (!alumnoId) setPushedDrawer(false)
-  }, [alumnoId])
-
   const [mobilePages, setMobilePages] = useState(1)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
-  const [pushedDrawer, setPushedDrawer] = useState(false)
 
   /** Escribe en la URL sin pedirle nada al servidor (los datos ya están cargados). */
   const updateUrl = useCallback((changes: Record<string, string | null>, mode: 'replace' | 'push' = 'replace') => {
@@ -180,26 +174,10 @@ export function AlumnosView({
   const desktopRows = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
   const mobileRows = filtered.slice(0, mobilePages * PAGE_SIZE)
 
-  const drawerStudent = alumnoId ? students.find((s) => s.id === alumnoId) ?? null : null
-
   const activeFilterCount = (profesor ? 1 : 0) + (plan ? 1 : 0)
   const hasAnyFilter = !!(estado || q || profesor || plan)
 
   // ── Acciones ──────────────────────────────────────────────────────────────────────────────
-  function openDrawer(id: string) {
-    updateUrl({ alumno: id }, 'push')
-    setPushedDrawer(true)
-  }
-
-  const closeDrawer = useCallback(() => {
-    if (pushedDrawer) {
-      setPushedDrawer(false)
-      window.history.back()
-    } else {
-      updateUrl({ alumno: null })
-    }
-  }, [pushedDrawer, updateUrl])
-
   function toggleSort(key: SortKey) {
     if (sortKey === key) setFilter({ orden: key, dir: sortDir === 'asc' ? 'desc' : 'asc' })
     else setFilter({ orden: key, dir: null })
@@ -421,21 +399,19 @@ export function AlumnosView({
               {desktopRows.map((s) => (
                 <tr
                   key={s.id}
-                  className={`h-[60px] border-t border-edge-row transition hover:bg-moss-soft/60 ${
-                    s.id === alumnoId ? 'bg-moss-soft' : ''
-                  }`}
+                  onClick={() => router.push(`/admin/alumnos/${s.id}`)}
+                  className="h-[60px] cursor-pointer border-t border-edge-row transition hover:bg-moss-soft/60"
                 >
                   <td className="px-4 py-2">
                     <div className="flex items-center gap-3">
                       <Avatar name={s.fullName} />
                       <div className="min-w-0">
-                        <button
-                          type="button"
-                          onClick={() => openDrawer(s.id)}
+                        <Link
+                          href={`/admin/alumnos/${s.id}`}
                           className="block max-w-[220px] truncate text-left text-sm font-medium text-ink hover:text-moss-dark hover:underline"
                         >
                           {s.fullName}
-                        </button>
+                        </Link>
                         <p className="max-w-[220px] truncate text-xs text-muted">
                           {subline(s)}
                           {!s.active && ' · De baja'}
@@ -457,8 +433,8 @@ export function AlumnosView({
                   <td className="hidden px-4 py-2 tabular-nums text-ink/80 xl:table-cell">
                     {shortDate(s.lastPaymentAt) ?? '—'}
                   </td>
-                  <td className="px-3 py-2">
-                    <RowActions student={s} onDeleted={s.id === alumnoId ? closeDrawer : undefined} />
+                  <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
+                    <RowActions student={s} />
                   </td>
                 </tr>
               ))}
@@ -526,9 +502,8 @@ export function AlumnosView({
               const wa = whatsappLink(s.phone)
               return (
                 <li key={s.id} className="flex items-center gap-1 pr-2">
-                  <button
-                    type="button"
-                    onClick={() => openDrawer(s.id)}
+                  <Link
+                    href={`/admin/alumnos/${s.id}`}
                     className="flex min-h-[64px] min-w-0 flex-1 items-center gap-3 px-4 py-2 text-left"
                   >
                     <Avatar name={s.fullName} size={38} />
@@ -539,7 +514,7 @@ export function AlumnosView({
                         {s.planName && <span className="truncate">· {s.planName}</span>}
                       </span>
                     </span>
-                  </button>
+                  </Link>
                   {wa && (
                     <a
                       href={wa}
@@ -592,10 +567,6 @@ export function AlumnosView({
         }
         onClear={() => setFilter({ profesor: null, plan: null })}
       />
-
-      {drawerStudent && (
-        <StudentDrawer student={drawerStudent} dueDay={dueDay} isMobile={isMobile} onClose={closeDrawer} />
-      )}
 
       {toast && (
         <div
