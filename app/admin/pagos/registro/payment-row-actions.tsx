@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { Pencil, Ban } from 'lucide-react'
 import { formatARS } from '@/lib/currency'
@@ -67,10 +68,11 @@ export function PaymentRowActions({
         ]}
       />
 
-      {(open === 'edit' || open === 'void') && (
+      {(open === 'edit' || open === 'void') &&
+        createPortal(
         <>
-          <div className="fixed inset-0 z-30 bg-ink/20" onClick={close} />
-          <div className="fixed left-1/2 top-1/2 z-40 w-[min(92vw,360px)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-sand bg-white p-5 text-left shadow-xl">
+          <div className="fixed inset-0 z-[80] bg-ink/20" onClick={close} />
+          <div className="fixed left-1/2 top-1/2 z-[81] w-[min(92vw,360px)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-sand bg-white p-5 text-left shadow-xl">
             {open === 'edit' ? (
               <form action={handleEdit} className="space-y-3">
                 <p className="font-display text-lg italic text-ink">Editar pago</p>
@@ -189,7 +191,8 @@ export function PaymentRowActions({
             )}
             {error && <p className="mt-2 text-sm text-clay">{error}</p>}
           </div>
-        </>
+        </>,
+        document.body
       )}
     </div>
   )

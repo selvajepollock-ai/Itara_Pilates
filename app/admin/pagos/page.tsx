@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { formatARS } from '@/lib/currency'
 import { subscriptionDisplayStatus, type PaymentStatus } from '@/lib/billing'
 import { collectionSummary } from '@/lib/payments'
+import { artMonthStart } from '@/lib/dates'
 import { loadQuickPaymentStudents } from '@/lib/quick-payment-students'
 import { loadStudentRows } from '@/lib/student-rows'
 import { StatCard } from '@/app/components/stat-card'
@@ -38,10 +39,10 @@ export default async function PagosResumenPage({ searchParams }: { searchParams:
   const currentMonth = today.slice(0, 7)
   const label = /^\d{4}-\d{2}$/.test(month ?? '') ? (month as string) : currentMonth
   const [year, mon] = label.split('-').map(Number)
-  const start = new Date(year, mon - 1, 1)
-  const end = new Date(year, mon, 1)
+  const start = new Date(artMonthStart(year, mon))
+  const end = new Date(artMonthStart(year, mon + 1))
   // Gráfico: los 6 meses que terminan en el mes elegido.
-  const sixMonthsAgo = new Date(year, mon - 6, 1)
+  const sixMonthsAgo = new Date(artMonthStart(year, mon - 5))
 
   const supabase = await createClient()
 

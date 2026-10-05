@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { suggestNextDueDate } from '@/lib/billing'
+import { suggestNextPaymentDate } from '@/lib/billing'
 
 type PlanRef = { name: string; price: number } | null
 
@@ -22,10 +22,7 @@ export async function loadQuickPaymentStudents(supabase: SupabaseClient) {
       planName: planInfo?.name ?? null,
       planPrice: planInfo?.price ?? 0,
       endDate: (sub?.end_date as string | null | undefined) ?? null,
-      suggestedNextDate: suggestNextDueDate(
-        sub?.end_date ? new Date(`${sub.end_date}T00:00:00`) : new Date(),
-        dueDay
-      ),
+      suggestedNextDate: suggestNextPaymentDate((sub?.end_date as string | null | undefined) ?? null),
     }
   })
 }

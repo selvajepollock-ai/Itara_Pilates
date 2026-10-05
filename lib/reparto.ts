@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { artMonthStart } from './dates'
 
 export const COMMISSION_RATE = 0.6
 
@@ -41,8 +42,8 @@ const round2 = (n: number) => Math.round(n * 100) / 100
 // (rol admin) no se les calcula comision: todo queda para el estudio.
 export async function buildReparto(supabase: SupabaseClient, month: string): Promise<Reparto> {
   const [year, m] = month.split('-').map(Number)
-  const start = new Date(year, m - 1, 1)
-  const end = new Date(year, m, 1)
+  const start = new Date(artMonthStart(year, m))
+  const end = new Date(artMonthStart(year, m + 1))
 
   const [
     { data: profiles },
