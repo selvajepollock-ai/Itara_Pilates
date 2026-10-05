@@ -1,6 +1,7 @@
 'use server'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { notifyUsers, resolveAnnouncementRecipients } from '@/lib/push'
 async function assertAdmin() {
   const supabase = await createClient()
   const {
@@ -72,6 +73,15 @@ export async function createAnnouncement(formData: FormData) {
     target_date: targetDate,
   })
   if (error) return { error: error.message }
+
+  const recipients = await resolveAnnouncementRecipients({ targetType, usernames: targetUsernames, classId: targetClassId })
+  await notifyUsers(recipients, {
+    title: 'Comunicado del estudio 📣',
+    body: message.length > 140 ? `${message.slice(0, 137)}...` : message,
+    url: '/alumno',
+    tag: 'announcement',
+  })
+
   revalidatePath('/admin/notificaciones')
   revalidatePath('/alumno')
   revalidatePath('/instructor')
