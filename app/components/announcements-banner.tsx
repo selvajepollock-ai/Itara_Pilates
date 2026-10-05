@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { AnnouncementCard } from './announcement-card'
+import { DismissAnnouncementButton } from './dismiss-announcement-button'
 
 type Announcement = {
   id: string
@@ -17,7 +18,7 @@ export async function AnnouncementsBanner() {
 
   const today = new Date().toISOString().slice(0, 10)
 
-  const [{ data: announcements }, { data: profile }] = await Promise.all([
+  const [{ data: announcements }, { data: profile }, { data: dismissals }] = await Promise.all([
     supabase
       .from('announcements')
       .select('id, message, target_type, target_usernames, target_class_id')
@@ -26,7 +27,11 @@ export async function AnnouncementsBanner() {
     user
       ? supabase.from('profiles').select('username, roles').eq('id', user.id).maybeSingle()
       : Promise.resolve({ data: null }),
+    user
+      ? supabase.from('announcement_dismissals').select('announcement_id').eq('user_id', user.id)
+      : Promise.resolve({ data: [] as { announcement_id: string }[] }),
   ])
+  const dismissed = new Set((dismissals ?? []).map((d) => d.announcement_id as string))
 
   if (!announcements || announcements.length === 0) return null
 
@@ -48,6 +53,7 @@ export async function AnnouncementsBanner() {
   }
 
   const visible = (announcements as unknown as Announcement[]).filter((a) => {
+    if (dismissed.has(a.id)) return false
     if (a.target_type === 'all') return true
     if (a.target_type === 'people') {
       return myUsername ? (a.target_usernames ?? []).includes(myUsername) : false
@@ -63,7 +69,7 @@ export async function AnnouncementsBanner() {
   return (
     <div className="mb-6 space-y-2">
       {visible.map((a) => (
-        <AnnouncementCard key={a.id} message={a.message} />
+        <AnnouncementCard key={a.id} message={a.message} action={<DismissAnnouncementButton announcementId={a.id} />} />
       ))}
     </div>
   )
