@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { formatARS } from '@/lib/currency'
-import { loadStudentRows } from '@/lib/student-rows'
 import { PageHeader } from '@/app/components/page-header'
 import { StatCard } from '@/app/components/stat-card'
 import { SectionCard } from '@/app/components/section-card'
@@ -39,7 +38,6 @@ export default async function ReportesPage({
     { data: enrollmentsData },
     { data: lateCancellations },
     { data: markedAbsences },
-    { rows: studentRows, dueDay },
   ] = await Promise.all([
     supabase
       .from('payments')
@@ -85,7 +83,6 @@ export default async function ReportesPage({
       .eq('status', 'absent')
       .gte('session_date', period.from)
       .lte('session_date', period.to),
-    loadStudentRows(supabase),
   ])
 
   // ── Ingresos ────────────────────────────────────────────────────────────────────────────
@@ -260,7 +257,7 @@ export default async function ReportesPage({
         </SectionCard>
       </div>
 
-      <AbsencesCard items={absenceRanking} students={studentRows} dueDay={dueDay} />
+      <AbsencesCard items={absenceRanking} />
     </div>
   )
 }

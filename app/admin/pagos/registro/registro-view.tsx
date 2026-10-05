@@ -2,11 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react'
 import { Avatar } from '@/app/components/avatar'
-import { StudentDrawer } from '../../alumnos/student-drawer'
-import type { StudentRow } from '../../alumnos/types'
 import { normalize } from '../../alumnos/format'
 import { formatARS } from '@/lib/currency'
 import { MonthPicker } from '../month-picker'
@@ -46,14 +44,10 @@ export function RegistroView({
   month,
   today,
   rows,
-  students,
-  dueDay,
 }: {
   month: string
   today: string
   rows: RegistroRow[]
-  students: StudentRow[]
-  dueDay: number
 }) {
   const isMobile = useMediaQuery('(max-width: 1023px)')
   const currentMonth = today.slice(0, 7)
@@ -75,18 +69,13 @@ export function RegistroView({
   const q = params.get('q') ?? ''
   const showVoided = params.get('anulados') === '1'
   const diaParam = params.get('dia')
-  const alumnoId = params.get('alumno')
+  const router = useRouter()
   const dia = diaParam && diaParam.startsWith(month) ? diaParam : null
   // En celular, sin día elegido se muestra "hoy" (si estamos en el mes actual).
   const effectiveDia = dia ?? (isMobile && month === currentMonth ? today : null)
 
   const [qInput, setQInput] = useState(q)
   useEffect(() => setQInput(q), [q])
-
-  const pushed = useRef(false)
-  useEffect(() => {
-    if (!alumnoId) pushed.current = false
-  }, [alumnoId])
 
   const updateUrl = useCallback((changes: Record<string, string | null>, mode: 'replace' | 'push' = 'replace') => {
     const next = new URLSearchParams(window.location.search)
@@ -98,17 +87,9 @@ export function RegistroView({
     const url = window.location.pathname + (qs ? `?${qs}` : '')
     if (mode === 'push') {
       window.history.pushState(window.history.state, '', url)
-      pushed.current = true
     } else window.history.replaceState(window.history.state, '', url)
     setSearch(qs)
   }, [])
-
-  const closeStudent = useCallback(() => {
-    if (pushed.current) {
-      pushed.current = false
-      window.history.back()
-    } else updateUrl({ alumno: null })
-  }, [updateUrl])
 
   // ── Datos filtrados ──────────────────────────────────────────────────────────────────────
   const team = useMemo(() => {
@@ -214,8 +195,6 @@ export function RegistroView({
     return sets
   }, [scoped, tipo, effectiveDia, month])
 
-  const drawerStudent = alumnoId ? students.find((s) => s.id === alumnoId) ?? null : null
-
   const goMonth = (ym: string) => {
     const qs = new URLSearchParams(search)
     qs.set('mes', ym)
@@ -229,7 +208,7 @@ export function RegistroView({
     { key: 'sueltas', label: 'Clases sueltas' },
   ]
 
-  const openStudent = (id: string | null) => id && updateUrl({ alumno: id }, 'push')
+  const openStudent = (id: string | null) => id && router.push(`/admin/alumnos/${id}`)
 
   const rowView = (r: RegistroRow) => (
     <li
@@ -506,15 +485,6 @@ export function RegistroView({
         </aside>
       </div>
 
-      {drawerStudent && (
-        <StudentDrawer
-          student={drawerStudent}
-          dueDay={dueDay}
-          isMobile={isMobile}
-          onClose={closeStudent}
-          fullHref={`/admin/alumnos?alumno=${drawerStudent.id}`}
-        />
-      )}
     </div>
   )
 }

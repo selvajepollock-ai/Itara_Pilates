@@ -35,7 +35,7 @@ export function OverdueList({ items, students }: { items: OverdueItem[]; student
           <li key={d.studentId} className="flex min-h-[58px] items-center gap-3 border-t border-edge-row py-2 first:border-t-0">
             <Avatar name={d.name} size={34} />
             <div className="min-w-0 flex-1">
-              <Link href={`/admin/alumnos?alumno=${d.studentId}`} className="block truncate text-sm font-medium text-ink hover:text-moss hover:underline">
+              <Link href={`/admin/alumnos/${d.studentId}`} className="block truncate text-sm font-medium text-ink hover:text-moss hover:underline">
                 {d.name}
               </Link>
               <p className="truncate text-xs text-muted">
