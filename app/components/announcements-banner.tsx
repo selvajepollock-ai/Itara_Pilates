@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { AnnouncementCard } from './announcement-card'
-import { DismissAnnouncementButton } from './dismiss-announcement-button'
+import { AnnouncementPopup } from './announcement-popup'
 
 type Announcement = {
   id: string
@@ -66,11 +65,6 @@ export async function AnnouncementsBanner() {
 
   if (visible.length === 0) return null
 
-  return (
-    <div className="mb-6 space-y-2">
-      {visible.map((a) => (
-        <AnnouncementCard key={a.id} message={a.message} action={<DismissAnnouncementButton announcementId={a.id} />} />
-      ))}
-    </div>
-  )
+  // Se muestran como ventana emergente: la persona los cierra y no vuelven a aparecerle.
+  return <AnnouncementPopup items={visible.map((a) => ({ id: a.id, message: a.message }))} />
 }
