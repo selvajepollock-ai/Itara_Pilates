@@ -1,3 +1,4 @@
+import { BackLink } from '@/app/components/back-link'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
 import { notFound } from 'next/navigation'
@@ -165,9 +166,7 @@ export default async function ClaseDetailPage({
 
   return (
     <div className="max-w-6xl">
-      <Link href={`/admin/horarios${weekQS}`} className="text-sm text-moss hover:text-moss-dark">
-        ← Volver a horarios
-      </Link>
+      <BackLink href={`/admin/horarios${weekQS}`} label="Horarios" />
 
       {/* Encabezado: qué clase es + acciones + moverse entre clases */}
       <div className="mt-4 flex flex-wrap items-start justify-between gap-4">

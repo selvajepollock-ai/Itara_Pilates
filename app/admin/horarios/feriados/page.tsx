@@ -1,3 +1,4 @@
+import { BackLink } from '@/app/components/back-link'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { NewHolidayForm } from './new-holiday-form'
@@ -13,9 +14,7 @@ export default async function FeriadosPage() {
 
   return (
     <div className="max-w-lg">
-      <Link href="/admin/horarios" className="text-sm text-moss hover:text-moss-dark">
-        ← Volver al calendario
-      </Link>
+      <BackLink href="/admin/horarios" label="Horarios" />
 
       <p className="eyebrow mt-4">Horarios</p>
       <h1 className="page-title mt-2">Feriados y días sin clase</h1>
