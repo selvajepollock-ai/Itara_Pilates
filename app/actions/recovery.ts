@@ -55,6 +55,8 @@ export async function cancelSession({
   const auth = await assertSelfOrAdmin(studentId)
   if (!auth.ok) return { error: auth.error }
   const { supabase } = auth
+  // Las escrituras se hacen con permisos del servidor: la alumna no puede escribir estas tablas directamente.
+  const admin = createAdminClient()
 
   const { data: classInfo } = await supabase
     .from('classes')
@@ -86,7 +88,7 @@ export async function cancelSession({
   const hoursLeft = hoursUntil(sessionDate, classInfo.start_time)
   const withinDeadline = hoursLeft >= minHours
 
-  const { data: cancellation, error } = await supabase
+  const { data: cancellation, error } = await admin
     .from('session_cancellations')
     .insert({
       enrollment_id: enrollmentId,
@@ -114,7 +116,7 @@ export async function cancelSession({
     const monday = getMonday(sessionDateObj)
     const sunday = getSunday(monday)
 
-    const { data: credit, error: creditError } = await supabase
+    const { data: credit, error: creditError } = await admin
       .from('recovery_credits')
       .insert({
         student_id: studentId,
@@ -130,7 +132,7 @@ export async function cancelSession({
 
     if (!creditError && credit) {
       recoveryCreditId = credit.id
-      await supabase
+      await admin
         .from('session_cancellations')
         .update({ recovery_credit_id: credit.id })
         .eq('id', cancellation.id)
@@ -165,15 +167,17 @@ export async function undoSessionCancellation({
   if (!auth.ok) return { error: auth.error }
   const { supabase } = auth
 
-  const { data: cancellation } = await supabase
+  const db = createAdminClient()
+  const { data: cancellation } = await db
     .from('session_cancellations')
-    .select('id, recovery_credit_id')
+    .select('id, recovery_credit_id, student_id')
     .eq('enrollment_id', enrollmentId)
     .eq('class_id', classId)
     .eq('session_date', sessionDate)
     .maybeSingle()
 
   if (!cancellation) return { error: 'No encontré un aviso de cancelación para esa fecha.' }
+  if (cancellation.student_id !== studentId) return { error: 'Ese aviso no te corresponde.' }
 
   // Si otra persona ya ocupó el lugar liberado, no se puede volver a anotar (la clase quedaría con más gente que el cupo).
   {
@@ -196,7 +200,7 @@ export async function undoSessionCancellation({
   }
 
   if (cancellation.recovery_credit_id) {
-    const { data: credit } = await supabase
+    const { data: credit } = await db
       .from('recovery_credits')
       .select('id, status')
       .eq('id', cancellation.recovery_credit_id)
@@ -214,12 +218,12 @@ export async function undoSessionCancellation({
     }
     if (credit) {
       // Crédito sin usar (available/expired): se descarta, nunca se llegó a usar.
-      await supabase.from('session_cancellations').update({ recovery_credit_id: null }).eq('id', cancellation.id)
-      await supabase.from('recovery_credits').delete().eq('id', credit.id)
+      await db.from('session_cancellations').update({ recovery_credit_id: null }).eq('id', cancellation.id)
+      await db.from('recovery_credits').delete().eq('id', credit.id)
     }
   }
 
-  const { error } = await supabase.from('session_cancellations').delete().eq('id', cancellation.id)
+  const { error } = await db.from('session_cancellations').delete().eq('id', cancellation.id)
   if (error) return { error: error.message }
 
   revalidatePath('/alumno')
