@@ -9,6 +9,7 @@ type ClassRow = {
   start_time: string
   end_time: string
   capacity: number
+  room: string
   pending_extra_capacity: number
   instructor_id: string | null
   class_types: { name: string } | null
@@ -54,7 +55,7 @@ export default async function HorariosPage({
     supabase
       .from('classes')
       .select(
-        'id, day_of_week, start_time, end_time, capacity, pending_extra_capacity, instructor_id, class_types(name), profiles(full_name)'
+        'id, day_of_week, start_time, end_time, capacity, room, pending_extra_capacity, instructor_id, class_types(name), profiles(full_name)'
       )
       .eq('active', true),
     supabase.from('enrollments').select('id, class_id, student_id, profiles(full_name)').eq('status', 'active'),
@@ -90,6 +91,7 @@ export default async function HorariosPage({
     start: c.start_time.slice(0, 5),
     end: c.end_time.slice(0, 5),
     capacity: c.capacity,
+    room: c.room ?? 'Sala principal',
     typeName: c.class_types?.name ?? 'Clase',
     instructorName: c.profiles?.full_name ?? null,
     fixed: (fixedByClass.get(c.id) ?? []).sort((a, b) => a.name.localeCompare(b.name, 'es')),
