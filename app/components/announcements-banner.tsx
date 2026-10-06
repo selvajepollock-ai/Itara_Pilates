@@ -37,6 +37,7 @@ export async function AnnouncementsBanner() {
   if (!announcements || announcements.length === 0) return null
 
   const myUsername = profile?.username?.toLowerCase() ?? null
+  const isStudent = profile?.roles?.includes('student') ?? false
   const isInstructor = profile?.roles?.includes('instructor') ?? false
 
   let myClassIds = new Set<string>()
@@ -55,7 +56,7 @@ export async function AnnouncementsBanner() {
 
   const visible = (announcements as unknown as Announcement[]).filter((a) => {
     if (dismissed.has(a.id)) return false
-    if (a.target_type === 'all') return true
+    if (a.target_type === 'all') return isStudent
     if (a.target_type === 'people') {
       return myUsername ? (a.target_usernames ?? []).includes(myUsername) : false
     }

@@ -22,7 +22,7 @@ export function RecipientCards({
     {
       key: 'all',
       emoji: '👥',
-      help: `${counts.students} ${counts.students === 1 ? 'alumno' : 'alumnos'} y ${counts.instructors} ${counts.instructors === 1 ? 'instructor' : 'instructores'}`,
+      help: `${counts.students} ${counts.students === 1 ? 'alumno' : 'alumnos'}`,
     },
     { key: 'people', emoji: '🙋‍♀️', help: 'Una o varias personas' },
     { key: 'class', emoji: '🧘‍♀️', help: 'Los anotados en un horario' },

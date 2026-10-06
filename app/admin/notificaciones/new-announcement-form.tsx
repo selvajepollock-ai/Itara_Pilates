@@ -167,7 +167,7 @@ export function NewAnnouncementForm({
 
   const toSummary =
     target === 'all'
-      ? `Todos · ${counts.students + counts.instructors} personas`
+      ? `Todos · ${counts.students} ${counts.students === 1 ? 'alumno' : 'alumnos'}`
       : target === 'people'
         ? selectedPeople.length === 0
           ? 'Sin elegir'
@@ -180,7 +180,7 @@ export function NewAnnouncementForm({
 
   const scope =
     target === 'all'
-      ? `Lo van a ver ${counts.students} ${counts.students === 1 ? 'alumno' : 'alumnos'} y ${counts.instructors} ${counts.instructors === 1 ? 'instructor' : 'instructores'}`
+      ? `Lo van a ver ${counts.students} ${counts.students === 1 ? 'alumno' : 'alumnos'}`
       : target === 'people'
         ? `Lo van a ver ${selectedPeople.length} ${selectedPeople.length === 1 ? 'persona' : 'personas'}`
         : chosenClass

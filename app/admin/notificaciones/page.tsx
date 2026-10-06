@@ -110,7 +110,7 @@ export default async function ComunicadosPage() {
       <div>
         <PageHeader title="Comunicados" />
         <p className="mt-2 text-sm text-muted">
-          Avisos que aparecen en el panel de alumnos e instructores al entrar a la app.
+          Avisos que aparecen en el panel de alumnos al entrar (y de instructores si se los elige puntualmente o por clase) a la app.
         </p>
       </div>
       <ComunicadosView
