@@ -8,6 +8,7 @@ export default function RegistroPage() {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
+  const [sentEmail, setSentEmail] = useState('')
   const [emailError, setEmailError] = useState<string | null>(null)
 
   function handleSubmit(formData: FormData) {
@@ -27,6 +28,7 @@ export default function RegistroPage() {
         setError(res.error)
         return
       }
+      setSentEmail(email)
       setDone(true)
     })
   }
@@ -43,11 +45,20 @@ export default function RegistroPage() {
 
         <div className="rounded-2xl border border-sand bg-white p-8 shadow-[0_2px_20px_rgba(46,43,38,0.06)]">
           {done ? (
-            <div className="text-center">
-              <p className="font-display text-xl italic text-ink">¡Listo! ✓</p>
-              <p className="mt-2 text-sm text-ink/60">
-                Recibimos tus datos. Nos vamos a contactar en breve para coordinar todo.
+            <div className="text-center" role="status">
+              <p className="font-display text-2xl italic text-ink">¡Recibimos tu solicitud! ✓</p>
+              <p className="mt-3 text-sm text-ink/70">
+                El estudio la va a revisar. Cuando la aprueben, te llega un mail a{' '}
+                <span className="font-medium text-ink">{sentEmail}</span> para que crees tu contraseña y puedas entrar.
               </p>
+              <div className="mt-5 rounded-xl bg-moss/5 p-4 text-left text-[13px] leading-relaxed text-ink/70">
+                <p className="font-medium text-ink">Mientras tanto</p>
+                <ul className="mt-1.5 list-disc space-y-1 pl-4">
+                  <li>No hace falta que vuelvas a enviar el formulario.</li>
+                  <li>Cuando llegue el mail, revisá también la carpeta de spam o promociones.</li>
+                  <li>Si pasan unos días y no te llegó nada, escribinos.</li>
+                </ul>
+              </div>
             </div>
           ) : (
             <form action={handleSubmit} className="space-y-4">
