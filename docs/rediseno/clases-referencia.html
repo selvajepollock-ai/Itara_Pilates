@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Itara · Horarios › Clases (escritorio)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400;1,9..144,500&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#3F5B46}a:hover{color:#2F4A36}
+button,select{font-family:inherit}
+button{cursor:pointer}
+.fila:hover{background:#FAF8F5}
+</style>
+</helmet>
+<div style="display: flex; min-height: 1100px; background: #FFFFFF; font-family: 'Work Sans', system-ui, sans-serif; color: #2B2A26; font-variant-numeric: tabular-nums">
+
+  <aside style="width: 248px; flex-shrink: 0; box-sizing: border-box; background: #FFFFFF; border-right: 1px solid #EEE8DF; padding: 22px 16px; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+      <div style="width: 36px; height: 36px; border-radius: 999px; background: #E9DFD0; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 18px; color: #8A5A3C">I</div>
+      <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 20px">Itara</span>
+    </div>
+    <nav aria-label="Navegación principal" style="display: flex; flex-direction: column; gap: 2px">
+      <a href="Main.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Inicio</a>
+      <a href="Semana.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; background: {{accent}}; color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 500">Horarios</a>
+      <a href="Alumnos.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Alumnos</a>
+      <a href="PagosResumen.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Pagos</a>
+    </nav>
+  </aside>
+
+  <main style="flex-grow: 1; min-width: 0; padding: 32px 40px 48px; box-sizing: border-box">
+    <div style="max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px">
+
+      <header style="display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; align-items: flex-end; justify-content: space-between">
+          <h1 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 400; font-size: 38px; line-height: 1.1">Horarios</h1>
+          <div style="display: flex; gap: 10px">
+            <a href="Feriados.dc.html" style="height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #2B2A26; font-size: 14px; display: flex; align-items: center; gap: 8px; text-decoration: none"><span aria-hidden="true">🗓️</span>Feriados y cierres</a>
+            <a href="TiposClase.dc.html" style="height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #2B2A26; font-size: 14px; display: flex; align-items: center; gap: 8px; text-decoration: none"><span aria-hidden="true">🏷️</span>Tipos de clase</a>
+            <button type="button" style="height: 44px; padding: 0 18px; border-radius: 12px; border: none; background: {{accent}}; color: #FFFFFF; font-size: 14px; font-weight: 600">+ Nueva clase</button>
+          </div>
+        </div>
+        <div role="tablist" aria-label="Vistas de horarios" style="display: flex; gap: 28px; border-bottom: 1px solid #EEE8DF">
+          <a href="Semana.dc.html" role="tab" aria-selected="false" style="padding: 0 0 12px; font-size: 15px; color: #6B6459; text-decoration: none">Esta semana</a>
+          <a href="HorarioFijo.dc.html" role="tab" aria-selected="false" style="padding: 0 0 12px; font-size: 15px; color: #6B6459; text-decoration: none">Horario fijo</a>
+          <a href="#" role="tab" aria-selected="true" style="padding: 0 0 12px; font-size: 15px; font-weight: 600; color: #2B2A26; text-decoration: none; border-bottom: 2px solid {{accent}}; margin-bottom: -1px">Clases</a>
+        </div>
+      </header>
+
+      <span style="font-size: 14px; color: #4A463F">Las clases que se repiten cada semana. Desde acá se crean, editan o eliminan.</span>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap">
+        <div role="tablist" aria-label="Día" style="display: flex; padding: 3px; background: #F5F1EB; border-radius: 12px">
+          <sc-for list="{{dayTabs}}" as="d" hint-placeholder-count="6">
+            <button type="button" role="tab" aria-selected="{{d.active}}" onClick="{{d.pick}}" style="{{d.style}}">{{d.label}} <span style="{{d.countStyle}}">{{d.count}}</span></button>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 8px">
+          <label style="display: flex; align-items: center; gap: 6px; height: 40px; padding: 0 12px; border: 1px solid #E2D9CC; border-radius: 12px; font-size: 14px; color: #4A463F">Profesor
+            <select onChange="{{onProf}}" aria-label="Filtrar por profesor" style="border: none; background: transparent; font-size: 14px; outline: none; color: #2B2A26">
+              <option value="todos">Todos</option><option value="Rodrigo Schulz">Rodrigo Schulz</option><option value="Yanina Cervino">Yanina Cervino</option><option value="Fabi">Fabi</option>
+            </select>
+          </label>
+          <button type="button" style="height: 40px; padding: 0 14px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; font-size: 14px; color: #2B2A26">Exportar ▾</button>
+        </div>
+      </div>
+
+      <sc-for list="{{groups}}" as="g" hint-placeholder-count="1">
+        <section aria-label="{{g.name}}" style="border: 1px solid #EEE8DF; border-radius: 16px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05); overflow: hidden">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 14px 20px; background: #FAF8F5; border-bottom: 1px solid #EEE8DF">
+            <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 21px">{{g.name}}</span>
+            <span style="font-size: 13px; color: #6B6459">{{g.summary}}</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 120px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.3fr) 170px 150px; gap: 12px; padding: 0 20px; height: 38px; align-items: center; font-size: 12px; font-weight: 600; color: #6B6459; border-bottom: 1px solid #F3EEE6">
+            <span>Horario</span><span>Clase</span><span>Sala</span><span>Profesor</span><span>Lugares fijos</span><span style="text-align: right">Acciones</span>
+          </div>
+          <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="10">
+            <div class="fila" style="display: grid; grid-template-columns: 120px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.3fr) 170px 150px; gap: 12px; padding: 0 20px; height: 56px; align-items: center; border-bottom: 1px solid #F3EEE6; font-size: 14px">
+              <span style="font-weight: 600">{{r.time}}</span>
+              <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 16px">Reformer</span>
+              <span style="{{r.roomStyle}}">{{r.room}}</span>
+              <span style="display: flex; align-items: center; gap: 8px; min-width: 0"><span style="{{r.avatar}}">{{r.initial}}</span><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.prof}}</span></span>
+              <div style="display: flex; align-items: center; gap: 8px">
+                <div style="flex-grow: 1; height: 6px; border-radius: 999px; background: #EFE9DF; overflow: hidden"><div style="{{r.bar}}"></div></div>
+                <span style="font-size: 13px; width: 32px; text-align: right">{{r.occ}}</span>
+              </div>
+              <div style="display: flex; justify-content: flex-end; align-items: center; gap: 4px">
+                <a href="HorarioFijo.dc.html" style="height: 34px; padding: 0 10px; border-radius: 9px; font-size: 13px; font-weight: 500; text-decoration: none; display: flex; align-items: center">Ver alumnos</a>
+                <button type="button" aria-label="Acciones de {{g.name}} {{r.time}}: editar o eliminar" style="width: 34px; height: 34px; border-radius: 9px; border: none; background: transparent; color: #6B6459">⋯</button>
+              </div>
+            </div>
+          </sc-for>
+        </section>
+      </sc-for>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#4F6B55","options":["#4F6B55","#3F5B46","#6B5B45"]},"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { day: 0, prof: 'todos' };
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#4F6B55';
+    const st = this.state || {};
+    const day = st.day == null ? 0 : st.day;
+    const prof = st.prof || 'todos';
+    const R = 'Rodrigo Schulz', Y = 'Yanina Cervino', F = 'Fabi';
+    const names = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+    const data = [
+      [['07:00', Y, 6], ['08:00', R, 8], ['09:00', R, 6], ['10:00', R, 8], ['14:00', Y, 5], ['15:00', F, 4], ['16:00', R, 7], ['17:00', R, 8], ['18:00', R, 7], ['19:00', R, 8], ['20:00', R, 8]],
+      [['08:00', R, 8], ['09:00', R, 6], ['10:00', R, 8], ['14:00', Y, 5], ['15:00', F, 5], ['16:00', R, 8], ['17:00', R, 7], ['18:00', R, 7], ['19:00', R, 7], ['20:00', R, 8]],
+      [['07:00', Y, 5], ['08:00', R, 8], ['09:00', R, 6], ['10:00', R, 8], ['14:00', Y, 7], ['16:00', R, 8], ['17:00', R, 8], ['18:00', R, 7], ['19:00', R, 8], ['20:00', R, 7]],
+      [['08:00', R, 7], ['09:00', R, 6], ['10:00', R, 8], ['14:00', Y, 5], ['15:00', F, 5], ['16:00', R, 7], ['17:00', R, 8], ['18:00', R, 8], ['19:00', R, 7], ['20:00', R, 7]],
+      [['07:00', Y, 4, 'Sala principal'], ['08:00', R, 7], ['09:00', R, 6], ['14:00', Y, 5], ['17:00', R, 8], ['18:00', R, 8], ['19:00', R, 5]]
+    ];
+    const avs = { R: ['#E4ECE5', '#2F4A36'], Y: ['#EDE6F1', '#5B3F72'], F: ['#E2ECF5', '#255377'] };
+    const end = (t) => String(parseInt(t, 10) + 1).padStart(2, '0') + ':00';
+    const mkRows = (list) => list.filter((c) => prof === 'todos' || c[1] === prof).map((c) => {
+      const av = avs[c[1][0]];
+      const odd = !!c[3];
+      return {
+        time: c[0] + '–' + end(c[0]),
+        room: c[3] || 'Sala Reformer',
+        roomStyle: odd ? 'font-size:13px;font-weight:600;color:#8A5A12;background:#FDF0D5;border-radius:999px;padding:2px 9px;justify-self:start' : 'font-size:13.5px;color:#4A463F',
+        prof: c[1],
+        initial: c[1][0],
+        avatar: 'width:28px;height:28px;flex-shrink:0;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;background:' + av[0] + ';color:' + av[1],
+        occ: c[2] + '/8',
+        bar: 'height:100%;border-radius:999px;width:' + Math.round(c[2] / 8 * 100) + '%;background:' + (c[2] >= 8 ? '#2F4A36' : accent)
+      };
+    });
+    const dayIdx = day === 5 ? [0, 1, 2, 3, 4] : [day];
+    const groups = dayIdx.map((i) => {
+      const rows = mkRows(data[i]);
+      const taken = data[i].reduce((s, c) => s + c[2], 0);
+      return { name: names[i], rows, summary: data[i].length + ' clases · ' + taken + ' de ' + data[i].length * 8 + ' lugares fijos ocupados' };
+    }).filter((g) => g.rows.length > 0);
+    const tabs = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Todos'];
+    const counts = data.map((d) => d.length);
+    const dayTabs = tabs.map((t, i) => {
+      const on = day === i;
+      return {
+        label: t, active: on, count: i === 5 ? counts.reduce((a, b) => a + b, 0) : counts[i],
+        pick: () => this.setState({ day: i }),
+        style: 'height:36px;padding:0 12px;border-radius:9px;border:none;font-size:13.5px;display:inline-flex;align-items:center;gap:6px;' + (on ? 'background:#FFFFFF;color:#2B2A26;font-weight:600;box-shadow:0 1px 3px rgba(43,42,38,0.12)' : 'background:transparent;color:#4A463F'),
+        countStyle: 'font-size:11.5px;font-weight:600;color:#6B6459'
+      };
+    });
+    return { accent, groups, dayTabs, onProf: (e) => this.setState({ prof: e.target.value }) };
+  }
+}
+</script>
+</body>
+</html>
