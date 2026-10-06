@@ -99,6 +99,30 @@ export function suggestNextPaymentDate(currentEndDate: string | null): string {
   return new Date(Date.UTC(y, m - 1 + monthsAhead + 1, 0)).toISOString().slice(0, 10)
 }
 
+// ¿Se le perdona el recargo a esta cuota?
+// - 'manual': el estudio lo perdonó para esta cuota (se guarda el "pagado hasta" de ese momento: al pagar, vence solo).
+// - 'primer_mes': un alumno que se dio de alta este mes no paga recargo ese primer mes.
+export type SurchargeSub = {
+  end_date?: string | null
+  created_at?: string | null
+  surcharge_waived_end_date?: string | null
+}
+
+const ART_TZ = 'America/Argentina/Buenos_Aires'
+
+export function isFirstMonth(sub: SurchargeSub | null | undefined, today: string = todayART()) {
+  if (!sub?.created_at) return false
+  const created = new Intl.DateTimeFormat('en-CA', { timeZone: ART_TZ }).format(new Date(sub.created_at))
+  return created.slice(0, 7) === today.slice(0, 7)
+}
+
+export function surchargeWaiver(sub: SurchargeSub | null | undefined, today: string = todayART()): 'manual' | 'primer_mes' | null {
+  if (!sub) return null
+  if (sub.surcharge_waived_end_date && sub.surcharge_waived_end_date === sub.end_date) return 'manual'
+  if (isFirstMonth(sub, today)) return 'primer_mes'
+  return null
+}
+
 // Si ya venció el margen de gracia, se le suma el recargo (10% por default) a la cuota.
 export function applyLateSurcharge(
   baseAmount: number,

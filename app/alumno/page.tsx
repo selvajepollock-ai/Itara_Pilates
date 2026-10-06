@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { AlertTriangle, CalendarDays } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { formatTime } from '@/lib/day-names'
-import { subscriptionStatus } from '@/lib/billing'
+import { subscriptionStatus, surchargeWaiver } from '@/lib/billing'
 import { hoursUntil, isInPast } from '@/lib/sessions'
 import { getDailyQuote } from '@/lib/quotes'
 import { AnnouncementsBanner } from '@/app/components/announcements-banner'
@@ -90,7 +90,7 @@ export default async function AlumnoDashboard() {
     supabase.from('profiles').select('full_name').eq('id', studentId).single(),
     supabase
       .from('subscriptions')
-      .select('end_date, comp, plans(name)')
+      .select('*, plans(name)')
       .eq('student_id', studentId)
       .eq('status', 'active')
       .maybeSingle(),
@@ -391,8 +391,16 @@ export default async function AlumnoDashboard() {
           <p>
             {status === 'vencido' ? (
               <>
-                Tu cuota está <span className="font-medium">vencida</span> y tiene recargo. Si ya la pagaste, avisale al
-                estudio; si no, hacelo cuanto antes.
+                {surchargeWaiver(subscription as Parameters<typeof surchargeWaiver>[0]) ? (
+                  <>
+                    Tu cuota está <span className="font-medium">pendiente de pago</span>. Si ya la pagaste, avisale al estudio.
+                  </>
+                ) : (
+                  <>
+                    Tu cuota está <span className="font-medium">vencida</span> y tiene recargo. Si ya la pagaste, avisale al
+                    estudio; si no, hacelo cuanto antes.
+                  </>
+                )}
               </>
             ) : (
               <>

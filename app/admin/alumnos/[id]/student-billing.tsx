@@ -6,11 +6,14 @@ import {
   STATUS_CLASSES,
   suggestNextPaymentDate,
   applyLateSurcharge,
+  isFirstMonth,
+  surchargeWaiver,
 } from '@/lib/billing'
 import { formatARS } from '@/lib/currency'
 import { todayART } from '@/lib/dates'
 import Link from 'next/link'
 import { AssignPlanForm } from './assign-plan-form'
+import { WaiveSurchargeButton } from './waive-surcharge-button'
 import { RegisterPaymentForm } from './register-payment-form'
 import { PlanSectionToggle } from './plan-section-toggle'
 import { PaymentRowActions } from '../../pagos/registro/payment-row-actions'
@@ -22,7 +25,7 @@ export async function StudentBilling({ studentId, studentName }: { studentId: st
     supabase.from('plans').select('id, name, price').eq('active', true).order('price'),
     supabase
       .from('subscriptions')
-      .select('id, plan_id, end_date, comp, comp_reason, plans(name, price)')
+      .select('*, plans(name, price)')
       .eq('student_id', studentId)
       .eq('status', 'active')
       .maybeSingle(),
@@ -50,7 +53,12 @@ export async function StudentBilling({ studentId, studentName }: { studentId: st
   const previousMonthEnd = new Date(Date.UTC(artYear, artMonth - 1, 0)).toISOString().slice(0, 10)
 
   const planInfo = subscription?.plans as unknown as { name: string; price: number } | null
-  const { amount: amountWithSurcharge, hasSurcharge } = applyLateSurcharge(planInfo?.price ?? 0, billingStatus)
+  // El recargo no corre en el primer mes de un alumno nuevo ni cuando el estudio lo perdonó para esta cuota.
+  const waiver = surchargeWaiver(subscription as Parameters<typeof surchargeWaiver>[0])
+  const raw = applyLateSurcharge(planInfo?.price ?? 0, billingStatus)
+  const hasSurcharge = raw.hasSurcharge && !waiver
+  const amountWithSurcharge = hasSurcharge ? raw.amount : planInfo?.price ?? 0
+  const firstPayment = status === 'vencido' && isFirstMonth(subscription as Parameters<typeof isFirstMonth>[0]) && (payments ?? []).length === 0
 
   // Fecha de vencimiento real (con margen de gracia): día `dueDay` del mes siguiente
   // al que ya está cubierto.
@@ -67,7 +75,7 @@ export async function StudentBilling({ studentId, studentName }: { studentId: st
       <div className="flex items-center justify-between">
         <p className="eyebrow">Cuota</p>
         <span className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_CLASSES[status]}`}>
-          {STATUS_LABEL[status]}
+          {firstPayment ? 'Pendiente de primer pago' : STATUS_LABEL[status]}
         </span>
       </div>
 
@@ -99,9 +107,21 @@ export async function StudentBilling({ studentId, studentName }: { studentId: st
                 </p>
               )}
               {hasSurcharge && (
-                <p className="mt-1 text-xs font-medium text-clay">
-                  Pasó el margen de pago — con recargo del 10% debe {formatARS(amountWithSurcharge)}.
-                </p>
+                <>
+                  <p className="mt-1 text-xs font-medium text-clay">
+                    Pasó el margen de pago — con recargo del 10% debe {formatARS(amountWithSurcharge)}.
+                  </p>
+                  <WaiveSurchargeButton subscriptionId={subscription.id} mode="waive" />
+                </>
+              )}
+              {waiver === 'manual' && (
+                <>
+                  <p className="mt-1 text-xs text-ink/50">Recargo perdonado para esta cuota.</p>
+                  <WaiveSurchargeButton subscriptionId={subscription.id} mode="restore" />
+                </>
+              )}
+              {waiver === 'primer_mes' && status === 'vencido' && (
+                <p className="mt-1 text-xs text-ink/50">Es su primer mes: no lleva recargo.</p>
               )}
             </>
           )}

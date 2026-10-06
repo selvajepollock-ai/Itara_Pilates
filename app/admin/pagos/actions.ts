@@ -99,6 +99,38 @@ export async function registerPayment(subscriptionId: string, studentId: string,
   return { success: true }
 }
 
+/** Perdona el recargo de la cuota actual (vale hasta el próximo pago: después vuelve a correr la regla normal). */
+export async function waiveSurcharge(subscriptionId: string) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+
+  const { data: sub } = await auth.supabase.from('subscriptions').select('end_date').eq('id', subscriptionId).maybeSingle()
+  if (!sub) return { error: 'La suscripción no existe.' }
+
+  const { error } = await auth.supabase
+    .from('subscriptions')
+    .update({ surcharge_waived_end_date: sub.end_date })
+    .eq('id', subscriptionId)
+  if (error) return { error: error.message.includes('surcharge_waived') ? 'Falta correr la migración 049 en Supabase.' : error.message }
+
+  revalidatePath('/admin/alumnos')
+  revalidatePath('/admin/pagos')
+  return { success: true }
+}
+
+/** Vuelve a aplicar el recargo que se había perdonado. */
+export async function restoreSurcharge(subscriptionId: string) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+
+  const { error } = await auth.supabase.from('subscriptions').update({ surcharge_waived_end_date: null }).eq('id', subscriptionId)
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/alumnos')
+  revalidatePath('/admin/pagos')
+  return { success: true }
+}
+
 /** Anula un pago mal cargado (queda registrado el motivo, no se borra). */
 export async function annulPayment(paymentId: string, reason: string) {
   const auth = await assertAdmin()

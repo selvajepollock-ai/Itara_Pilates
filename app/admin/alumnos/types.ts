@@ -16,6 +16,10 @@ export type StudentRow = {
   hasSurcharge: boolean
   /** Cuota con recargo, si aplica. */
   surchargeAmount: number | null
+  /** Se le perdonó el recargo a esta cuota (a mano) o está en su primer mes. */
+  surchargeWaived: boolean
+  /** Alumno nuevo sin su primer pago. */
+  firstPayment: boolean
   planId: string | null
   planName: string | null
   planPrice: number
