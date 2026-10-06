@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { todayART } from '@/lib/dates'
 import { AnnouncementPopup } from './announcement-popup'
 
 type Announcement = {
@@ -15,7 +16,7 @@ export async function AnnouncementsBanner() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayART()
 
   const [{ data: announcements }, { data: profile }, { data: dismissals }] = await Promise.all([
     supabase

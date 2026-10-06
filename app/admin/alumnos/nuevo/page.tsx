@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { suggestNextDueDate } from '@/lib/billing'
+import { todayART } from '@/lib/dates'
 import { DAY_ORDER } from '@/lib/day-names'
 import { NewStudentForm } from './new-student-form'
 import type { ClassOption } from '../[id]/schedule-form'
@@ -47,7 +48,7 @@ export default async function NuevoAlumnoPage({
   ])
 
   const dueDay = settings?.payment_due_day ?? 10
-  const defaultEndDate = suggestNextDueDate(new Date(), dueDay)
+  const defaultEndDate = suggestNextDueDate(new Date(`${todayART()}T12:00:00`), dueDay)
 
   const countByClass = new Map<string, number>()
   for (const e of enrollments ?? []) countByClass.set(e.class_id, (countByClass.get(e.class_id) ?? 0) + 1)

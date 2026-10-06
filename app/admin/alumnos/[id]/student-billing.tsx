@@ -183,7 +183,7 @@ export async function StudentBilling({ studentId, studentName }: { studentId: st
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className="whitespace-nowrap">
-                          {new Date(p.paid_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
+                          {new Date(p.paid_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', timeZone: 'America/Argentina/Buenos_Aires' })}
                         </span>
                         <span className={voided ? 'line-through' : 'font-medium text-ink'}>
                           {formatARS(p.amount)}
@@ -223,7 +223,7 @@ export async function StudentBilling({ studentId, studentName }: { studentId: st
                       return (
                         <tr key={p.id} className={`border-b border-sand/50 last:border-0 ${voided ? 'text-ink/35' : 'text-ink/70'}`}>
                           <td className="whitespace-nowrap px-3 py-2">
-                            {new Date(p.paid_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
+                            {new Date(p.paid_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', timeZone: 'America/Argentina/Buenos_Aires' })}
                           </td>
                           <td className={`whitespace-nowrap px-3 py-2 text-right ${voided ? 'line-through' : 'font-medium text-ink'}`}>
                             {formatARS(p.amount)}

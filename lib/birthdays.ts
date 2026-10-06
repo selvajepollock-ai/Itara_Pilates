@@ -1,4 +1,7 @@
-export function daysUntilNextBirthday(birthDate: string, today: Date = new Date()) {
+import { todayART } from './dates'
+
+// "Hoy" es el día en Argentina (el servidor está en UTC): si no, un cumpleaños de hoy desaparecería a la noche.
+export function daysUntilNextBirthday(birthDate: string, today: Date = new Date(`${todayART()}T12:00:00`)) {
   const [, month, day] = birthDate.split('-').map(Number)
   const year = today.getFullYear()
 

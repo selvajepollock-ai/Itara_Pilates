@@ -39,6 +39,8 @@ async function assertAdmin() {
   return { ok: true as const, supabase, userId: user.id }
 }
 
+const weekdayOf = (iso: string) => new Date(`${iso}T12:00:00Z`).getUTCDay()
+
 export async function cancelSession({
   studentId,
   enrollmentId,
@@ -56,11 +58,14 @@ export async function cancelSession({
 
   const { data: classInfo } = await supabase
     .from('classes')
-    .select('start_time, class_type_id, instructor_id')
+    .select('start_time, class_type_id, instructor_id, day_of_week')
     .eq('id', classId)
     .maybeSingle()
 
   if (!classInfo) return { error: 'La clase no existe.' }
+  // La fecha tiene que ser un día en que esa clase realmente se da, y todavía no haber empezado.
+  if (weekdayOf(sessionDate) !== classInfo.day_of_week) return { error: 'Esa fecha no corresponde al día de esa clase.' }
+  if (hoursUntil(sessionDate, classInfo.start_time) < 0) return { error: 'Esa clase ya empezó o ya pasó.' }
 
   const { data: enrollmentInfo } = await supabase
     .from('enrollments')
@@ -263,12 +268,13 @@ export async function bookRecovery({
 
   const { data: targetClass } = await supabase
     .from('classes')
-    .select('id, class_type_id, instructor_id, capacity, start_time')
+    .select('id, class_type_id, instructor_id, capacity, start_time, day_of_week')
     .eq('id', classId)
     .maybeSingle()
 
   if (!targetClass) return { error: 'La clase no existe.' }
   if (isInPast(sessionDate, targetClass.start_time)) return { error: 'Esa clase ya empezó.' }
+  if (weekdayOf(sessionDate) !== targetClass.day_of_week) return { error: 'Esa fecha no corresponde al día de esa clase.' }
   if (targetClass.class_type_id !== credit.class_type_id) {
     return { error: 'Esa clase es de otro tipo, no coincide con lo que tenés para recuperar.' }
   }
@@ -298,6 +304,10 @@ export async function bookRecovery({
 
   const occupancy = (enrolledCount ?? 0) - (cancelledCount ?? 0) + (recoveringCount ?? 0)
   if (occupancy >= targetClass.capacity) return { error: 'Esa clase ya está completa.' }
+
+  // Ni un feriado.
+  const { data: holiday } = await admin.from('holidays').select('date').eq('date', sessionDate).maybeSingle()
+  if (holiday) return { error: 'Ese día es feriado.' }
 
   // Esa clase no puede estar cancelada por el estudio ese día.
   const { data: studioCancelled } = await admin

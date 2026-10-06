@@ -6,8 +6,18 @@ import { formatTime } from '@/lib/day-names'
 import { dayDate } from '../alumno/format'
 import type { InboxItem } from './notification-types'
 
+async function isAdminUser(supabase: Awaited<ReturnType<typeof createClient>>) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return false
+  const { data } = await supabase.from('profiles').select('roles').eq('id', user.id).maybeSingle()
+  return Boolean(data?.roles?.includes('admin'))
+}
+
 export async function getNotificationCounts() {
   const supabase = await createClient()
+  if (!(await isAdminUser(supabase))) return { pendingCount: 0, birthdaysToday: 0, pendingSignups: 0 }
 
   const [
     { count: pendingRecoveries },
@@ -54,6 +64,7 @@ export async function getNotificationCounts() {
  */
 export async function getNotificationInbox(): Promise<{ items: InboxItem[] }> {
   const supabase = await createClient()
+  if (!(await isAdminUser(supabase))) return { items: [] }
 
   const [
     { data: signups },
