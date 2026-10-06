@@ -32,6 +32,7 @@ Los puntos 2 y 4 pueden resolverse en la presentación si los datos ya traen lo 
 | 12 | Recordatorio de pago | Si no existe, enviar un aviso a quienes tienen la cuota vencida (individual y masivo) |
 | 13 | Buscador global (Ctrl + K) | Saltar a cualquier alumno o acción desde cualquier pantalla |
 | 14 | Lectura de comunicados | Ver "visto por N de M" en cada comunicado enviado |
+| 15 | Validez de las clases sueltas compradas | Hoy la escala de precios es por compra (1, 2, 3, 4+ clases) y se paga todo junto, incluso de distintas semanas. A evaluar: hasta cuándo se pueden tomar las clases ya pagadas (¿vencen?) y qué pasa si se compran en dos veces |
 
 ## Cómo encararlos
 

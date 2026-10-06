@@ -5,6 +5,7 @@ import { formatARS } from '@/lib/currency'
 import { subscriptionDisplayStatus, type PaymentStatus } from '@/lib/billing'
 import { collectionSummary } from '@/lib/payments'
 import { artMonthStart } from '@/lib/dates'
+import { groupPurchases, type ChargeRow } from '@/lib/purchases'
 import { loadQuickPaymentStudents } from '@/lib/quick-payment-students'
 import { loadStudentRows } from '@/lib/student-rows'
 import { StatCard } from '@/app/components/stat-card'
@@ -23,13 +24,14 @@ type PlanRef = { name: string; price: number } | null
 const ART = 'America/Argentina/Buenos_Aires'
 const dayART = (ts: string) => new Intl.DateTimeFormat('en-CA', { timeZone: ART }).format(new Date(ts))
 
-const STATUS_ORDER: PaymentStatus[] = ['al_dia', 'por_vencer', 'vencido', 'sin_plan', 'bonificado']
+const STATUS_ORDER: PaymentStatus[] = ['al_dia', 'por_vencer', 'vencido', 'sin_plan', 'sueltas', 'bonificado']
 const BAR_COLOR: Record<PaymentStatus, string> = {
   al_dia: 'bg-state-ok',
   por_vencer: 'bg-state-soon',
   vencido: 'bg-state-due',
   sin_plan: 'bg-state-none',
   bonificado: 'bg-state-free',
+  sueltas: 'bg-state-soon',
 }
 const PREVIEW_LIMIT = 6
 
@@ -77,7 +79,7 @@ export default async function PagosResumenPage({ searchParams }: { searchParams:
     // Clases sueltas todavía sin cobrar (solo lectura): no son pagos, por eso no están en el Registro.
     supabase
       .from('extra_charges')
-      .select('id, description, amount, student_id, profiles(full_name)')
+      .select('*, profiles(full_name)')
       .eq('paid', false)
       .eq('comp', false)
       .order('created_at', { ascending: false }),
@@ -102,7 +104,7 @@ export default async function PagosResumenPage({ searchParams }: { searchParams:
   const collectedToday = paymentsToday.reduce((s, p) => s + Number(p.amount), 0)
 
   // Estados de cuota
-  const counts: Record<PaymentStatus, number> = { al_dia: 0, por_vencer: 0, vencido: 0, sin_plan: 0, bonificado: 0 }
+  const counts: Record<PaymentStatus, number> = { al_dia: 0, por_vencer: 0, vencido: 0, sin_plan: 0, bonificado: 0, sueltas: 0 }
   const overdue: { studentId: string; endDate: string | null; planName: string | null; amount: number }[] = []
   const studentsWithSub = new Set<string>()
   for (const s of subs) {
@@ -115,6 +117,9 @@ export default async function PagosResumenPage({ searchParams }: { searchParams:
     }
   }
   counts.sin_plan = students.filter((s) => !studentsWithSub.has(s.id)).length
+  // Quienes no tienen plan pero compraron clases sueltas se cuentan aparte (no como "sin plan").
+  counts.sueltas = studentRows.filter((r) => r.status === 'sueltas').length
+  counts.sin_plan = Math.max(counts.sin_plan - counts.sueltas, 0)
   overdue.sort((a, b) => (a.endDate ?? '').localeCompare(b.endDate ?? ''))
   const totalStudents = STATUS_ORDER.reduce((n, k) => n + counts[k], 0)
 
@@ -147,12 +152,15 @@ export default async function PagosResumenPage({ searchParams }: { searchParams:
   }
   const trend = [...trendMap.entries()]
 
-  const pending = (pendingData ?? []).map((c) => ({
-    id: c.id as string,
-    studentId: (c.student_id as string | null) ?? null,
-    name: (c.profiles as unknown as { full_name: string } | null)?.full_name ?? 'Alumno',
-    description: (c.description as string | null) ?? 'Clase suelta',
-    amount: Number(c.amount),
+  // Clases sueltas por cobrar: una fila por compra (varias clases se cobran juntas).
+  const nameOfStudent = new Map((pendingData ?? []).map((c) => [c.student_id as string, (c.profiles as unknown as { full_name: string } | null)?.full_name ?? 'Alumno']))
+  const pending = groupPurchases(pendingData as unknown as ChargeRow[]).map((p) => ({
+    key: p.key,
+    ids: p.ids,
+    name: nameOfStudent.get(p.studentId) ?? 'Alumno',
+    description: p.count === 1 ? (p.rows[0].description ?? 'Clase suelta') : `${p.count} clases sueltas`,
+    amount: p.total,
+    count: p.count,
   }))
 
   // Recargo del 10%: solo texto derivado de la fecha de hoy (no calcula montos).

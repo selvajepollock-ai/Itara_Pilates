@@ -18,6 +18,7 @@ const CHIPS: Partial<Record<ClassState, Chip>> = {
   tarde: { label: 'Avisaste tarde', cls: 'bg-slot-full text-slot-full-ink' },
   studio: { label: 'Cancelada por el estudio', cls: 'bg-slot-cancel text-slot-cancel-ink' },
   recovery: { label: 'Recuperación', cls: 'bg-info-soft text-info-ink' },
+  suelta: { label: 'Clase suelta', cls: 'bg-edge-row text-ink' },
 }
 
 const STRUCK: ClassState[] = ['avisaste-credito', 'avisaste-pedido', 'avisaste-usada', 'avisaste-vencida', 'tarde', 'studio']

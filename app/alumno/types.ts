@@ -22,6 +22,7 @@ export type ClassState =
   | 'tarde'
   | 'studio'
   | 'recovery'
+  | 'suelta'
   | 'past'
 
 export type ClassRowData = {

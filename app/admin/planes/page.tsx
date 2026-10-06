@@ -4,11 +4,15 @@ import type { PlanItem } from './plan-math'
 
 export default async function PlanesPage() {
   const supabase = await createClient()
-  const [{ data: plans }, { data: subs }, { data: students }] = await Promise.all([
+  const [{ data: plans }, { data: subs }, { data: students }, { data: settings }] = await Promise.all([
     supabase.from('plans').select('id, name, price, active, category, classes_per_week').order('price'),
     // Solo lectura: suscripciones activas, para contar alumnos por plan.
     supabase.from('subscriptions').select('student_id, plan_id, comp').eq('status', 'active'),
     supabase.from('profiles').select('id, active').contains('roles', ['student']),
+    supabase
+      .from('studio_settings')
+      .select('drop_in_price_1, drop_in_price_2, drop_in_price_3, drop_in_price_4_plus')
+      .maybeSingle(),
   ])
 
   const activeStudents = new Set((students ?? []).filter((s) => s.active !== false).map((s) => s.id as string))
@@ -32,5 +36,12 @@ export default async function PlanesPage() {
     paying: counts.get(p.id as string)?.paying ?? 0,
   }))
 
-  return <PlansView plans={items} />
+  const dropIn = {
+    p1: Number(settings?.drop_in_price_1 ?? 10000),
+    p2: Number(settings?.drop_in_price_2 ?? 9000),
+    p3: Number(settings?.drop_in_price_3 ?? 8000),
+    p4: Number(settings?.drop_in_price_4_plus ?? 7000),
+  }
+
+  return <PlansView plans={items} dropIn={dropIn} />
 }

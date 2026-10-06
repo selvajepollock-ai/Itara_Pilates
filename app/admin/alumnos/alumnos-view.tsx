@@ -39,7 +39,7 @@ import {
 
 type SortKey = 'nombre' | 'plan' | 'profesor' | 'estado' | 'pago'
 const SORT_KEYS: SortKey[] = ['nombre', 'plan', 'profesor', 'estado', 'pago']
-const STATE_RANK: Record<PaymentStatus, number> = { vencido: 0, por_vencer: 1, sin_plan: 2, bonificado: 3, al_dia: 4 }
+const STATE_RANK: Record<PaymentStatus, number> = { vencido: 0, por_vencer: 1, sin_plan: 2, sueltas: 3, bonificado: 4, al_dia: 5 }
 
 function useMediaQuery(query: string) {
   const [matches, setMatches] = useState(false)
@@ -130,7 +130,7 @@ export function AlumnosView({
   }, [students])
 
   const counts = useMemo(() => {
-    const c: Record<PaymentStatus, number> = { al_dia: 0, por_vencer: 0, vencido: 0, sin_plan: 0, bonificado: 0 }
+    const c: Record<PaymentStatus, number> = { al_dia: 0, por_vencer: 0, vencido: 0, sin_plan: 0, bonificado: 0, sueltas: 0 }
     for (const s of students) c[s.status]++
     return c
   }, [students])
@@ -178,6 +178,13 @@ export function AlumnosView({
   const hasAnyFilter = !!(estado || q || profesor || plan)
 
   // ── Acciones ──────────────────────────────────────────────────────────────────────────────
+  /** Plan o, si no tiene plan, sus clases sueltas. */
+  function planCell(s: StudentRow) {
+    if (s.planName) return s.planName
+    if (s.dropInCount > 0) return `${s.dropInCount} ${s.dropInCount === 1 ? 'clase suelta' : 'clases sueltas'}${s.dropInUnpaid > 0 ? ' · por cobrar' : ''}`
+    return '—'
+  }
+
   function toggleSort(key: SortKey) {
     if (sortKey === key) setFilter({ orden: key, dir: sortDir === 'asc' ? 'desc' : 'asc' })
     else setFilter({ orden: key, dir: null })
@@ -419,7 +426,7 @@ export function AlumnosView({
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-2 text-ink/80">{s.planName ?? '—'}</td>
+                  <td className="px-4 py-2 text-ink/80">{planCell(s)}</td>
                   <td className="px-4 py-2">
                     {s.instructorName ? (
                       <span className="text-ink/80">{s.instructorName}</span>
@@ -511,7 +518,7 @@ export function AlumnosView({
                       <span className="block truncate text-sm font-medium text-ink">{s.fullName}</span>
                       <span className="flex items-center gap-1.5 truncate text-[13px] text-muted">
                         <StatusDot status={s.status} surcharge={s.hasSurcharge} className="!text-[13px]" />
-                        {s.planName && <span className="truncate">· {s.planName}</span>}
+                        {planCell(s) !== '—' && <span className="truncate">· {planCell(s)}</span>}
                       </span>
                     </span>
                   </Link>

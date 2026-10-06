@@ -576,6 +576,8 @@ export async function addExtraClassesBatch({
             : settings?.drop_in_price_4_plus ?? 7000
   }
 
+  const batchId = crypto.randomUUID()
+
   for (const sel of selections) {
     const { data: targetClass } = await supabase
       .from('classes')
@@ -641,14 +643,19 @@ export async function addExtraClassesBatch({
       return { error: attendanceError.message }
     }
 
-    const { error: chargeError } = await supabase.from('extra_charges').insert({
+    const chargeRow = {
       student_id: studentId,
       recovery_credit_id: credit.id,
       description: hasPlan
         ? `Clase extra — ${sel.sessionDate}`
         : `Clase suelta (${selections.length}) — ${sel.sessionDate}`,
       amount: unitPrice,
-    })
+    }
+    // batch_id agrupa las clases de una misma compra. Si la migración todavía no se corrió, se guarda sin agrupar.
+    let { error: chargeError } = await supabase.from('extra_charges').insert({ ...chargeRow, batch_id: batchId })
+    if (chargeError?.message.includes('batch_id')) {
+      ;({ error: chargeError } = await supabase.from('extra_charges').insert(chargeRow))
+    }
 
     if (chargeError) return { error: chargeError.message }
   }
