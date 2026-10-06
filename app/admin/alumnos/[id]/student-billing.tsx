@@ -8,6 +8,7 @@ import {
   applyLateSurcharge,
 } from '@/lib/billing'
 import { formatARS } from '@/lib/currency'
+import { todayART } from '@/lib/dates'
 import Link from 'next/link'
 import { AssignPlanForm } from './assign-plan-form'
 import { RegisterPaymentForm } from './register-payment-form'
@@ -45,6 +46,8 @@ export async function StudentBilling({ studentId, studentName }: { studentId: st
   const status = subscriptionDisplayStatus(subscription ?? null, reminderDays)
   const billingStatus = subscriptionStatus(subscription ?? null, reminderDays, dueDay)
   const suggestedNextDate = suggestNextPaymentDate(subscription?.end_date ?? null)
+  const [artYear, artMonth] = todayART().split('-').map(Number)
+  const previousMonthEnd = new Date(Date.UTC(artYear, artMonth - 1, 0)).toISOString().slice(0, 10)
 
   const planInfo = subscription?.plans as unknown as { name: string; price: number } | null
   const { amount: amountWithSurcharge, hasSurcharge } = applyLateSurcharge(planInfo?.price ?? 0, billingStatus)
@@ -130,7 +133,9 @@ export async function StudentBilling({ studentId, studentName }: { studentId: st
             studentId={studentId}
             plans={plans ?? []}
             currentPlanId={null}
-            defaultEndDate={suggestedNextDate}
+            // Un plan recién asignado no queda al día solo: arranca pendiente de cobro (fin del mes anterior).
+            defaultEndDate={previousMonthEnd}
+            hint="Si todavía no pagó, dejá la fecha como está: queda pendiente de cobro. Cuando pague, registrá el pago."
           />
         </div>
       )}

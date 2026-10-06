@@ -13,6 +13,7 @@ export function NewStudentForm({
   plans,
   classOptions,
   defaultEndDate,
+  previousMonthEnd,
   requestId,
   defaultFirstName = '',
   defaultLastName = '',
@@ -24,6 +25,8 @@ export function NewStudentForm({
   plans: Plan[]
   classOptions: ClassOption[]
   defaultEndDate: string
+  /** Último día del mes anterior: "todavía no pagó". */
+  previousMonthEnd: string
   requestId?: string
   defaultFirstName?: string
   defaultLastName?: string
@@ -37,6 +40,10 @@ export function NewStudentForm({
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [grantAccess, setGrantAccess] = useState(true)
+  // Un alumno nuevo NO queda al día solo por tener un plan: tiene que haber pagado.
+  const [payOption, setPayOption] = useState<'unpaid' | 'paid' | 'custom'>('unpaid')
+  const [customEnd, setCustomEnd] = useState(defaultEndDate)
+  const endDateValue = payOption === 'unpaid' ? previousMonthEnd : payOption === 'paid' ? defaultEndDate : customEnd
   const [planId, setPlanId] = useState('')
   const [selected, setSelected] = useState<Record<string, boolean>>({})
 
@@ -193,10 +200,35 @@ export function NewStudentForm({
               ))}
             </select>
           </div>
-          <div className="mt-3">
-            <label className={labelClass}>Pagado hasta</label>
-            <input type="date" name="end_date" defaultValue={defaultEndDate} className={inputClass} />
-          </div>
+          {planId && (
+            <fieldset className="mt-4">
+              <legend className={labelClass}>¿Ya pagó?</legend>
+              <div className="mt-2 space-y-2 text-sm text-ink">
+                {(
+                  [
+                    ['unpaid', 'Todavía no pagó (queda pendiente de cobro)'],
+                    ['paid', 'Ya pagó este mes (al día hasta fin de mes)'],
+                    ['custom', 'Elegir la fecha de "pagado hasta"'],
+                  ] as const
+                ).map(([key, label]) => (
+                  <label key={key} className="flex min-h-[40px] cursor-pointer items-center gap-2.5">
+                    <input
+                      type="radio"
+                      name="pay_option"
+                      checked={payOption === key}
+                      onChange={() => setPayOption(key)}
+                      className="h-4 w-4 accent-[#5B7561]"
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
+              {payOption === 'custom' && (
+                <input type="date" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)} className={`${inputClass} mt-2`} />
+              )}
+              <input type="hidden" name="end_date" value={endDateValue} />
+            </fieldset>
+          )}
         </div>
 
         <div className={`${cardClass} lg:col-span-2`}>

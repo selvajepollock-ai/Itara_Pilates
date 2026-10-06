@@ -14,6 +14,7 @@ export function AssignPlanForm({
   defaultEndDate,
   currentComp = false,
   currentCompReason = '',
+  hint,
 }: {
   studentId: string
   plans: Plan[]
@@ -21,6 +22,8 @@ export function AssignPlanForm({
   defaultEndDate: string
   currentComp?: boolean
   currentCompReason?: string
+  /** Aclaración debajo de "Pagado hasta". */
+  hint?: string
 }) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -111,6 +114,7 @@ export function AssignPlanForm({
             defaultValue={defaultEndDate}
             className="mt-1.5 w-full rounded-lg border border-sand bg-linen/40 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-moss focus:bg-white"
           />
+          {hint && <p className="mt-1.5 text-xs text-ink/50">{hint}</p>}
         </div>
       )}
 
