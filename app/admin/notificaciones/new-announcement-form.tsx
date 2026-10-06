@@ -71,7 +71,7 @@ export function NewAnnouncementForm({
   today: string
   birthdays: UpcomingBirthday[]
   /** Texto de un comunicado anterior ("Usar como modelo"). */
-  loaded: { text: string; nonce: number } | null
+  loaded: { text: string; nonce: number; modelId?: string } | null
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -124,7 +124,7 @@ export function NewAnnouncementForm({
   // "Usar como modelo" desde el historial: carga el texto en el paso 2.
   useEffect(() => {
     if (!loaded) return
-    setModelId(FREE_MODEL)
+    setModelId(loaded.modelId ?? FREE_MODEL)
     setMessage(loaded.text)
     setAutoText('')
     setNotice(null)

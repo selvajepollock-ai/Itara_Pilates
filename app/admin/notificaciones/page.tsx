@@ -6,12 +6,19 @@ import type { HistoryItem } from './announcements-history'
 import { ComunicadosView } from './comunicados-view'
 import type { ClassOption, UpcomingBirthday } from './new-announcement-form'
 import { daysUntilNextBirthday } from '@/lib/birthdays'
+import { ANNOUNCEMENT_MODELS } from './templates'
+import { dayDate } from '../../alumno/format'
 import type { Person } from './people-picker'
 
 const ART = 'America/Argentina/Buenos_Aires'
 const dayART = (ts: string) => new Intl.DateTimeFormat('en-CA', { timeZone: ART }).format(new Date(ts))
 
-export default async function ComunicadosPage() {
+export default async function ComunicadosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ modelo?: string; fecha?: string; motivo?: string }>
+}) {
+  const { modelo, fecha, motivo } = await searchParams
   const supabase = await createClient()
   const today = todayART()
 
@@ -105,6 +112,18 @@ export default async function ComunicadosPage() {
     }
   })
 
+  // Viene de Feriados y cierres: arma el modelo con el día y el motivo. Nada se publica solo.
+  const presetModel = ANNOUNCEMENT_MODELS.find((m) => m.id === modelo && (m.id === 'feriado' || m.id === 'cierre'))
+  const preset =
+    presetModel && fecha && /^d{4}-d{2}-d{2}$/.test(fecha)
+      ? {
+          modelId: presetModel.id,
+          text: presetModel.text
+            .replace('[día]', dayDate(fecha))
+            .replace('[motivo]', motivo?.trim() ? motivo.trim().replace(/^./, (c) => c.toLowerCase()) : '[motivo]'),
+        }
+      : null
+
   return (
     <div className="space-y-8">
       <div>
@@ -114,6 +133,7 @@ export default async function ComunicadosPage() {
         </p>
       </div>
       <ComunicadosView
+        preset={preset}
         classOptions={classOptions}
         people={people}
         counts={{ students, instructors }}

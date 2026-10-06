@@ -13,9 +13,11 @@ export function ComunicadosView(props: {
   today: string
   birthdays: UpcomingBirthday[]
   items: HistoryItem[]
+  /** Modelo precargado desde otra pantalla (ej: Feriados y cierres). */
+  preset?: { text: string; modelId: string } | null
 }) {
-  const [loaded, setLoaded] = useState<{ text: string; nonce: number } | null>(null)
-  const { items, ...formProps } = props
+  const [loaded, setLoaded] = useState<{ text: string; nonce: number; modelId?: string } | null>(props.preset ? { ...props.preset, nonce: 1 } : null)
+  const { items, preset: _preset, ...formProps } = props
   return (
     <>
       <NewAnnouncementForm {...formProps} loaded={loaded} />
