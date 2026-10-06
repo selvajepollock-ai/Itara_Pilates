@@ -34,18 +34,18 @@ export function OccupancyBar({ value, max, full }: { value: number; max: number;
 }
 
 /** Chips de una clase en una fecha: libres, +recuperar, ↻ recuperan, o "Completa". */
-export function CellChips({ fixedFree, freed, recovering }: { fixedFree: number; freed: number; recovering: number }) {
+export function CellChips({ fixedFree, freed, recovering, long = false }: { fixedFree: number; freed: number; recovering: number; long?: boolean }) {
   return (
     <div className="flex flex-wrap gap-1">
       {fixedFree > 0 && <SlotChip tone="free">{fixedFree === 1 ? '1 libre' : `${fixedFree} libres`}</SlotChip>}
       {freed > 0 && (
         <SlotChip tone="freed" title="Liberado por una cancelación: solo sirve para recuperar en esta fecha">
-          +{freed} recuperar
+          {long ? `+${freed} para recuperar` : (<><span className="lg:hidden">+{freed} recup.</span><span className="hidden lg:inline">+{freed} recuperar</span></>)}
         </SlotChip>
       )}
       {recovering > 0 && (
         <SlotChip tone="recover" title="Alumnos que vienen a recuperar en esta fecha">
-          {recovering}
+          {long ? (recovering === 1 ? '1 recupera' : `${recovering} recuperan`) : recovering}
         </SlotChip>
       )}
       {fixedFree === 0 && freed === 0 && <SlotChip tone="full">Completa</SlotChip>}
