@@ -68,6 +68,8 @@ export async function cancelSession({
   // La fecha tiene que ser un día en que esa clase realmente se da, y todavía no haber empezado.
   if (weekdayOf(sessionDate) !== classInfo.day_of_week) return { error: 'Esa fecha no corresponde al día de esa clase.' }
   if (hoursUntil(sessionDate, classInfo.start_time) < 0) return { error: 'Esa clase ya empezó o ya pasó.' }
+  const { data: holidayOnDate } = await admin.from('holidays').select('date').eq('date', sessionDate).maybeSingle()
+  if (holidayOnDate) return { error: 'Ese día es feriado: no hay clase y no hace falta avisar.' }
 
   const { data: enrollmentInfo } = await supabase
     .from('enrollments')
@@ -778,6 +780,9 @@ export async function cancelClassOccurrence({
 
   if (!classInfo) return { error: 'La clase no existe.' }
 
+  const { data: holidayOnDate } = await supabase.from('holidays').select('date').eq('date', sessionDate).maybeSingle()
+  if (holidayOnDate) return { error: 'Ese día es feriado: no genera recuperaciones. Si querés cerrar el estudio con recuperación, sacá el feriado.' }
+
   const { data: cancellation, error: cancelError } = await supabase
     .from('class_cancellations')
     .insert({
@@ -868,6 +873,28 @@ export async function cancelClassOccurrence({
   revalidatePath('/admin/avisos')
 
   return { success: true }
+}
+
+// Admin cierra el estudio un día: cancela todas las clases de esa fecha (con recuperación para cada alumno).
+export async function cancelDayOccurrences({ sessionDate, reason }: { sessionDate: string; reason?: string }) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
+
+  if (!/^d{4}-d{2}-d{2}$/.test(sessionDate)) return { error: 'Elegí una fecha.' }
+  const { data: holiday } = await supabase.from('holidays').select('date').eq('date', sessionDate).maybeSingle()
+  if (holiday) return { error: 'Ese día ya está cargado como feriado (sin recuperación). Sacalo de Feriados si querés cerrar con recuperación.' }
+
+  const { data: classes } = await supabase.from('classes').select('id').eq('active', true).eq('day_of_week', weekdayOf(sessionDate))
+  if (!classes || classes.length === 0) return { error: 'Ese día no hay clases.' }
+
+  let done = 0
+  for (const c of classes) {
+    const res = await cancelClassOccurrence({ classId: c.id as string, sessionDate, reason })
+    if (!res?.error) done++
+  }
+  if (done === 0) return { error: 'Todas las clases de ese día ya estaban canceladas.' }
+  return { success: true, count: done }
 }
 
 // Admin deshace la cancelación de una fecha puntual (por si fue un error).

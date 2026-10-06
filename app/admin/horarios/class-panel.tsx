@@ -47,6 +47,7 @@ export function ClassPanel({
 }) {
   const router = useRouter()
   const panelRef = useRef<HTMLElement>(null)
+  const swipeY = useRef<number | null>(null)
   useSidePanel(panelRef, { isMobile, onClose, resetKey: `${item.id}|${date}` })
 
   const info = cellInfo(item, date, occ)
@@ -85,14 +86,27 @@ export function ClassPanel({
   ]
 
   return (
+    <>
+    {/* Tablet y celular: hoja inferior; escritorio: panel a la derecha. */}
+    <button type="button" aria-label="Cerrar detalle" tabIndex={-1} onClick={onClose} className="fixed inset-0 z-40 cursor-default bg-ink/30 lg:hidden" />
     <aside
       ref={panelRef}
       tabIndex={-1}
       aria-label={`Detalle de la clase: ${title}`}
       {...(isMobile ? { role: 'dialog', 'aria-modal': true } : {})}
-      className="fixed inset-0 z-40 flex flex-col overflow-y-auto bg-white outline-none lg:inset-y-0 lg:left-auto lg:right-0 lg:w-[420px] lg:border-l lg:border-edge lg:shadow-[-12px_0_32px_rgba(43,42,38,0.08)]"
+      className="fixed inset-x-0 bottom-0 z-40 mx-auto flex max-h-[88vh] w-full flex-col overflow-y-auto rounded-t-[22px] bg-white outline-none md:max-h-[80vh] md:max-w-[640px] lg:inset-y-0 lg:bottom-auto lg:left-auto lg:right-0 lg:mx-0 lg:max-h-none lg:w-[420px] lg:max-w-none lg:rounded-none lg:border-l lg:border-edge lg:shadow-[-12px_0_32px_rgba(43,42,38,0.08)]"
     >
-      <div className="flex items-start gap-3 px-5 pb-4 pt-5">
+      <div
+        className="flex cursor-grab justify-center pt-2 lg:hidden"
+        onTouchStart={(e) => (swipeY.current = e.touches[0].clientY)}
+        onTouchEnd={(e) => {
+          if (swipeY.current !== null && e.changedTouches[0].clientY - swipeY.current > 60) onClose()
+          swipeY.current = null
+        }}
+      >
+        <span className="h-1.5 w-12 rounded-full bg-edge-strong" aria-hidden />
+      </div>
+      <div className="flex items-start gap-3 px-5 pb-4 pt-3 lg:pt-5">
         <div className="min-w-0 flex-1">
           <p className="text-sm text-muted">{item.typeName}</p>
           <h2 className="mt-0.5 font-display text-2xl font-normal italic leading-tight text-ink">{title}</h2>
@@ -145,7 +159,7 @@ export function ClassPanel({
           {(info.cancelledWhole ? item.fixed : coming).length === 0 ? (
             <p className="mt-2 text-sm text-muted">Nadie con lugar fijo.</p>
           ) : (
-            <ul className="mt-2 grid grid-cols-2 gap-x-2 gap-y-0.5 text-sm">
+            <ul className="mt-2 grid grid-cols-2 gap-x-2 md:grid-cols-3 lg:grid-cols-2 gap-y-0.5 text-sm">
               {(info.cancelledWhole ? item.fixed : coming).map((f) => (
                 <li key={f.enrollmentId} className="min-w-0">
                   <NameButton label={f.name} fullName={f.name} onClick={() => onOpenStudent(f.studentId)} className="w-full" />
@@ -197,16 +211,17 @@ export function ClassPanel({
         {date === today && !info.cancelledWhole && (
           <Link
             href="/instructor/pasar-lista"
-            className="inline-flex h-[38px] flex-1 items-center justify-center rounded-[10px] bg-moss px-4 text-sm font-semibold text-white transition hover:bg-moss-dark"
+            className="inline-flex h-[50px] flex-1 items-center justify-center rounded-[10px] bg-moss px-4 lg:h-[38px] text-sm font-semibold text-white transition hover:bg-moss-dark"
           >
             Pasar lista
           </Link>
         )}
         {/* TODO: "Ver asistencia" para clases ya pasadas (falta una vista de solo lectura por fecha). */}
         <div className="ml-auto">
-          <DropdownMenu label="Más acciones de la clase" items={menu} buttonClassName="h-[38px] w-[38px]" openUp />
+          <DropdownMenu label="Más acciones de la clase" items={menu} buttonClassName="h-11 w-11 lg:h-[38px] lg:w-[38px]" openUp />
         </div>
       </div>
     </aside>
+    </>
   )
 }

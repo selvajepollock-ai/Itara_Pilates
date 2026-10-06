@@ -59,7 +59,7 @@ export function weekTotals(classes: ClassItem[], columns: DayColumn[], occ: Occu
 export function WeekTab({ classes, columns, occ, today, selected, mobileDate, onMobileDate, onOpen }: Props) {
   const daysKey = columns.map((c) => c.dow).join(',')
   const rows = useMemo(() => buildRows(classes, daysKey.split(',').map(Number)), [classes, daysKey])
-  const gridCols = `64px repeat(${columns.length}, minmax(0, 1fr))`
+  const gridVars = { '--n': columns.length } as React.CSSProperties
 
   const mobileCol = columns.find((c) => c.date === mobileDate) ?? columns[0]
   const mobileClasses = classes.filter((c) => c.dow === mobileCol.dow).sort((a, b) => a.start.localeCompare(b.start))
@@ -67,8 +67,8 @@ export function WeekTab({ classes, columns, occ, today, selected, mobileDate, on
   return (
     <>
       {/* ── Escritorio ─────────────────────────────────────────────── */}
-      <div className="surface-card hidden overflow-hidden lg:block">
-        <div className="grid" style={{ gridTemplateColumns: gridCols }}>
+      <div className="surface-card hidden overflow-hidden md:block">
+        <div className="grid grid-cols-[52px_repeat(var(--n),minmax(0,1fr))] lg:grid-cols-[64px_repeat(var(--n),minmax(0,1fr))]" style={gridVars}>
           <div className={`${GRID_BORDER} bg-edge-head`} />
           {columns.map((col) => {
             const isToday = col.date === today
@@ -113,7 +113,7 @@ export function WeekTab({ classes, columns, occ, today, selected, mobileDate, on
       </div>
 
       {/* ── Celular ────────────────────────────────────────────────── */}
-      <div className="lg:hidden">
+      <div className="md:hidden">
         <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}>
           {columns.map((col) => {
             const active = col.date === mobileCol.date
@@ -168,7 +168,7 @@ export function WeekTab({ classes, columns, occ, today, selected, mobileDate, on
                           max={c.capacity}
                           full={info.fixedFree === 0 && info.freed === 0}
                         />
-                        <CellChips fixedFree={info.fixedFree} freed={info.freed} recovering={info.recovering.length} />
+                        <CellChips fixedFree={info.fixedFree} freed={info.freed} recovering={info.recovering.length} long />
                       </>
                     )}
                   </div>
@@ -205,12 +205,12 @@ function WeekRow({
       </div>
       {columns.map((col) => {
         const c = row.get(col.dow)
-        if (!c) return <div key={col.date} className={`${GRID_BORDER} min-h-[84px] bg-slot-empty`} />
+        if (!c) return <div key={col.date} className={`${GRID_BORDER} min-h-[76px] bg-slot-empty lg:min-h-[84px]`} />
         if (col.holiday)
           return (
             <div
               key={col.date}
-              className={`${GRID_BORDER} flex min-h-[84px] items-center justify-center bg-slot-empty text-xs text-muted`}
+              className={`${GRID_BORDER} flex min-h-[76px] items-center justify-center bg-slot-empty text-xs text-muted lg:min-h-[84px]`}
             >
               Feriado
             </div>
@@ -225,7 +225,7 @@ function WeekRow({
             aria-label={ariaLabel(c, info, col.dow)}
             aria-pressed={isSelected}
             onClick={() => onOpen(c.id, col.date)}
-            className={`${GRID_BORDER} flex min-h-[84px] flex-col justify-between gap-2 p-2.5 text-left transition ${cellClasses(isSelected, info.cancelledWhole)}`}
+            className={`${GRID_BORDER} flex min-h-[76px] flex-col justify-between gap-2 p-2 text-left transition lg:min-h-[84px] lg:p-2.5 [&_span]:text-[10.5px] lg:[&_span]:text-[11px] ${cellClasses(isSelected, info.cancelledWhole)}`}
           >
             {info.cancelledWhole ? (
               <>
@@ -235,12 +235,12 @@ function WeekRow({
             ) : (
               <>
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-[15px] font-semibold tabular-nums text-ink">
+                  <span className="!text-[14.5px] font-semibold tabular-nums text-ink lg:!text-[15px]">
                     {info.attending}/{c.capacity}
                   </span>
                   {info.avisaron.length > 0 && (
                     <span
-                      className="text-[11px] text-muted"
+                      className="hidden text-[11px] text-muted lg:inline"
                       title={plural(info.avisaron.length, 'aviso de ausencia', 'avisos de ausencia')}
                     >
                       fijos {info.fixedCount}

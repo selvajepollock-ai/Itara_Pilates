@@ -334,6 +334,9 @@ export async function createHoliday(formData: FormData) {
 
   if (!date) return { error: 'Elegí una fecha.' }
 
+  const { count: closed } = await supabase.from('class_cancellations').select('id', { count: 'exact', head: true }).eq('session_date', date)
+  if (closed) return { error: 'Ese día ya tiene clases canceladas (con recuperación). Reactivalas desde Horarios antes de cargarlo como feriado.' }
+
   const { error } = await supabase.from('holidays').insert({ date, label: label || null })
   if (error) {
     if (error.message.toLowerCase().includes('duplicate')) {

@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ChevronLeft, ChevronRight, List, Plus, Settings2, CalendarOff } from 'lucide-react'
+import { ChevronLeft, ChevronRight, MoreHorizontal, Plus } from 'lucide-react'
 import { PageHeader } from '@/app/components/page-header'
-import { DropdownMenu, type MenuItem } from '@/app/components/dropdown-menu'
+import { BottomSheet } from '@/app/components/bottom-sheet'
 import { ActivateAllExtraCapacityButton } from './activate-all-extra-capacity-button'
 import { ClassPanel } from './class-panel'
 import { FixedTab } from './fixed-tab'
@@ -118,10 +118,11 @@ export function HorariosView({
     return `/admin/horarios${s ? `?${s}` : ''}`
   }
 
-  const headerMenu: MenuItem[] = [
-    { key: 'holidays', label: 'Feriados', icon: <CalendarOff size={15} />, href: '/admin/horarios/feriados' },
-    { key: 'types', label: 'Tipos de clase', icon: <Settings2 size={15} />, href: '/admin/tipos-de-clase' },
-    { key: 'list', label: 'Lista', icon: <List size={15} />, href: '/admin/horarios/lista' },
+  const [menuOpen, setMenuOpen] = useState(false)
+  const headerLinks = [
+    { key: 'holidays', emoji: '🗓️', bg: '#FDF0D5', long: 'Feriados y cierres', short: 'Feriados', desc: 'Días en que el estudio no abre', href: '/admin/horarios/feriados' },
+    { key: 'types', emoji: '🏷️', bg: '#EFE7FB', long: 'Tipos de clase', short: 'Tipos', desc: 'Reformer, cupos y duración', href: '/admin/tipos-de-clase' },
+    { key: 'list', emoji: '📋', bg: '#E3F4E6', long: 'Lista', short: 'Lista', desc: 'Todas las clases en una tabla', href: '/admin/horarios/lista' },
   ]
 
   const tabs: { key: Vista; label: string }[] = [
@@ -130,16 +131,37 @@ export function HorariosView({
   ]
 
   return (
-    <div>
+    <div className="pb-[120px] lg:pb-0">
       <PageHeader
         title="Horarios"
         actions={
           <>
             {pendingExtraCapacityCount > 0 && <ActivateAllExtraCapacityButton pendingCount={pendingExtraCapacityCount} />}
-            <DropdownMenu label="Más opciones de Horarios" items={headerMenu} buttonClassName="h-11 w-11" />
-            <Link href="/admin/horarios/nuevo" className="btn-primary">
+            {/* Tablet y escritorio: botones visibles con nombre. */}
+            {headerLinks.map((l) => (
+              <Link
+                key={l.key}
+                href={l.href}
+                className="hidden h-11 items-center gap-1.5 rounded-[12px] border border-edge-strong bg-white px-3.5 text-sm text-ink transition hover:border-moss md:inline-flex"
+              >
+                <span aria-hidden>{l.emoji}</span>
+                <span className="lg:hidden">{l.short}</span>
+                <span className="hidden lg:inline">{l.long}</span>
+              </Link>
+            ))}
+            {/* Celular: un "⋯" que abre la hoja con las opciones. */}
+            <button
+              type="button"
+              aria-label="Más opciones: feriados y tipos de clase"
+              onClick={() => setMenuOpen(true)}
+              className="inline-flex h-11 w-11 items-center justify-center rounded-[12px] border border-edge-strong bg-white text-ink md:hidden"
+            >
+              <MoreHorizontal size={18} />
+            </button>
+            <Link href="/admin/horarios/nuevo" className="btn-primary min-h-[44px]">
               <Plus size={16} strokeWidth={2.5} />
-              Nueva clase
+              <span className="md:hidden">Clase</span>
+              <span className="hidden md:inline">Nueva clase</span>
             </Link>
           </>
         }
@@ -189,11 +211,20 @@ export function HorariosView({
                 <span className="ml-1 text-sm font-medium text-ink">{weekRange(monday, columns.length)}</span>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2" aria-label="Resumen de la semana">
-                <SlotChip tone="free">{plural(totals.fixedFree, 'lugar fijo libre', 'lugares fijos libres')}</SlotChip>
+              <div className="-mx-4 flex w-[calc(100%+2rem)] items-center gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:w-auto md:flex-wrap md:overflow-visible md:px-0 md:pb-0 [&>span]:shrink-0 [&>span]:whitespace-nowrap" aria-label="Resumen de la semana">
+                <SlotChip tone="free">
+                  <span className="md:hidden">{totals.fixedFree} libres</span>
+                  <span className="hidden md:inline">{plural(totals.fixedFree, 'lugar fijo libre', 'lugares fijos libres')}</span>
+                </SlotChip>
                 <SlotChip tone="freed">+{totals.freed} para recuperar</SlotChip>
-                <SlotChip tone="recover">{plural(totals.recovering, 'recuperación', 'recuperaciones')}</SlotChip>
-                <SlotChip tone="cancel">{plural(totals.cancelled, 'clase cancelada', 'clases canceladas')}</SlotChip>
+                <SlotChip tone="recover">
+                  <span className="md:hidden">{totals.recovering} recuperan</span>
+                  <span className="hidden md:inline">{plural(totals.recovering, 'recuperación', 'recuperaciones')}</span>
+                </SlotChip>
+                <SlotChip tone="cancel">
+                  <span className="md:hidden">{totals.cancelled} canceladas</span>
+                  <span className="hidden md:inline">{plural(totals.cancelled, 'clase cancelada', 'clases canceladas')}</span>
+                </SlotChip>
               </div>
             </div>
 
@@ -231,6 +262,24 @@ export function HorariosView({
         />
       )}
 
+      <BottomSheet open={menuOpen} onClose={() => setMenuOpen(false)} title="Más opciones" className="md:hidden">
+        <ul className="space-y-1">
+          {headerLinks.map((l) => (
+            <li key={l.key}>
+              <Link href={l.href} className="flex min-h-[60px] items-center gap-3 rounded-[14px] p-2 hover:bg-edge-row">
+                <span aria-hidden className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] text-[22px]" style={{ background: l.bg }}>
+                  {l.emoji}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[15px] font-semibold text-ink">{l.long}</span>
+                  <span className="block text-[13px] text-muted">{l.desc}</span>
+                </span>
+                <ChevronRight size={18} className="text-muted" aria-hidden />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </BottomSheet>
     </div>
   )
 }

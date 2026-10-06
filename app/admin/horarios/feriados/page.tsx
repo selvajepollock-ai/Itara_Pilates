@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { NewHolidayForm } from './new-holiday-form'
 import { DeleteHolidayButton } from './delete-holiday-button'
+import { CloseDayForm } from './close-day-form'
 
 export default async function FeriadosPage() {
   const supabase = await createClient()
@@ -23,6 +24,12 @@ export default async function FeriadosPage() {
       </p>
 
       <NewHolidayForm />
+
+      <h2 className="mt-10 font-display text-xl italic text-ink">Cerrar el estudio un día (con recuperación)</h2>
+      <p className="mt-1 text-sm text-ink/60">
+        Para un día que no es feriado pero no hay clases: se cancelan todas las clases de esa fecha y cada alumno anotado recibe una recuperación.
+      </p>
+      <CloseDayForm />
 
       <ul className="mt-6 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
         {holidays?.map((h) => (
