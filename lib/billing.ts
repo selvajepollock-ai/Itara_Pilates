@@ -1,6 +1,7 @@
 import { todayART } from './dates'
 
-export type PaymentStatus = 'al_dia' | 'por_vencer' | 'vencido' | 'sin_plan' | 'bonificado'
+// 'sueltas': sin plan mensual pero con clases sueltas compradas (se asigna al armar la lista de alumnos).
+export type PaymentStatus = 'al_dia' | 'por_vencer' | 'vencido' | 'sin_plan' | 'bonificado' | 'sueltas'
 
 // Estado a mostrar para una suscripción, contemplando el "sin cargo" (bonificado),
 // que ignora la fecha de vencimiento porque no se factura.
@@ -70,6 +71,7 @@ export const STATUS_LABEL: Record<PaymentStatus, string> = {
   vencido: 'Vencido',
   sin_plan: 'Sin plan',
   bonificado: 'Bonificado',
+  sueltas: 'Clases sueltas',
 }
 
 export const STATUS_CLASSES: Record<PaymentStatus, string> = {
@@ -78,6 +80,7 @@ export const STATUS_CLASSES: Record<PaymentStatus, string> = {
   vencido: 'bg-clay text-white',
   sin_plan: 'bg-sand text-ink/50',
   bonificado: 'bg-blush text-ink/70',
+  sueltas: 'bg-info-soft text-info-ink',
 }
 
 // Sugiere "pagado hasta" = último día del mes actual (se paga el mes completo, como un banco).

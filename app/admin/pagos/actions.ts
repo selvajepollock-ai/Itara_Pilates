@@ -148,6 +148,42 @@ export async function setExtraChargePaid(chargeId: string, paid: boolean) {
   return { success: true }
 }
 
+/** Marca como pagada (o pendiente) una compra completa de clases sueltas: todas las clases a la vez. */
+export async function setExtraChargesPaid(chargeIds: string[], paid: boolean) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+  if (!chargeIds || chargeIds.length === 0) return { error: 'No hay nada para actualizar.' }
+
+  const { error } = await auth.supabase
+    .from('extra_charges')
+    .update({ paid, paid_at: paid ? new Date().toISOString() : null, comp: false })
+    .in('id', chargeIds)
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/pagos')
+  revalidatePath('/admin/reportes')
+  revalidatePath('/admin/alumnos')
+  return { success: true }
+}
+
+/** Bonifica una compra completa de clases sueltas (no se cobra). */
+export async function setExtraChargesComp(chargeIds: string[], comp: boolean) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+  if (!chargeIds || chargeIds.length === 0) return { error: 'No hay nada para actualizar.' }
+
+  const { error } = await auth.supabase
+    .from('extra_charges')
+    .update({ comp, paid: false, paid_at: null })
+    .in('id', chargeIds)
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/pagos')
+  revalidatePath('/admin/reportes')
+  revalidatePath('/admin/alumnos')
+  return { success: true }
+}
+
 /** Marca una clase suelta como bonificada (no se cobra) o la vuelve a pendiente. */
 export async function setExtraChargeComp(chargeId: string, comp: boolean) {
   const auth = await assertAdmin()

@@ -8,6 +8,7 @@ export const STATUS_VIEW: Record<PaymentStatus, View> = {
   vencido: { dot: 'bg-state-due', ink: 'text-state-due-ink', label: 'Vencido' },
   sin_plan: { dot: 'bg-state-none', ink: 'text-state-none-ink', label: 'Sin plan' },
   bonificado: { dot: 'bg-state-free', ink: 'text-state-free-ink', label: 'Bonificado' },
+  sueltas: { dot: 'bg-state-soon', ink: 'text-state-soon-ink', label: 'Clases sueltas' },
 }
 
 // Vencido que además ya tiene recargo (pasó el margen de gracia).

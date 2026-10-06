@@ -9,7 +9,7 @@ import { formatARS } from '@/lib/currency'
 import { shortDate } from '../alumnos/format'
 import { whatsappLink } from '@/lib/whatsapp'
 import { Private, useMoneyHidden } from './privacy'
-import { ChargePaidToggle } from './sueltas/charge-paid-toggle'
+import { PurchaseActions } from './purchase-actions'
 import { monthLabel } from './month-label'
 
 type Students = Parameters<typeof RegisterPaymentDialog>[0]['students']
@@ -72,14 +72,14 @@ export function OverdueList({ items, students }: { items: OverdueItem[]; student
   )
 }
 
-export type PendingCharge = { id: string; studentId: string | null; name: string; description: string; amount: number }
+export type PendingCharge = { key: string; ids: string[]; name: string; description: string; amount: number; count: number }
 
 /** Clases sueltas pendientes de cobro: usa la acción existente (Pagado / Bonificar). */
 export function PendingChargesList({ items }: { items: PendingCharge[] }) {
   return (
     <ul>
       {items.map((c) => (
-        <li key={c.id} className="flex min-h-[58px] items-center gap-3 border-t border-edge-row py-2 first:border-t-0">
+        <li key={c.key} className="flex min-h-[58px] items-center gap-3 border-t border-edge-row py-2 first:border-t-0">
           <Avatar name={c.name} size={34} />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-ink">{c.name}</p>
@@ -88,7 +88,7 @@ export function PendingChargesList({ items }: { items: PendingCharge[] }) {
           <p className="shrink-0 text-sm font-semibold tabular-nums text-ink">
             <Private>{formatARS(c.amount)}</Private>
           </p>
-          <ChargePaidToggle chargeId={c.id} paid={false} comp={false} />
+          <PurchaseActions ids={c.ids} count={c.count} total={formatARS(c.amount)} />
         </li>
       ))}
     </ul>

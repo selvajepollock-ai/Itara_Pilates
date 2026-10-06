@@ -13,7 +13,9 @@ import { CATEGORY_LABEL, pricePerClass, sortPlans, type PlanItem } from './plan-
 
 const GRID = 'grid-cols-[minmax(0,1.6fr)_90px_130px_110px_minmax(0,1.3fr)_130px_44px]'
 
-export function PlansView({ plans }: { plans: PlanItem[] }) {
+export type DropInPrices = { p1: number; p2: number; p3: number; p4: number }
+
+export function PlansView({ plans, dropIn }: { plans: PlanItem[]; dropIn: DropInPrices }) {
   const router = useRouter()
   const [, startTransition] = useTransition()
   const [dialog, setDialog] = useState<{ plan: PlanItem | null } | null>(null)
@@ -186,6 +188,32 @@ export function PlansView({ plans }: { plans: PlanItem[] }) {
           </div>
         )}
       </div>
+
+      {/* Clases sueltas: no son un plan mensual, tienen su propia escala de precios por compra */}
+      <section className="surface-card mt-8 p-5">
+        <h2 className="font-display text-[22px] font-normal italic leading-tight text-ink">Clases sueltas (sin plan)</h2>
+        <p className="mt-1 text-[13px] text-muted">
+          Se compran por tanda y se pagan todas juntas. Cuantas más clases en la misma compra, más barata sale cada una.
+        </p>
+        <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {(
+            [
+              ['1 clase', dropIn.p1],
+              ['2 clases', dropIn.p2],
+              ['3 clases', dropIn.p3],
+              ['4 o más', dropIn.p4],
+            ] as const
+          ).map(([label, price]) => (
+            <div key={label} className="rounded-[12px] border border-edge-divider p-3.5">
+              <dt className="text-xs text-muted">{label}</dt>
+              <dd className="mt-1 text-sm font-semibold tabular-nums text-ink">{formatARS(price)} c/u</dd>
+            </div>
+          ))}
+        </dl>
+        <Link href="/admin/perfil" className="mt-3 inline-block text-[13px] font-medium text-moss hover:text-moss-dark">
+          Cambiar los precios en Ajustes del estudio →
+        </Link>
+      </section>
 
       {/* Desactivados */}
       <section className="mt-8">

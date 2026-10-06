@@ -51,6 +51,7 @@ type Credit = {
   id: string
   status: string
   week_end: string
+  is_paid_extra?: boolean | null
   requested_session_date: string | null
   requested: { start_time: string; day_of_week: number } | null
 }
@@ -102,7 +103,7 @@ export default async function AlumnoDashboard() {
       .lte('session_date', nextSunday),
     supabase
       .from('recovery_credits')
-      .select('id, status, week_end, requested_session_date, requested:requested_class_id(start_time, day_of_week)')
+      .select('id, status, week_end, requested_session_date, is_paid_extra, requested:requested_class_id(start_time, day_of_week)')
       .eq('student_id', studentId)
       .gte('week_end', since),
     supabase.from('plans').select('id, name, price').eq('active', true).order('price'),
@@ -259,6 +260,8 @@ export default async function AlumnoDashboard() {
     for (const r of recoveries) {
       if (r.session_date < monday || r.session_date > addDaysISO(monday, 6) || !r.classes) continue
       const origin = r.recovery_credit_id ? cancByCredit.get(r.recovery_credit_id) : undefined
+      // Una clase suelta comprada se guarda como una reserva: no es una recuperación y no se puede cancelar desde acá.
+      const isDropIn = Boolean(r.recovery_credit_id && creditById.get(r.recovery_credit_id)?.is_paid_extra)
       const start = formatTime(r.classes.start_time)
       const past = isInPast(r.session_date, r.classes.start_time)
       rows.push({
@@ -270,10 +273,10 @@ export default async function AlumnoDashboard() {
         start,
         typeName: r.classes.class_types?.name ?? 'Clase',
         instructor: r.classes.profiles?.full_name ?? null,
-        state: 'recovery',
-        note: origin ? `Por tu clase del ${dayDate(origin.session_date)}` : 'Recuperación confirmada',
+        state: isDropIn ? 'suelta' : 'recovery',
+        note: isDropIn ? 'Clase suelta' : origin ? `Por tu clase del ${dayDate(origin.session_date)}` : 'Recuperación confirmada',
         recoveryCancel:
-          !past && r.recovery_credit_id
+          !isDropIn && !past && r.recovery_credit_id
             ? {
                 creditId: r.recovery_credit_id,
                 onTime: hoursUntil(r.session_date, r.classes.start_time) >= minHours,
@@ -294,7 +297,7 @@ export default async function AlumnoDashboard() {
   // ── Próxima clase confirmada ──────────────────────────────────────────────────────────────
   const upcoming = weeks
     .flatMap((w) => w.rows)
-    .filter((r) => !r.past && (r.state === 'future' || r.state === 'late-window' || r.state === 'recovery'))
+    .filter((r) => !r.past && (r.state === 'future' || r.state === 'late-window' || r.state === 'recovery' || r.state === 'suelta'))
     .sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start))[0]
   const daysTo = (date: string) =>
     Math.round((new Date(`${date}T12:00:00Z`).getTime() - new Date(`${today}T12:00:00Z`).getTime()) / 86_400_000)
@@ -348,8 +351,10 @@ export default async function AlumnoDashboard() {
         date: shortDate(c.requested_session_date!) ?? '',
         sort: c.requested_session_date!,
       })),
-    ...recoveries.map((r) => ({
-      text: `Tu recuperación del ${dayDate(r.session_date)} fue aprobada`,
+    ...recoveries
+      .filter((r) => !(r.recovery_credit_id && creditById.get(r.recovery_credit_id)?.is_paid_extra))
+      .map((r) => ({
+      text: `Tu recuperación del ${dayDate(r.session_date)} quedó confirmada`,
       tone: 'green' as const,
       date: shortDate(r.session_date) ?? '',
       sort: r.session_date,

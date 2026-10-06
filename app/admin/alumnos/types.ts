@@ -27,6 +27,10 @@ export type StudentRow = {
   instructorName: string | null
   /** Timestamp del último pago no anulado, si se pudo leer. */
   lastPaymentAt: string | null
+  /** Clases sueltas vigentes (pendientes de cobro o con fecha futura). */
+  dropInCount: number
+  /** De esas, cuántas todavía no se cobraron. */
+  dropInUnpaid: number
 }
 
 export type PlanOption = { id: string; name: string }
@@ -41,6 +45,7 @@ export const ESTADO_FROM_PARAM: Record<string, PaymentStatus> = {
   sinplan: 'sin_plan',
   sin_plan: 'sin_plan',
   bonificado: 'bonificado',
+  sueltas: 'sueltas',
 }
 
 export const ESTADO_TO_PARAM: Record<PaymentStatus, string> = {
@@ -49,9 +54,10 @@ export const ESTADO_TO_PARAM: Record<PaymentStatus, string> = {
   por_vencer: 'porvencer',
   sin_plan: 'sinplan',
   bonificado: 'bonificado',
+  sueltas: 'sueltas',
 }
 
 // Orden de las chips de estado (después de "Todos").
-export const ESTADO_ORDER: PaymentStatus[] = ['vencido', 'al_dia', 'sin_plan', 'bonificado', 'por_vencer']
+export const ESTADO_ORDER: PaymentStatus[] = ['vencido', 'al_dia', 'sin_plan', 'sueltas', 'bonificado', 'por_vencer']
 
 export const PAGE_SIZE = 25
