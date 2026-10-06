@@ -22,6 +22,7 @@ export function BookRecoveryButton({
   const [error, setError] = useState<string | null>(null)
 
   function handleBook() {
+    if (!confirm('¿Confirmás la recuperación en este horario? Queda anotada al instante.')) return
     setError(null)
     startTransition(async () => {
       const res = await bookRecovery({ studentId, creditId, classId, sessionDate })

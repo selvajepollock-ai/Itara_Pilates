@@ -3,7 +3,8 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getMonday, getSunday, toISODate, hoursUntil } from '@/lib/sessions'
+import { getMonday, getSunday, toISODate, hoursUntil, isInPast } from '@/lib/sessions'
+import { todayART } from '@/lib/dates'
 import { notifyAdmins, notifyUsers } from '@/lib/push'
 import { dayDate } from '../alumno/format'
 
@@ -76,7 +77,7 @@ export async function cancelSession({
     .select('cancellation_min_hours')
     .maybeSingle()
 
-  const minHours = settings?.cancellation_min_hours ?? 12
+  const minHours = settings?.cancellation_min_hours ?? 4
   const hoursLeft = hoursUntil(sessionDate, classInfo.start_time)
   const withinDeadline = hoursLeft >= minHours
 
@@ -131,6 +132,8 @@ export async function cancelSession({
     }
   }
 
+  await notifyFreedSpot(classId, sessionDate)
+
   revalidatePath('/alumno')
   revalidatePath(`/admin/alumnos/${studentId}`)
   revalidatePath('/admin/avisos')
@@ -166,6 +169,26 @@ export async function undoSessionCancellation({
     .maybeSingle()
 
   if (!cancellation) return { error: 'No encontré un aviso de cancelación para esa fecha.' }
+
+  // Si otra persona ya ocupó el lugar liberado, no se puede volver a anotar (la clase quedaría con más gente que el cupo).
+  {
+    const admin = createAdminClient()
+    const [{ data: cls }, { count: enrolledCount }, { count: cancelledCount }, { count: recoveringCount }] = await Promise.all([
+      admin.from('classes').select('capacity').eq('id', classId).maybeSingle(),
+      admin.from('enrollments').select('id', { count: 'exact', head: true }).eq('class_id', classId).eq('status', 'active'),
+      admin.from('session_cancellations').select('id', { count: 'exact', head: true }).eq('class_id', classId).eq('session_date', sessionDate),
+      admin
+        .from('attendance')
+        .select('id', { count: 'exact', head: true })
+        .eq('class_id', classId)
+        .eq('session_date', sessionDate)
+        .not('recovery_credit_id', 'is', null),
+    ])
+    const occupancyAfterUndo = (enrolledCount ?? 0) - ((cancelledCount ?? 1) - 1) + (recoveringCount ?? 0)
+    if (cls && occupancyAfterUndo > cls.capacity) {
+      return { error: 'Ya ocuparon tu lugar en esa clase, así que no se puede deshacer el aviso. Podés usar tu recuperación en otra clase.' }
+    }
+  }
 
   if (cancellation.recovery_credit_id) {
     const { data: credit } = await supabase
@@ -222,7 +245,7 @@ export async function bookRecovery({
 
   const { data: credit } = await supabase
     .from('recovery_credits')
-    .select('id, status, class_type_id, instructor_id, week_end, student_id')
+    .select('id, status, class_type_id, instructor_id, week_start, week_end, student_id')
     .eq('id', creditId)
     .maybeSingle()
 
@@ -234,15 +257,18 @@ export async function bookRecovery({
   if (credit.status !== 'available') {
     return { error: 'Esa clase a recuperar ya fue usada o venció. Volvé a tu horario para ver el estado actual.' }
   }
-  if (sessionDate > credit.week_end) return { error: 'Esa fecha ya está fuera de la semana disponible.' }
+  if (sessionDate > credit.week_end || sessionDate < credit.week_start) {
+    return { error: 'Esa fecha está fuera de la semana en la que podés recuperar.' }
+  }
 
   const { data: targetClass } = await supabase
     .from('classes')
-    .select('id, class_type_id, instructor_id, capacity')
+    .select('id, class_type_id, instructor_id, capacity, start_time')
     .eq('id', classId)
     .maybeSingle()
 
   if (!targetClass) return { error: 'La clase no existe.' }
+  if (isInPast(sessionDate, targetClass.start_time)) return { error: 'Esa clase ya empezó.' }
   if (targetClass.class_type_id !== credit.class_type_id) {
     return { error: 'Esa clase es de otro tipo, no coincide con lo que tenés para recuperar.' }
   }
@@ -273,70 +299,206 @@ export async function bookRecovery({
   const occupancy = (enrolledCount ?? 0) - (cancelledCount ?? 0) + (recoveringCount ?? 0)
   if (occupancy >= targetClass.capacity) return { error: 'Esa clase ya está completa.' }
 
-  // Si lo hace la admin en nombre del alumno, se confirma directo (no necesita "auto-aprobarse").
-  if (auth.actingAdmin) {
-    const { error: attendanceError } = await supabase.from('attendance').insert({
-      class_id: classId,
-      session_date: sessionDate,
-      student_id: studentId,
-      status: 'recovering',
-      recovery_credit_id: creditId,
-    })
+  // Esa clase no puede estar cancelada por el estudio ese día.
+  const { data: studioCancelled } = await admin
+    .from('class_cancellations')
+    .select('id')
+    .eq('class_id', classId)
+    .eq('session_date', sessionDate)
+    .maybeSingle()
+  if (studioCancelled) return { error: 'Esa clase está cancelada ese día.' }
 
-    if (attendanceError) {
-      if (attendanceError.message.toLowerCase().includes('duplicate')) {
-        return { error: 'Ya tenés una recuperación anotada en esa clase.' }
-      }
-      return { error: attendanceError.message }
-    }
-
-    const { data: updatedDirect, error: directError } = await supabase
-      .from('recovery_credits')
-      .update({ status: 'used', used_class_id: classId, used_session_date: sessionDate })
-      .eq('id', creditId)
-      .eq('status', 'available')
+  // Ni una clase en la que ya tiene su lugar fijo (y no avisó que faltaba).
+  const { data: ownEnrollment } = await admin
+    .from('enrollments')
+    .select('id')
+    .eq('class_id', classId)
+    .eq('student_id', studentId)
+    .eq('status', 'active')
+    .maybeSingle()
+  if (ownEnrollment) {
+    const { data: ownAbsence } = await admin
+      .from('session_cancellations')
       .select('id')
+      .eq('enrollment_id', ownEnrollment.id)
+      .eq('session_date', sessionDate)
       .maybeSingle()
-
-    if (directError || !updatedDirect) {
-      return { error: directError?.message ?? 'La clase quedó anotada, pero no se pudo actualizar el estado.' }
-    }
-
-    revalidatePath('/alumno')
-    revalidatePath(`/admin/alumnos/${studentId}`)
-    revalidatePath('/admin/avisos')
-    return { success: true }
+    if (!ownAbsence) return { error: 'Ya tenés tu lugar fijo en esa clase.' }
   }
 
-  const { data: updated, error: updateError } = await supabase
+  // Queda confirmada al instante (sin aprobación del estudio). Se escribe con permisos del servidor
+  // porque la alumna no puede insertar asistencia directamente; antes se verificó que el crédito es suyo.
+  const { error: attendanceError } = await admin.from('attendance').insert({
+    class_id: classId,
+    session_date: sessionDate,
+    student_id: studentId,
+    status: 'recovering',
+    recovery_credit_id: creditId,
+  })
+
+  if (attendanceError) {
+    if (attendanceError.message.toLowerCase().includes('duplicate')) {
+      return { error: 'Ya tenés una recuperación anotada en esa clase.' }
+    }
+    return { error: attendanceError.message }
+  }
+
+  const { data: usedCredit, error: creditError } = await admin
     .from('recovery_credits')
-    .update({
-      status: 'requested',
-      requested_class_id: classId,
-      requested_session_date: sessionDate,
-    })
+    .update({ status: 'used', used_class_id: classId, used_session_date: sessionDate })
     .eq('id', creditId)
     .eq('status', 'available')
     .select('id')
     .maybeSingle()
 
-  if (updateError) return { error: updateError.message }
-  if (!updated) return { error: 'Alguien más ya modificó esta recuperación. Refrescá la página.' }
+  if (creditError || !usedCredit) {
+    // Si el crédito no se pudo marcar como usado, se deshace la asistencia para no dejar nada a medias.
+    await admin.from('attendance').delete().eq('class_id', classId).eq('session_date', sessionDate).eq('student_id', studentId)
+    return { error: creditError?.message ?? 'Alguien más ya modificó esta recuperación. Refrescá la página.' }
+  }
 
-  const { data: who } = await supabase.from('profiles').select('full_name').eq('id', studentId).maybeSingle()
-  const { data: askedClass } = await supabase.from('classes').select('start_time').eq('id', classId).maybeSingle()
-  await notifyAdmins({
-    title: 'Pedido de recuperación 🔄',
-    body: `${who?.full_name ?? 'Una alumna'} pidió recuperar el ${dayDate(sessionDate)}${askedClass ? ` a las ${String(askedClass.start_time).slice(0, 5)}` : ''}.`,
-    url: '/admin/avisos',
-    tag: `recovery-request-${creditId}`,
-  })
+  const { data: who } = await admin.from('profiles').select('full_name').eq('id', studentId).maybeSingle()
+  const when = `${dayDate(sessionDate)} a las ${String(targetClass.start_time).slice(0, 5)}`
+  if (auth.actingAdmin) {
+    await notifyUsers([studentId], {
+      kind: 'recovery_approved',
+      title: 'Recuperación confirmada',
+      body: `Te anotaron en tu recuperación del ${when}.`,
+      url: '/alumno',
+      tag: `recovery-${creditId}`,
+    })
+  } else {
+    // El estudio se entera por la campanita y el push (solo informativo, no hay nada que aprobar).
+    await notifyAdmins({
+      title: 'Recuperación 🔄',
+      body: `${who?.full_name ?? 'Una alumna'} recuperó el ${when}.`,
+      url: '/admin/avisos',
+      tag: `recovery-${creditId}`,
+    })
+  }
 
   revalidatePath('/alumno')
   revalidatePath(`/admin/alumnos/${studentId}`)
   revalidatePath('/admin/avisos')
-
+  revalidatePath('/admin/horarios')
   return { success: true }
+}
+
+/**
+ * Cancela una recuperación ya anotada. Con el plazo de anticipación, la recuperación vuelve a estar disponible
+ * (mientras siga en su semana); si es tarde, se pierde. Si lo hace el estudio, siempre vuelve a estar disponible.
+ */
+export async function cancelRecovery({ studentId, creditId }: { studentId: string; creditId: string }) {
+  const auth = await assertSelfOrAdmin(studentId)
+  if (!auth.ok) return { error: auth.error }
+
+  const admin = createAdminClient()
+  const { data: credit } = await admin
+    .from('recovery_credits')
+    .select('id, student_id, status, week_end, used_class_id, used_session_date')
+    .eq('id', creditId)
+    .maybeSingle()
+
+  if (!credit || credit.student_id !== studentId) return { error: 'Esa recuperación no existe.' }
+  if (credit.status !== 'used' || !credit.used_class_id || !credit.used_session_date) {
+    return { error: 'Esa recuperación no está anotada en ninguna clase.' }
+  }
+
+  const classId = credit.used_class_id as string
+  const sessionDate = credit.used_session_date as string
+  const { data: cls } = await admin.from('classes').select('start_time').eq('id', classId).maybeSingle()
+  if (!cls) return { error: 'La clase no existe.' }
+  if (isInPast(sessionDate, cls.start_time)) return { error: 'Esa clase ya pasó.' }
+
+  const { data: settings } = await admin.from('studio_settings').select('cancellation_min_hours').maybeSingle()
+  const minHours = settings?.cancellation_min_hours ?? 4
+  const onTime = auth.actingAdmin || hoursUntil(sessionDate, cls.start_time) >= minHours
+  const restore = onTime && (credit.week_end as string) >= todayART()
+
+  const { error: delError } = await admin
+    .from('attendance')
+    .delete()
+    .eq('class_id', classId)
+    .eq('session_date', sessionDate)
+    .eq('student_id', studentId)
+    .eq('recovery_credit_id', creditId)
+  if (delError) return { error: delError.message }
+
+  if (restore) {
+    await admin
+      .from('recovery_credits')
+      .update({ status: 'available', used_class_id: null, used_session_date: null })
+      .eq('id', creditId)
+  }
+
+  const { data: who } = await admin.from('profiles').select('full_name').eq('id', studentId).maybeSingle()
+  await notifyAdmins({
+    title: 'Recuperación cancelada',
+    body: `${who?.full_name ?? 'Una alumna'} canceló su recuperación del ${dayDate(sessionDate)} a las ${String(cls.start_time).slice(0, 5)}.`,
+    url: '/admin/avisos',
+    tag: `recovery-${creditId}`,
+  })
+  await notifyFreedSpot(classId, sessionDate)
+
+  revalidatePath('/alumno')
+  revalidatePath(`/admin/alumnos/${studentId}`)
+  revalidatePath('/admin/avisos')
+  revalidatePath('/admin/horarios')
+  return { success: true, restored: restore }
+}
+
+/**
+ * Si una clase estaba completa y se acaba de liberar un lugar, avisa (campanita y push) a quienes tienen una
+ * recuperación disponible para ese tipo de clase, con ese profesor, esa semana. Es automático.
+ */
+async function notifyFreedSpot(classId: string, sessionDate: string) {
+  try {
+    const admin = createAdminClient()
+    const { data: cls } = await admin
+      .from('classes')
+      .select('capacity, class_type_id, instructor_id, start_time, class_types(name)')
+      .eq('id', classId)
+      .maybeSingle()
+    if (!cls || isInPast(sessionDate, cls.start_time)) return
+
+    const [{ count: enrolled }, { count: cancelled }, { count: recovering }] = await Promise.all([
+      admin.from('enrollments').select('id', { count: 'exact', head: true }).eq('class_id', classId).eq('status', 'active'),
+      admin.from('session_cancellations').select('id', { count: 'exact', head: true }).eq('class_id', classId).eq('session_date', sessionDate),
+      admin
+        .from('attendance')
+        .select('id', { count: 'exact', head: true })
+        .eq('class_id', classId)
+        .eq('session_date', sessionDate)
+        .not('recovery_credit_id', 'is', null),
+    ])
+    const occupancy = (enrolled ?? 0) - (cancelled ?? 0) + (recovering ?? 0)
+    // Solo cuando estaba llena y se abrió justo un lugar.
+    if (occupancy !== cls.capacity - 1) return
+
+    let q = admin
+      .from('recovery_credits')
+      .select('id, student_id')
+      .eq('status', 'available')
+      .eq('class_type_id', cls.class_type_id)
+      .lte('week_start', sessionDate)
+      .gte('week_end', sessionDate)
+    q = cls.instructor_id ? q.or(`instructor_id.is.null,instructor_id.eq.${cls.instructor_id}`) : q
+    const { data: waiting } = await q
+    if (!waiting || waiting.length === 0) return
+
+    const typeName = (cls.class_types as unknown as { name: string } | null)?.name ?? 'Clase'
+    for (const w of waiting) {
+      await notifyUsers([w.student_id as string], {
+        kind: 'spot_freed',
+        title: 'Se liberó un lugar',
+        body: `${typeName} del ${dayDate(sessionDate)} a las ${String(cls.start_time).slice(0, 5)}. Elegilo desde tu panel antes de que se ocupe.`,
+        url: `/alumno/recuperar/${w.id}`,
+        tag: `spot-${classId}-${sessionDate}`,
+      })
+    }
+  } catch {
+    // Un aviso que falla no debe romper la acción principal.
+  }
 }
 
 // Admin agrega una clase EXTRA paga individual (se mantiene por compatibilidad).

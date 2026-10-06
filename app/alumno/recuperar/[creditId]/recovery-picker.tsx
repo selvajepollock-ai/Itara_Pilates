@@ -28,8 +28,27 @@ export function RecoveryPicker({
   const [sentLabel, setSentLabel] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [confirming, setConfirming] = useState(false)
 
-  const shownLabel = sentLabel ?? pendingLabel ?? null
+  if (sentLabel) {
+    return (
+      <div className="rounded-2xl border border-[#DCE7DE] bg-moss-soft p-6">
+        <span className="rounded-full bg-slot-free px-2.5 py-0.5 text-[11px] font-semibold text-slot-free-ink">Confirmada</span>
+        <p className="mt-3 font-display text-2xl italic text-ink">Listo, te esperamos {sentLabel}</p>
+        <p className="mt-2 text-sm text-muted">
+          Tu recuperación quedó confirmada. La vas a ver en "Tus clases". Si no podés ir, avisá con tiempo desde tu panel.
+        </p>
+        <Link
+          href="/alumno"
+          className="mt-5 inline-flex h-11 items-center justify-center rounded-[12px] bg-[#2B2A26] px-5 text-sm font-semibold text-white hover:bg-black max-sm:w-full"
+        >
+          Volver a Inicio
+        </Link>
+      </div>
+    )
+  }
+
+  const shownLabel = pendingLabel ?? null
   if (shownLabel) {
     return (
       <div className="rounded-2xl border border-[#F0E3C4] bg-[#FDF8EE] p-6">
@@ -54,6 +73,7 @@ export function RecoveryPicker({
   function submit() {
     if (!selected) return
     setError(null)
+    setConfirming(false)
     startTransition(async () => {
       const res = await bookRecovery({ studentId, creditId, classId: selected.classId, sessionDate: selected.date })
       if (res?.error) {
@@ -68,7 +88,7 @@ export function RecoveryPicker({
   if (days.length === 0) {
     return (
       <p className="rounded-2xl border border-dashed border-edge-strong px-5 py-8 text-center text-sm text-muted">
-        No quedan clases con lugar esta semana. Si se libera un lugar, va a aparecer acá.
+        No quedan clases con lugar esta semana. Mantenés tu recuperación hasta el viernes y te avisamos apenas se libere un lugar.
       </p>
     )
   }
@@ -106,21 +126,47 @@ export function RecoveryPicker({
         ))}
       </div>
 
+      {confirming && selected && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-label="Confirmar recuperación">
+          <button type="button" aria-label="Cerrar" tabIndex={-1} className="absolute inset-0 cursor-default bg-ink/30" onClick={() => setConfirming(false)} />
+          <div className="relative w-full max-w-[420px] rounded-t-[22px] bg-white p-6 pb-[calc(24px+env(safe-area-inset-bottom))] sm:rounded-[22px]">
+            <h2 className="font-display text-2xl italic leading-tight text-ink">¿Confirmás esta recuperación?</h2>
+            <p className="mt-3 rounded-[12px] bg-moss-soft px-4 py-3 text-sm text-[#2F4A36]">
+              Vas a recuperar <strong>{selected.label}</strong>. Queda confirmada al instante y tu lugar queda reservado.
+            </p>
+            <p className="mt-3 text-[13px] text-muted">Si después no podés ir, podés cancelarla con anticipación y no la perdés.</p>
+            <div className="mt-6 flex gap-2.5">
+              <button type="button" onClick={() => setConfirming(false)} className="btn-secondary h-11 flex-1 justify-center">
+                Volver
+              </button>
+              <button
+                type="button"
+                onClick={submit}
+                disabled={isPending}
+                className="inline-flex h-11 flex-1 items-center justify-center rounded-[12px] bg-[#2B2A26] px-4 text-sm font-semibold text-white hover:bg-black disabled:opacity-50"
+              >
+                {isPending ? 'Confirmando...' : 'Sí, confirmar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {selected && (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-edge bg-white px-4 py-3 pb-[calc(12px+env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(43,42,38,0.08)]">
           <div className="mx-auto flex max-w-[1120px] flex-wrap items-center justify-between gap-3 sm:px-4">
             <p className="text-sm text-ink">
-              Vas a pedir <span className="font-semibold">{selected.label}</span>
+              Vas a recuperar <span className="font-semibold">{selected.label}</span>
             </p>
             <div className="flex items-center gap-3 max-sm:w-full max-sm:flex-col">
               {error && <p className="text-sm text-danger">{error}</p>}
               <button
                 type="button"
-                onClick={submit}
+                onClick={() => setConfirming(true)}
                 disabled={isPending}
                 className="inline-flex h-11 items-center justify-center rounded-[12px] bg-[#2B2A26] px-6 text-sm font-semibold text-white hover:bg-black disabled:opacity-50 max-sm:w-full"
               >
-                {isPending ? 'Enviando...' : 'Pedir esta clase'}
+                {isPending ? 'Confirmando...' : 'Elegir esta clase'}
               </button>
             </div>
           </div>

@@ -33,7 +33,7 @@ export async function updateStudioSettings(formData: FormData) {
   if (!user) return { error: 'No autenticado.' }
   const { data: profile } = await supabase.from('profiles').select('roles').eq('id', user.id).maybeSingle()
   if (!profile?.roles?.includes('admin')) return { error: 'No tenés permisos.' }
-  const cancellationMinHours = Number(formData.get('cancellation_min_hours') ?? 2)
+  const cancellationMinHours = Number(formData.get('cancellation_min_hours') ?? 4)
   const paymentDueDay = Number(formData.get('payment_due_day') ?? 10)
   const paymentReminderDaysBefore = Number(formData.get('payment_reminder_days_before') ?? 3)
   const dropInPrice1 = Number(formData.get('drop_in_price_1') ?? 10000)

@@ -118,7 +118,7 @@ export default async function AlumnoDashboard() {
 
   const firstName = profile?.full_name?.split(' ')[0] ?? null
   // El plazo sale de la configuración del estudio. El 12 es solo el valor de respaldo que usa también la acción de avisar.
-  const minHours = settings?.cancellation_min_hours ?? 12
+  const minHours = settings?.cancellation_min_hours ?? 4
   const minHoursText = formatHours(minHours)
   const status = subscriptionStatus(
     subscription ?? null,
@@ -271,8 +271,16 @@ export default async function AlumnoDashboard() {
         typeName: r.classes.class_types?.name ?? 'Clase',
         instructor: r.classes.profiles?.full_name ?? null,
         state: 'recovery',
-        note: origin ? `Por tu clase del ${dayDate(origin.session_date)}` : 'Recuperación aprobada',
-        // TODO: "Avisar que no voy" en una recuperación: la acción necesita una inscripción fija y acá no hay.
+        note: origin ? `Por tu clase del ${dayDate(origin.session_date)}` : 'Recuperación confirmada',
+        recoveryCancel:
+          !past && r.recovery_credit_id
+            ? {
+                creditId: r.recovery_credit_id,
+                onTime: hoursUntil(r.session_date, r.classes.start_time) >= minHours,
+                whenLabel: whenLabel(r.session_date, today),
+                start,
+              }
+            : undefined,
       })
     }
 

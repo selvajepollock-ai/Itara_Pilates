@@ -19,6 +19,7 @@ const EMOJI: Record<string, { emoji: string; bg: string }> = {
   recovery_approved: { emoji: '✅', bg: '#E3F4E6' },
   recovery_rejected: { emoji: '🔄', bg: '#E3EEFB' },
   class_cancelled: { emoji: '🗓️', bg: '#FDE6E1' },
+  spot_freed: { emoji: '🙋‍♀️', bg: '#E3F4E6' },
 }
 const FALLBACK = { emoji: '🔔', bg: '#FDF0D5' }
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)

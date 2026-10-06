@@ -7,6 +7,7 @@ import {
   Wallet,
   BarChart3,
   Megaphone,
+  Settings2,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -48,6 +49,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/admin/planes', label: 'Planes', icon: CreditCard },
       { href: '/admin/instructores', label: 'Equipo', icon: UserCog },
+      { href: '/admin/perfil', label: 'Ajustes del estudio', icon: Settings2 },
     ],
   },
 ]
