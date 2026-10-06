@@ -1,9 +1,24 @@
 /** Aviso del estudio, tal como se ve en el panel del alumno e instructor (y en la vista previa de Comunicados). */
-export function AnnouncementCard({ message, action }: { message: string; action?: React.ReactNode }) {
+export function AnnouncementCard({
+  message,
+  action,
+  urgent = false,
+}: {
+  message: string
+  action?: React.ReactNode
+  /** Comunicado importante: borde rojo y etiqueta "Aviso importante". */
+  urgent?: boolean
+}) {
   return (
-    <div className="flex items-start gap-2 rounded-2xl border border-edge border-l-4 border-l-[#C9962E] bg-white py-3 pl-4 pr-3">
+    <div
+      className={`flex items-start gap-2 rounded-2xl border border-edge border-l-4 bg-white py-3 pl-4 pr-3 ${
+        urgent ? 'border-l-[#E5484D]' : 'border-l-[#C9962E]'
+      }`}
+    >
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-warning-ink">Aviso del estudio</p>
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-warning-ink">
+          {urgent ? '⭐ Aviso importante' : 'Aviso del estudio'}
+        </p>
         <p className="mt-1 text-sm leading-snug text-ink">{message}</p>
       </div>
       {action}

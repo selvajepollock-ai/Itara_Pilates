@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Itara · Comunicados (escritorio)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400;1,9..144,500&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#3F5B46}a:hover{color:#2F4A36}
+button,textarea,input{font-family:inherit}
+button{cursor:pointer}
+.tplcard:hover{border-color:#CFC4B3 !important;box-shadow:0 4px 14px rgba(43,42,38,0.08)}
+textarea:focus{outline:2px solid #CFDDD1;outline-offset:0}
+</style>
+</helmet>
+<div style="display: flex; min-height: 1500px; background: #FFFFFF; font-family: 'Work Sans', system-ui, sans-serif; color: #2B2A26; font-variant-numeric: tabular-nums">
+
+  <aside style="width: 248px; flex-shrink: 0; box-sizing: border-box; background: #FFFFFF; border-right: 1px solid #EEE8DF; padding: 22px 16px; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+      <div style="width: 36px; height: 36px; border-radius: 999px; background: #E9DFD0; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 18px; color: #8A5A3C">I</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 20px; line-height: 1">Itara</span>
+        <span style="font-size: 10px; letter-spacing: 0.18em; color: #6B6459; margin-top: 3px">PILATES</span>
+      </div>
+    </div>
+    <nav aria-label="Navegación principal" style="display: flex; flex-direction: column; gap: 2px">
+      <a href="Main.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Inicio</a>
+      <a href="Semana.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Horarios</a>
+      <a href="Alumnos.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Alumnos</a>
+      <a href="PagosResumen.dc.html" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; color: #3A3832; text-decoration: none; font-size: 14px">Pagos</a>
+      <a href="#" style="display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px; background: {{accent}}; color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 500">Comunicados</a>
+    </nav>
+  </aside>
+
+  <main style="flex-grow: 1; min-width: 0; padding: 32px 40px 48px; box-sizing: border-box">
+    <div style="max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px">
+
+      <header style="display: flex; flex-direction: column; gap: 6px">
+        <h1 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 400; font-size: 38px; line-height: 1.1">Comunicados</h1>
+        <span style="font-size: 14px; color: #4A463F">Avisos que aparecen en el panel de alumnos e instructores al entrar a la app.</span>
+      </header>
+
+      <div style="display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 24px; align-items: start">
+
+        <div style="display: flex; flex-direction: column; gap: 16px">
+
+          <section aria-label="Paso 1: a quién" style="padding: 22px; border: 1px solid #EEE8DF; border-radius: 18px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05); display: flex; flex-direction: column; gap: 14px">
+            <div style="display: flex; align-items: center; gap: 10px">
+              <span style="width: 26px; height: 26px; border-radius: 999px; background: #2B2A26; color: #FFFFFF; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center">1</span>
+              <h2 style="margin: 0; font-size: 17px; font-weight: 600">¿A quién le escribís?</h2>
+            </div>
+            <div role="radiogroup" aria-label="Destinatarios" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+              <sc-for list="{{audiences}}" as="a" hint-placeholder-count="3">
+                <button type="button" role="radio" aria-checked="{{a.active}}" onClick="{{a.pick}}" style="{{a.style}}">
+                  <span style="font-size: 26px; line-height: 1">{{a.emoji}}</span>
+                  <span style="font-size: 15px; font-weight: 600">{{a.label}}</span>
+                  <span style="{{a.subStyle}}">{{a.sub}}</span>
+                </button>
+              </sc-for>
+            </div>
+            <sc-if value="{{isPeople}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 46px; padding: 6px 10px; border: 1px solid #E2D9CC; border-radius: 12px; box-sizing: border-box">
+                  <sc-for list="{{people}}" as="p" hint-placeholder-count="1">
+                    <span style="display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 6px 0 10px; border-radius: 999px; background: #E1EBE2; color: #2F4A36; font-size: 13px; font-weight: 500">{{p}} <button type="button" aria-label="Quitar a {{p}}" style="border: none; background: transparent; color: #2F4A36; width: 22px; height: 22px">✕</button></span>
+                  </sc-for>
+                  <input type="search" placeholder="Buscar alumno o instructor…" aria-label="Agregar destinatario" style="border: none; outline: none; font-size: 14px; flex-grow: 1; min-width: 160px; height: 30px">
+                </div>
+                <sc-if value="{{showBirthdays}}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size: 13px; color: #4A463F">🎂 Cumplen pronto: <strong style="font-weight: 600">Marcio Klauk</strong> (dom 4) · <strong style="font-weight: 600">Carmen Karg</strong> (sáb 10)</span>
+                </sc-if>
+              </div>
+            </sc-if>
+            <sc-if value="{{isClass}}" hint-placeholder-val="{{ false }}">
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+                <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #6B6459">Día y fecha
+                  <select style="height: 44px; padding: 0 10px; border: 1px solid #E2D9CC; border-radius: 12px; font-size: 14px; color: #2B2A26; background: #FFFFFF"><option>Martes 6 de octubre</option></select>
+                </label>
+                <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #6B6459">Clase
+                  <select style="height: 44px; padding: 0 10px; border: 1px solid #E2D9CC; border-radius: 12px; font-size: 14px; color: #2B2A26; background: #FFFFFF"><option>18:00 · Reformer (7 alumnos)</option></select>
+                </label>
+              </div>
+            </sc-if>
+          </section>
+
+          <section aria-label="Paso 2: qué querés decir" style="padding: 22px; border: 1px solid #EEE8DF; border-radius: 18px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05); display: flex; flex-direction: column; gap: 14px">
+            <div style="display: flex; align-items: center; justify-content: space-between">
+              <div style="display: flex; align-items: center; gap: 10px">
+                <span style="width: 26px; height: 26px; border-radius: 999px; background: #2B2A26; color: #FFFFFF; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center">2</span>
+                <h2 style="margin: 0; font-size: 17px; font-weight: 600">¿Qué querés decir?</h2>
+              </div>
+              <span style="font-size: 13px; color: #6B6459">Elegí un modelo o escribí desde cero</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px">
+              <sc-for list="{{templates}}" as="t" hint-placeholder-count="6">
+                <button type="button" class="tplcard" onClick="{{t.use}}" aria-pressed="{{t.active}}" style="{{t.style}}">
+                  <span style="{{t.bubble}}">{{t.emoji}}</span>
+                  <span style="font-size: 14px; font-weight: 600; color: #2B2A26">{{t.label}}</span>
+                  <span style="font-size: 12px; color: #6B6459">{{t.hint}}</span>
+                </button>
+              </sc-for>
+              <button type="button" class="tplcard" onClick="{{writeFree}}" aria-pressed="{{freeActive}}" style="{{freeStyle}}">
+                <span style="width: 36px; height: 36px; border-radius: 11px; background: #F5F1EB; display: flex; align-items: center; justify-content: center; font-size: 20px; line-height: 1">✏️</span>
+                <span style="font-size: 14px; font-weight: 600; color: #2B2A26">Mensaje libre</span>
+                <span style="font-size: 12px; color: #6B6459">Escribí lo que quieras</span>
+              </button>
+            </div>
+            <sc-if value="{{tplNotice}}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 10px 12px; border-radius: 12px; background: #F4F8F4; font-size: 13px; color: #2F4A36">{{tplNoticeText}}</div>
+            </sc-if>
+            <label style="display: flex; flex-direction: column; gap: 8px">
+              <span style="font-size: 14px; font-weight: 600">Mensaje</span>
+              <textarea value="{{message}}" onInput="{{onMessage}}" rows="4" placeholder="Ej: El estudio permanece cerrado el lunes 12 de octubre por feriado." style="resize: vertical; min-height: 110px; padding: 12px 14px; border: 1px solid #E2D9CC; border-radius: 12px; font-size: 15px; line-height: 1.5; color: #2B2A26; box-sizing: border-box"></textarea>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; color: #6B6459">
+                <span>{{bracketHint}}</span>
+                <span>{{charCount}}</span>
+              </div>
+            </label>
+          </section>
+
+          <section aria-label="Paso 3: cuánto tiempo" style="padding: 22px; border: 1px solid #EEE8DF; border-radius: 18px; box-shadow: 0 1px 2px rgba(43,42,38,0.04), 0 2px 8px rgba(43,42,38,0.05); display: flex; flex-direction: column; gap: 14px">
+            <div style="display: flex; align-items: center; gap: 10px">
+              <span style="width: 26px; height: 26px; border-radius: 999px; background: #2B2A26; color: #FFFFFF; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center">3</span>
+              <h2 style="margin: 0; font-size: 17px; font-weight: 600">¿Cuánto tiempo se muestra?</h2>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap">
+              <sc-for list="{{durations}}" as="d" hint-placeholder-count="4">
+                <button type="button" onClick="{{d.pick}}" aria-pressed="{{d.active}}" style="{{d.style}}">{{d.label}}</button>
+              </sc-for>
+            </div>
+            <span style="font-size: 13px; color: #6B6459">{{durationHint}}</span>
+            <label style="display: flex; align-items: flex-start; gap: 12px; padding: 14px; border-radius: 14px; background: #FAF8F5; cursor: pointer">
+              <input type="checkbox" checked="{{important}}" onChange="{{toggleImportant}}" style="width: 18px; height: 18px; margin-top: 2px; accent-color: #4F6B55">
+              <span style="display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: 14px; font-weight: 600">⭐ Es importante</span>
+                <span style="font-size: 13px; color: #4A463F">Además de la campanita, aparece como ventana emergente cuando entran a la app.</span>
+              </span>
+            </label>
+          </section>
+        </div>
+
+        <aside aria-label="Vista previa y resumen" style="display: flex; flex-direction: column; gap: 14px; position: sticky; top: 16px">
+          <span style="font-size: 13px; font-weight: 600; color: #4A463F">Así lo van a ver</span>
+          <div aria-hidden="true" style="width: 300px; align-self: center; border-radius: 36px; border: 10px solid #2B2A26; background: #FBF8F4; padding: 22px 16px 26px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 12px 32px rgba(43,42,38,0.14)">
+            <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 22px">Hola, {{previewName}}</span>
+            <div style="{{previewCardStyle}}">
+              <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.04em; color: #8A5A12">{{previewLabel}}</span>
+              <span style="{{previewStyle}}">{{previewText}}</span>
+            </div>
+            <div style="height: 64px; border-radius: 14px; background: #FFFFFF; border: 1px solid #EEE8DF"></div>
+            <div style="height: 48px; border-radius: 14px; background: #FFFFFF; border: 1px solid #EEE8DF"></div>
+          </div>
+
+          <div style="padding: 16px; border: 1px solid #EEE8DF; border-radius: 16px; display: flex; flex-direction: column; gap: 10px">
+            <span style="font-size: 13px; font-weight: 600">Resumen</span>
+            <div style="display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px"><span style="color: #6B6459">Para</span><span style="font-weight: 500; text-align: right">{{sumTo}}</span></div>
+            <div style="display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px"><span style="color: #6B6459">Se ve</span><span style="font-weight: 500; text-align: right">{{sumUntil}}</span></div>
+            <div style="display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px"><span style="color: #6B6459">Ventana emergente</span><span style="font-weight: 500">{{sumImportant}}</span></div>
+            <button type="button" disabled="{{cantSend}}" style="{{sendStyle}}">Publicar comunicado</button>
+            <button type="button" onClick="{{clear}}" style="height: 40px; border-radius: 12px; border: none; background: transparent; color: #6B6459; font-size: 13.5px">Descartar</button>
+            <sc-if value="{{pendingBrackets}}" hint-placeholder-val="{{ false }}">
+              <span style="font-size: 12.5px; color: #9A4A1E; text-align: center">Completá los datos entre [corchetes] antes de publicar.</span>
+            </sc-if>
+          </div>
+        </aside>
+      </div>
+
+      <section aria-label="Comunicados publicados" style="display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; align-items: center; justify-content: space-between">
+          <h2 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 500; font-size: 26px">Publicados</h2>
+          <div role="tablist" aria-label="Filtrar publicados" style="display: flex; padding: 3px; background: #F5F1EB; border-radius: 12px">
+            <sc-for list="{{histTabs}}" as="h" hint-placeholder-count="3">
+              <button type="button" role="tab" aria-selected="{{h.active}}" onClick="{{h.pick}}" style="{{h.style}}">{{h.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="border: 1px solid #EEE8DF; border-radius: 16px; overflow: hidden">
+          <sc-for list="{{history}}" as="m" hint-placeholder-count="3">
+            <div style="display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-bottom: 1px solid #F3EEE6">
+              <span aria-hidden="true" style="{{m.bubble}}">{{m.emoji}}</span>
+              <div style="display: flex; flex-direction: column; gap: 6px; flex-grow: 1; min-width: 0">
+                <span style="font-size: 15px">{{m.text}}</span>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12.5px; color: #6B6459">
+                  <span style="font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 9px; background: #E1EBE2; color: #2F4A36">Visible</span>
+                  <span style="font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 9px; background: #F1EDE6; color: #4A463F">Para: {{m.to}}</span>
+                  <span>Publicado {{m.date}} · {{m.until}}</span>
+                </div>
+              </div>
+              <button type="button" aria-label="Acciones del comunicado: usar como modelo o eliminar" style="width: 36px; height: 36px; border-radius: 10px; border: none; background: transparent; color: #6B6459">⋯</button>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#4F6B55","options":["#4F6B55","#3F5B46","#6B5B45"]},"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { audience: 'todos', tpl: null, message: '', duration: 'nunca', important: false, hist: 'visibles', notice: '' };
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#4F6B55';
+    const st = this.state || {};
+    const audience = st.audience || 'todos';
+    const message = st.message || '';
+    const duration = st.duration || 'nunca';
+    const MAX = 280;
+    const audDefs = [
+      ['todos', '👥', 'Todos', '159 alumnos y 3 instructores'],
+      ['personas', '🙋‍♀️', 'Personas puntuales', 'Una o varias personas'],
+      ['clase', '🧘‍♀️', 'Una clase', 'Los anotados en un horario']
+    ];
+    const audiences = audDefs.map((a) => {
+      const on = audience === a[0];
+      return {
+        emoji: a[1], label: a[2], sub: a[3], active: on,
+        pick: () => this.setState({ audience: a[0] }),
+        style: 'display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:16px;border-radius:14px;text-align:left;color:#2B2A26;' + (on ? 'background:#F4F8F4;border:2px solid ' + accent : 'background:#FFFFFF;border:1px solid #E2D9CC;margin:1px'),
+        subStyle: 'font-size:12.5px;' + (on ? 'color:#2F4A36' : 'color:#6B6459')
+      };
+    });
+    const tplDefs = [
+      { id: 'cumple', emoji: '🎂', bg: '#FCE4EF', label: 'Cumpleaños', aud: 'personas', hint: 'Para una persona', text: '¡Feliz cumpleaños, [nombre]! 🎉 Todo el equipo de Itara te desea un año lleno de movimiento y bienestar.' },
+      { id: 'cancelada', emoji: '🚫', bg: '#FDE6E1', label: 'Clase cancelada', aud: 'clase', hint: 'Una clase · con recuperación', text: 'La clase del [día] a las [hora] se suspende. Ya tenés tu recuperación disponible en la app para usar esta semana.' },
+      { id: 'cierre', emoji: '⚠️', bg: '#FDE6E1', label: 'Cierre del estudio', aud: 'todos', hint: 'Fuerza mayor · con recuperación', text: 'Por [motivo], el estudio permanece cerrado el [día]. Si tenías clase ese día, tu recuperación ya está disponible en la app.' },
+      { id: 'feriado', emoji: '🗓️', bg: '#FDF0D5', label: 'Feriado', aud: 'todos', hint: 'Para todos · sin recuperación', text: 'El [día] es feriado y el estudio permanece cerrado. Las clases de ese día no se recuperan. ¡Nos vemos a la vuelta!' },
+      { id: 'cuota', emoji: '💳', bg: '#E3F4E6', label: 'Recordatorio de cuota', aud: 'todos', hint: 'Para todos', text: 'Recordá que la cuota vence el día 1 y desde el día 11 tiene un recargo del 10%. Podés abonar en el estudio.' },
+      { id: 'bienvenida', emoji: '👋', bg: '#EFE7FB', label: 'Bienvenida', aud: 'personas', hint: 'Para alumnos nuevos', text: '¡Te damos la bienvenida a Itara, [nombre]! Desde la app ves tus clases y podés avisar si un día no venís.' },
+      { id: 'novedades', emoji: '✨', bg: '#FDF0D5', label: 'Novedades', aud: 'todos', hint: 'Para todos', text: '¡Tenemos novedades en Itara! [Contá la novedad acá]. Cualquier consulta, escribinos.' }
+    ];
+    const audLabels = { todos: 'Todos', personas: 'Personas puntuales', clase: 'Una clase' };
+    const firstNames = { cumple: 'Marcio', bienvenida: 'Lucía' };
+    const fill = (t) => {
+      let s = t.text;
+      if (firstNames[t.id]) s = s.replace('[nombre]', firstNames[t.id]);
+      if (t.aud === 'clase') s = s.replace('[día]', 'martes 6').replace('[hora]', '18:00');
+      return s;
+    };
+    const freeOn = st.tpl === 'libre';
+    const templates = tplDefs.map((t) => {
+      const on = st.tpl === t.id;
+      return {
+        emoji: t.emoji, label: t.label, hint: t.hint, active: on,
+        use: () => this.setState({ tpl: t.id, message: fill(t), audience: t.aud, notice: t.aud !== audience ? 'Cambiamos el destinatario a "' + audLabels[t.aud] + '", que es lo habitual para este modelo. Podés cambiarlo en el paso 1.' : '' }),
+        bubble: 'width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;line-height:1;background:' + t.bg,
+        style: 'display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:14px;border-radius:14px;text-align:left;min-height:116px;transition:box-shadow 150ms;' + (on ? 'background:#F4F8F4;border:2px solid ' + accent : 'background:#FFFFFF;border:1px solid #E2D9CC;margin:1px')
+      };
+    });
+    const durDefs = [['nunca', 'Hasta que lo elimine'], ['semana', '1 semana'], ['mes', '1 mes'], ['fecha', 'Hasta una fecha']];
+    const durHints = { nunca: 'Queda visible hasta que lo elimines.', semana: 'Se oculta solo el martes 13 de octubre.', mes: 'Se oculta solo el viernes 6 de noviembre.', fecha: 'Elegí la fecha en que se oculta.' };
+    const durShort = { nunca: 'Hasta que lo elimines', semana: 'Hasta el 13 de octubre', mes: 'Hasta el 6 de noviembre', fecha: 'Hasta la fecha elegida' };
+    const people = st.tpl === 'cumple' ? ['Marcio Klauk'] : (st.tpl === 'bienvenida' ? ['Lucía Pereyra'] : ['Karina Horianski']);
+    const sumTo = { todos: 'Todos · 162 personas', personas: people.join(', '), clase: 'Martes 6 · 18:00 (7 alumnos)' }[audience];
+    const hasBrackets = /\[[^\]]+\]/.test(message);
+    const cantSend = message.trim().length === 0 || hasBrackets;
+    const previewName = audience === 'personas' && st.tpl === 'cumple' ? 'Marcio' : 'Ana';
+    const hist = st.hist || 'visibles';
+    const allHist = [
+      { emoji: '💬', bg: '#F1EDE6', text: 'Holiwis', to: 'Victoria Pollock', date: '5 oct', until: 'sin vencimiento' },
+      { emoji: '💬', bg: '#F1EDE6', text: 'Notificación de prueba PUSH', to: 'Victoria Pollock', date: '5 oct', until: 'sin vencimiento' },
+      { emoji: '💬', bg: '#F1EDE6', text: 'Test mensaje a persona puntual.', to: 'Victoria Pollock', date: '23 ago', until: 'sin vencimiento' }
+    ];
+    const histDefs = [['visibles', 'Visibles'], ['ocultos', 'Ocultos'], ['todos', 'Todos']];
+    return {
+      accent,
+      audiences,
+      isPeople: audience === 'personas',
+      isClass: audience === 'clase',
+      people,
+      showBirthdays: st.tpl === 'cumple',
+      templates,
+      writeFree: () => this.setState({ tpl: 'libre', message: '', notice: '' }),
+      freeActive: freeOn,
+      freeStyle: 'display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:14px;border-radius:14px;text-align:left;min-height:116px;' + (freeOn ? 'background:#F4F8F4;border:2px solid ' + accent : 'background:#FFFFFF;border:1.5px dashed #D9CFC0'),
+      tplNotice: !!st.notice,
+      tplNoticeText: st.notice || '',
+      message,
+      onMessage: (e) => this.setState({ message: e.target.value.slice(0, MAX) }),
+      charCount: message.length + ' / ' + MAX,
+      bracketHint: hasBrackets ? 'Reemplazá lo que está entre [corchetes].' : '',
+      durations: durDefs.map((d) => ({
+        label: d[1], active: duration === d[0], pick: () => this.setState({ duration: d[0] }),
+        style: 'height:36px;padding:0 14px;border-radius:999px;font-size:13px;' + (duration === d[0] ? 'background:#2B2A26;color:#FFFFFF;border:1px solid #2B2A26;font-weight:600' : 'background:#FFFFFF;color:#2B2A26;border:1px solid #E2D9CC')
+      })),
+      durationHint: durHints[duration],
+      important: !!st.important,
+      toggleImportant: () => this.setState({ important: !st.important }),
+      previewName,
+      previewLabel: st.important ? '⭐ AVISO IMPORTANTE' : 'AVISO DEL ESTUDIO',
+      previewCardStyle: 'padding:12px 14px;border-radius:14px;background:#FFFFFF;border:1px solid #E8DFC9;display:flex;flex-direction:column;gap:6px;' + (st.important ? 'border-left:4px solid #E5484D' : 'border-left:4px solid #C9962E'),
+      previewText: message.trim() ? message : 'Escribí el mensaje para ver cómo queda.',
+      previewStyle: 'font-size:13.5px;line-height:1.45;' + (message.trim() ? 'color:#2B2A26' : 'color:#A39C90;font-style:italic'),
+      sumTo,
+      sumUntil: durShort[duration],
+      sumImportant: st.important ? 'Sí' : 'No',
+      pendingBrackets: hasBrackets,
+      cantSend,
+      sendStyle: 'height:46px;margin-top:6px;border-radius:12px;border:none;font-size:14.5px;font-weight:600;' + (cantSend ? 'background:#D9D3C8;color:#FFFFFF;cursor:not-allowed' : 'background:' + accent + ';color:#FFFFFF'),
+      clear: () => this.setState({ message: '', tpl: null, notice: '' }),
+      histTabs: histDefs.map((h) => ({ label: h[1], active: hist === h[0], pick: () => this.setState({ hist: h[0] }), style: 'height:34px;padding:0 12px;border-radius:9px;border:none;font-size:13px;' + (hist === h[0] ? 'background:#FFFFFF;color:#2B2A26;font-weight:600;box-shadow:0 1px 3px rgba(43,42,38,0.12)' : 'background:transparent;color:#4A463F') })),
+      history: (hist === 'ocultos' ? [] : allHist).map((m) => Object.assign({}, m, { bubble: 'width:40px;height:40px;flex-shrink:0;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;background:' + m.bg }))
+    };
+  }
+}
+</script>
+</body>
+</html>

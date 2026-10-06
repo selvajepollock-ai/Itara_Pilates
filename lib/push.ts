@@ -115,7 +115,7 @@ export async function resolveAnnouncementRecipients({
       ])
       return [...(enrolled ?? []).map((e) => e.student_id as string), ...(cls?.instructor_id ? [cls.instructor_id as string] : [])]
     }
-    const { data } = await admin.from('profiles').select('id').overlaps('roles', ['student', 'instructor'])
+    const { data } = await admin.from('profiles').select('id').overlaps('roles', ['student'])
     return (data ?? []).map((p) => p.id as string)
   } catch {
     return []
