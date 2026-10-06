@@ -81,6 +81,7 @@ export default async function AlumnoDashboard() {
     { data: activePlans },
     { data: recoveriesData },
     { data: studioCancellations },
+    { data: holidaysData },
   ] = await Promise.all([
     supabase
       .from('enrollments')
@@ -115,7 +116,9 @@ export default async function AlumnoDashboard() {
       .gte('session_date', since)
       .lte('session_date', nextSunday),
     supabase.from('class_cancellations').select('class_id, session_date, reason').gte('session_date', since).lte('session_date', nextSunday),
+    supabase.from('holidays').select('date, label').gte('date', since).lte('date', nextSunday),
   ])
+  const holidayByDate = new Map((holidaysData ?? []).map((h) => [h.date as string, (h.label as string | null) ?? null]))
 
   const firstName = profile?.full_name?.split(' ')[0] ?? null
   // El plazo sale de la configuración del estudio. El 12 es solo el valor de respaldo que usa también la acción de avisar.
@@ -194,6 +197,13 @@ export default async function AlumnoDashboard() {
         start,
         typeName: c.class_types?.name ?? 'Clase',
         instructor: c.profiles?.full_name ?? null,
+      }
+
+      // Feriado: no hay clase y no genera recuperación.
+      if (holidayByDate.has(date)) {
+        const label = holidayByDate.get(date)
+        rows.push({ ...base, state: 'studio', note: label ? `Feriado: ${label}` : 'Feriado, sin clase' })
+        continue
       }
 
       if (studioCancelled) {
