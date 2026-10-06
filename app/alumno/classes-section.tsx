@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { undoSessionCancellation } from '@/app/actions/recovery'
+import { cancelRecovery, undoSessionCancellation } from '@/app/actions/recovery'
 import { AvoidDialog } from './avoid-dialog'
 import { dayShortName } from './format'
 import type { AvoidInfo, ClassRowData, ClassState, ClassWeek } from './types'
@@ -31,10 +31,12 @@ function Row({
   row,
   onAvoid,
   onUndo,
+  onCancelRecovery,
 }: {
   row: ClassRowData
   onAvoid: (info: AvoidInfo) => void
   onUndo: (u: NonNullable<ClassRowData['undo']>) => void
+  onCancelRecovery: (r: NonNullable<ClassRowData['recoveryCancel']>) => void
 }) {
   const chip = CHIPS[row.state]
   const struck = STRUCK.includes(row.state)
@@ -68,7 +70,7 @@ function Row({
         </p>
       </div>
 
-      {(row.avoid || row.undo || row.chooseCreditId) && (
+      {(row.avoid || row.undo || row.chooseCreditId || row.recoveryCancel) && (
         <div className="flex shrink-0 items-center gap-2.5 max-sm:w-full max-sm:flex-col">
           {row.undo && (
             <button
@@ -87,6 +89,11 @@ function Row({
           {row.avoid && (
             <button type="button" onClick={() => onAvoid(row.avoid!)} className={BTN_SECONDARY}>
               Avisar que no voy
+            </button>
+          )}
+          {row.recoveryCancel && (
+            <button type="button" onClick={() => onCancelRecovery(row.recoveryCancel!)} className={BTN_SECONDARY}>
+              Cancelar recuperación
             </button>
           )}
         </div>
@@ -118,6 +125,18 @@ export function ClassesSection({
     })
   }
 
+  function cancelRec(r: NonNullable<ClassRowData['recoveryCancel']>) {
+    const msg = r.onTime
+      ? `¿Cancelar tu recuperación ${r.whenLabel} a las ${r.start}? Tu recuperación vuelve a estar disponible para elegir otro horario esta semana.`
+      : `Faltan menos de ${minHoursText}: si cancelás tu recuperación ${r.whenLabel} a las ${r.start}, la perdés y no vuelve a estar disponible. ¿Querés cancelarla igual?`
+    if (!confirm(msg)) return
+    startTransition(async () => {
+      const res = await cancelRecovery({ studentId, creditId: r.creditId })
+      if (res && 'error' in res && res.error) alert(res.error)
+      router.refresh()
+    })
+  }
+
   return (
     <section>
       <h2 className="font-display text-[22px] font-normal italic leading-tight text-ink">Tus clases</h2>
@@ -133,7 +152,7 @@ export function ClassesSection({
           ) : (
             <ul className="mt-2 overflow-hidden rounded-2xl border border-edge bg-white">
               {w.rows.map((r) => (
-                <Row key={r.key} row={r} onAvoid={setAvoid} onUndo={undo} />
+                <Row key={r.key} row={r} onAvoid={setAvoid} onUndo={undo} onCancelRecovery={cancelRec} />
               ))}
             </ul>
           )}

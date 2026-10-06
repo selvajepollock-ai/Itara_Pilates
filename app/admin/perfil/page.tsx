@@ -39,7 +39,7 @@ export default async function PerfilPage() {
         <div className="mt-4">
           <StudioSettingsForm
             settings={{
-              cancellation_min_hours: settings?.cancellation_min_hours ?? 2,
+              cancellation_min_hours: settings?.cancellation_min_hours ?? 4,
               payment_due_day: settings?.payment_due_day ?? 10,
               payment_reminder_days_before: settings?.payment_reminder_days_before ?? 3,
               drop_in_price_1: settings?.drop_in_price_1 ?? 10000,

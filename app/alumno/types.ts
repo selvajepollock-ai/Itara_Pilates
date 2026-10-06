@@ -41,6 +41,8 @@ export type ClassRowData = {
   undo?: { enrollmentId: string; classId: string; sessionDate: string }
   /** "Avisar que no voy". */
   avoid?: AvoidInfo
+  /** "Cancelar recuperación" (solo en recuperaciones confirmadas que todavía no empezaron). */
+  recoveryCancel?: { creditId: string; onTime: boolean; whenLabel: string; start: string }
 }
 
 export type ClassWeek = { title: string; range: string; rows: ClassRowData[] }

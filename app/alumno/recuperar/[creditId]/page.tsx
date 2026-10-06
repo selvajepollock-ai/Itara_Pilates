@@ -183,8 +183,8 @@ export default async function RecuperarPage({
       </dl>
 
       <p className="mt-4 text-[13.5px] text-muted">
-        Solo se muestran clases con lugar, del mismo tipo y con tu mismo profesor. El estudio tiene que aprobar el horario
-        que elijas.
+        Solo se muestran clases con lugar, del mismo tipo y con tu mismo profesor. Al elegir una, queda confirmada al
+        instante.
       </p>
 
       <div className="mt-6">
