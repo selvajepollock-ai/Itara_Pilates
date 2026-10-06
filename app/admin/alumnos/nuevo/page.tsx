@@ -49,6 +49,9 @@ export default async function NuevoAlumnoPage({
 
   const dueDay = settings?.payment_due_day ?? 10
   const defaultEndDate = suggestNextDueDate(new Date(`${todayART()}T12:00:00`), dueDay)
+  // "Todavía no pagó": la cobertura termina el último día del mes anterior, así queda pendiente de cobro.
+  const [artYear, artMonth] = todayART().split('-').map(Number)
+  const previousMonthEnd = new Date(Date.UTC(artYear, artMonth - 1, 0)).toISOString().slice(0, 10)
 
   const countByClass = new Map<string, number>()
   for (const e of enrollments ?? []) countByClass.set(e.class_id, (countByClass.get(e.class_id) ?? 0) + 1)
@@ -78,6 +81,7 @@ export default async function NuevoAlumnoPage({
       plans={plans ?? []}
       classOptions={classOptions}
       defaultEndDate={defaultEndDate}
+      previousMonthEnd={previousMonthEnd}
       requestId={params.requestId}
       defaultFirstName={params.first_name ?? ''}
       defaultLastName={params.last_name ?? ''}
