@@ -90,7 +90,7 @@ export async function buildPeriodReport({
   const cuotas = (paymentsData ?? []).map((p) => {
     const sub = p.subscriptions as unknown as { student_id: string; plans: { name: string } | null } | null
     return {
-      Fecha: new Date(p.paid_at as string).toLocaleDateString('es-AR'),
+      Fecha: new Date(p.paid_at as string).toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' }),
       _ts: p.paid_at as string,
       Alumno: name(sub?.student_id),
       Concepto: 'Cuota',
@@ -101,7 +101,7 @@ export async function buildPeriodReport({
     }
   })
   const sueltas = (dropInData ?? []).map((c) => ({
-    Fecha: new Date(c.paid_at as string).toLocaleDateString('es-AR'),
+    Fecha: new Date(c.paid_at as string).toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' }),
     _ts: c.paid_at as string,
     Alumno: name(c.student_id),
     Concepto: 'Clase suelta',

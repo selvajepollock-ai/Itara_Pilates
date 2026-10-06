@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Trash2 } from 'lucide-react'
 import { recordInstructorPayout, deleteInstructorPayout } from '../actions'
 import { formatARS } from '@/lib/currency'
+import { todayART } from '@/lib/dates'
 
 type Payout = { id: string; amount: number; paid_at: string; notes: string | null }
 
@@ -105,7 +106,7 @@ export function PayoutForm({
             <input
               type="date"
               name="paid_at"
-              defaultValue={new Date().toISOString().slice(0, 10)}
+              defaultValue={todayART()}
               className="mt-1.5 w-full rounded-lg border border-sand bg-white px-3 py-2 text-sm outline-none focus:border-moss"
             />
           </div>

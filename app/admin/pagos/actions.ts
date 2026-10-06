@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { recordPayment, voidPayment, updatePayment } from '@/lib/payments'
+import { todayART } from '@/lib/dates'
 
 async function assertAdmin() {
   const supabase = await createClient()
@@ -182,7 +183,7 @@ export async function recordInstructorPayout(formData: FormData) {
     instructor_id: instructorId,
     month,
     amount,
-    paid_at: paidAt || new Date().toISOString().slice(0, 10),
+    paid_at: paidAt || todayART(),
     notes,
     created_by: auth.userId,
   })
