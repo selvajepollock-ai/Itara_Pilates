@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Itara · Horarios esta semana (tablet)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400;1,9..144,500&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#3F5B46}a:hover{color:#2F4A36}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 834px; height: 1600px; box-sizing: border-box; background: #FFFFFF; font-family: 'Work Sans', system-ui, sans-serif; color: #2B2A26; font-variant-numeric: tabular-nums; overflow: hidden">
+
+  <div style="padding: 24px 28px 110px; display: flex; flex-direction: column; gap: 16px">
+    <header style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+      <h1 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 400; font-size: 34px; line-height: 1.1">Horarios</h1>
+      <div style="display: flex; gap: 8px">
+        <a href="Feriados.dc.html" style="height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #2B2A26; font-size: 13.5px; display: flex; align-items: center; gap: 6px; text-decoration: none"><span aria-hidden="true">🗓️</span>Feriados</a>
+        <a href="#" style="height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #2B2A26; font-size: 13.5px; display: flex; align-items: center; gap: 6px; text-decoration: none"><span aria-hidden="true">🏷️</span>Tipos</a>
+        <button type="button" style="height: 44px; padding: 0 16px; border-radius: 12px; border: none; background: {{accent}}; color: #FFFFFF; font-size: 14px; font-weight: 600">+ Nueva clase</button>
+      </div>
+    </header>
+
+    <div role="tablist" aria-label="Vistas de horarios" style="display: flex; gap: 26px; border-bottom: 1px solid #EEE8DF">
+      <a href="#" role="tab" aria-selected="true" style="padding: 0 0 12px; font-size: 15px; font-weight: 600; color: #2B2A26; text-decoration: none; border-bottom: 2px solid {{accent}}; margin-bottom: -1px">Esta semana</a>
+      <a href="HorarioFijo.dc.html" role="tab" aria-selected="false" style="padding: 0 0 12px; font-size: 15px; color: #6B6459; text-decoration: none">Horario fijo</a>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 8px">
+      <button type="button" aria-label="Semana anterior" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; font-size: 16px">‹</button>
+      <button type="button" style="height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; font-size: 14px">Hoy</button>
+      <button type="button" aria-label="Semana siguiente" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF; font-size: 16px">›</button>
+      <span style="font-size: 16px; font-weight: 600; margin-left: 4px">5 – 9 oct 2026</span>
+    </div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap">
+      <span style="height: 30px; padding: 0 12px; border-radius: 999px; background: #E1EBE2; color: #2F4A36; font-size: 12.5px; font-weight: 600; display: inline-flex; align-items: center">{{freeFixed}} lugares fijos libres</span>
+      <span style="height: 30px; padding: 0 12px; border-radius: 999px; background: #FBEFC9; color: #7A5A0E; font-size: 12.5px; font-weight: 600; display: inline-flex; align-items: center">+{{toRecover}} para recuperar</span>
+      <span style="height: 30px; padding: 0 12px; border-radius: 999px; background: #E2ECF5; color: #255377; font-size: 12.5px; font-weight: 600; display: inline-flex; align-items: center">↻ {{recovering}} recuperaciones</span>
+      <span style="height: 30px; padding: 0 12px; border-radius: 999px; background: #F5E1DC; color: #9A3420; font-size: 12.5px; font-weight: 600; display: inline-flex; align-items: center">{{cancelled}} clases canceladas</span>
+    </div>
+
+    <section aria-label="Grilla de la semana" style="border: 1px solid #EEE8DF; border-radius: 16px; overflow: hidden">
+      <div style="display: grid; grid-template-columns: 52px repeat(5, minmax(0, 1fr)); background: #FAF8F5; border-bottom: 1px solid #EEE8DF">
+        <span></span>
+        <sc-for list="{{days}}" as="d" hint-placeholder-count="5">
+          <div style="{{d.style}}">
+            <span style="font-size: 13.5px; font-weight: 600">{{d.label}}</span>
+            <sc-if value="{{d.today}}" hint-placeholder-val="{{ false }}">
+              <span style="font-size: 10.5px; font-weight: 600; background: {{accent}}; color: #FFFFFF; border-radius: 999px; padding: 1px 7px">Hoy</span>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+      <sc-for list="{{rows}}" as="row" hint-placeholder-count="11">
+        <sc-if value="{{row.gapBefore}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 7px 12px; background: #FAF8F5; border-bottom: 1px solid #EEE8DF; font-size: 12px; color: #6B6459; text-align: center">Sin clases de 11 a 14 h</div>
+        </sc-if>
+        <div style="display: grid; grid-template-columns: 52px repeat(5, minmax(0, 1fr)); border-bottom: 1px solid #EEE8DF">
+          <div style="padding: 10px 0 0 10px; font-size: 13px; font-weight: 600; color: #4A463F">{{row.hour}}</div>
+          <sc-for list="{{row.cells}}" as="c" hint-placeholder-count="5">
+            <div style="display: flex; border-left: 1px solid #EEE8DF; min-height: 76px">
+              <sc-if value="{{c.exists}}" hint-placeholder-val="{{ true }}">
+                <button type="button" onClick="{{c.open}}" aria-label="{{c.aria}}" style="{{c.cellStyle}}">
+                  <span style="{{c.countStyle}}">{{c.main}}</span>
+                  <div style="height: 4px; width: 100%; border-radius: 999px; background: #EFE9DF; overflow: hidden"><div style="{{c.barStyle}}"></div></div>
+                  <div style="display: flex; gap: 3px; flex-wrap: wrap">
+                    <sc-for list="{{c.tags}}" as="t" hint-placeholder-count="1">
+                      <span style="{{t.style}}">{{t.label}}</span>
+                    </sc-for>
+                  </div>
+                </button>
+              </sc-if>
+              <sc-if value="{{c.empty}}" hint-placeholder-val="{{ false }}">
+                <div style="flex-grow: 1; background: #FCFBF9"></div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </sc-for>
+    </section>
+    <div style="display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: #4A463F">
+      <span>🟩 Libre: se puede anotar fijo</span><span>🟨 Para recuperar: solo esa fecha</span><span>🟦 ↻ Vienen a recuperar</span>
+    </div>
+  </div>
+
+  <nav aria-label="Navegación principal" style="position: absolute; left: 0; right: 0; bottom: 0; height: 72px; background: #FFFFFF; border-top: 1px solid #EEE8DF; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); box-sizing: border-box; font-size: 12px">
+    <a href="#" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: #6B6459">Inicio</a>
+    <a href="#" aria-current="page" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: {{accent}}; font-weight: 600">Horarios</a>
+    <a href="#" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: #6B6459">Alumnos</a>
+    <a href="#" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: #6B6459">Pagos</a>
+    <a href="#" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: #6B6459">Más</a>
+  </nav>
+
+  <sc-if value="{{hasSel}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: rgba(43,42,38,0.35); display: flex; align-items: flex-end; justify-content: center">
+      <div role="dialog" aria-modal="true" aria-label="Detalle de la clase" style="width: 100%; max-width: 640px; max-height: 80%; overflow: auto; background: #FFFFFF; border-radius: 22px 22px 0 0; padding: 18px 24px 28px; display: flex; flex-direction: column; gap: 14px; box-sizing: border-box">
+        <span style="width: 40px; height: 4px; border-radius: 999px; background: #E2D9CC; align-self: center"></span>
+        <div style="display: flex; align-items: flex-start; justify-content: space-between">
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 13px; color: #6B6459">Reformer</span>
+            <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 26px">{{sel.title}}</span>
+          </div>
+          <button type="button" onClick="{{closeSel}}" aria-label="Cerrar" style="width: 44px; height: 44px; border-radius: 12px; border: none; background: transparent; font-size: 18px; color: #6B6459">✕</button>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+          <div style="padding: 10px; border-radius: 12px; background: #FAF8F5"><span style="font-size: 20px; font-weight: 600; display: block">{{sel.attending}}</span><span style="font-size: 12px; color: #6B6459">vienen</span></div>
+          <div style="padding: 10px; border-radius: 12px; background: #FAF8F5"><span style="font-size: 20px; font-weight: 600; display: block">{{sel.c}}</span><span style="font-size: 12px; color: #6B6459">avisaron</span></div>
+          <div style="padding: 10px; border-radius: 12px; background: #FAF8F5"><span style="font-size: 20px; font-weight: 600; display: block">{{sel.r}}</span><span style="font-size: 12px; color: #6B6459">recuperan</span></div>
+        </div>
+        <span style="font-size: 13px; font-weight: 600">Vienen</span>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 12px">
+          <sc-for list="{{sel.names}}" as="n" hint-placeholder-count="6">
+            <span style="font-size: 14px; line-height: 30px">{{n}}</span>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 8px">
+          <button type="button" style="flex-grow: 1; height: 48px; border-radius: 12px; border: none; background: {{accent}}; color: #FFFFFF; font-size: 15px; font-weight: 600">Pasar lista</button>
+          <button type="button" aria-label="Más: cancelar clase" style="width: 48px; height: 48px; border-radius: 12px; border: 1px solid #E2D9CC; background: #FFFFFF">⋯</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#4F6B55","options":["#4F6B55","#3F5B46","#6B5B45"]},"$preview":{"width":834,"height":1600}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { sel: null };
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#4F6B55';
+    const st = this.state || {};
+    const dayLabels = ['Lun 5', 'Mar 6', 'Mié 7', 'Jue 8', 'Vie 9'];
+    const longDays = ['Lunes 5', 'Martes 6', 'Miércoles 7', 'Jueves 8', 'Viernes 9'];
+    const hours = ['07:00','08:00','09:00','10:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'];
+    const N = {
+      '07:00': [6, null, 5, null, 4], '08:00': [8, 8, 8, 6, 7], '09:00': [7, 8, 7, 8, 6],
+      '10:00': [8, 8, 8, 8, null], '14:00': [5, 4, 7, 4, 5], '15:00': [4, 5, null, 5, null],
+      '16:00': [7, 8, 8, 7, null], '17:00': [8, 7, 8, 8, 8], '18:00': [7, 7, 7, 8, 8],
+      '19:00': [8, 7, 8, 7, 5], '20:00': [8, 8, 7, 7, null]
+    };
+    const C = { '0-08:00': 1 };
+    const R = { '3-08:00': 1, '4-08:00': 1, '2-09:00': 1 };
+    const first = ['Karina','Sandra','Margarita','Silvia','Valentina','Nidia','Carmen','Marcio','Laura','Mónica','Gabriela','Patricia','Andrea','Claudia','Florencia','Lucía'];
+    const last = ['Horianski','Cardozo','Barrientos','Imbach','Weichzel','Báez','Karg','Klauk','Pereyra','Ramírez'];
+    const tag = (label, bg, fg) => ({ label, style: 'font-size:10.5px;font-weight:600;border-radius:999px;padding:1px 6px;white-space:nowrap;background:' + bg + ';color:' + fg });
+    let freeFixed = 0, toRecover = 0, recovering = 0;
+    let sel = null;
+    const rows = hours.map((h, hi) => ({
+      hour: h.slice(0, 2) + ' h',
+      gapBefore: h === '14:00',
+      cells: N[h].map((n, di) => {
+        if (n === null) return { exists: false, empty: true };
+        const key = di + '-' + h;
+        const c = C[key] || 0, r = R[key] || 0;
+        const free = 8 - n, att = n - c + r;
+        freeFixed += free; toRecover += Math.max(0, c - r); recovering += r;
+        const tags = [];
+        if (free > 0) tags.push(tag(free + (free === 1 ? ' libre' : ' libres'), '#E1EBE2', '#2F4A36'));
+        if (c - r > 0) tags.push(tag('+' + (c - r) + ' recup.', '#FBEFC9', '#7A5A0E'));
+        if (r > 0) tags.push(tag('↻ ' + r, '#E2ECF5', '#255377'));
+        if (!tags.length) tags.push(tag('Completa', '#F1EDE6', '#5E584F'));
+        const isSel = st.sel === key;
+        if (isSel) {
+          const names = [];
+          for (let i = 0; i < att; i++) names.push(first[(di * 3 + hi * 5 + i) % first.length] + ' ' + last[(di + hi + i * 3) % last.length][0] + '.');
+          sel = { title: longDays[di] + ' · ' + h, attending: att, c, r, names };
+        }
+        return {
+          exists: true, empty: false,
+          open: () => this.setState({ sel: key }),
+          aria: longDays[di] + ' ' + h + ', ' + att + ' de 8',
+          main: att + '/8',
+          countStyle: 'font-size:14.5px;font-weight:600',
+          barStyle: 'height:100%;border-radius:999px;width:' + Math.round(att / 8 * 100) + '%;background:' + (att >= 8 ? '#2F4A36' : accent),
+          tags,
+          cellStyle: 'flex-grow:1;width:100%;display:flex;flex-direction:column;align-items:stretch;gap:5px;padding:8px;border:none;text-align:left;font-family:inherit;color:inherit;' + (isSel ? 'background:#F4F8F4;box-shadow:inset 0 0 0 2px ' + accent : 'background:#FFFFFF')
+        };
+      })
+    }));
+    const days = dayLabels.map((label, i) => ({ label, today: i === 1, style: 'padding:10px 8px;border-left:1px solid #EEE8DF;display:flex;align-items:center;justify-content:center;gap:6px;' + (i === 1 ? 'background:#F4F8F4' : '') }));
+    return {
+      accent, rows, days, freeFixed, toRecover, recovering, cancelled: 0,
+      hasSel: !!sel,
+      sel: sel || { title: '', names: [], attending: 0, c: 0, r: 0 },
+      closeSel: () => this.setState({ sel: null })
+    };
+  }
+}
+</script>
+</body>
+</html>
