@@ -435,7 +435,7 @@ export function AlumnosView({
                     )}
                   </td>
                   <td className="px-4 py-2">
-                    <StatusDot status={s.status} surcharge={s.hasSurcharge} />
+                    <StatusDot status={s.status} surcharge={s.hasSurcharge} label={s.firstPayment ? 'Pendiente de primer pago' : undefined} />
                   </td>
                   <td className="hidden px-4 py-2 tabular-nums text-ink/80 xl:table-cell">
                     {shortDate(s.lastPaymentAt) ?? '—'}
@@ -517,7 +517,7 @@ export function AlumnosView({
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium text-ink">{s.fullName}</span>
                       <span className="flex items-center gap-1.5 truncate text-[13px] text-muted">
-                        <StatusDot status={s.status} surcharge={s.hasSurcharge} className="!text-[13px]" />
+                        <StatusDot status={s.status} surcharge={s.hasSurcharge} label={s.firstPayment ? 'Pendiente de primer pago' : undefined} className="!text-[13px]" />
                         {planCell(s) !== '—' && <span className="truncate">· {planCell(s)}</span>}
                       </span>
                     </span>

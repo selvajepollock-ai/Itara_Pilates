@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { applyLateSurcharge, subscriptionDisplayStatus, subscriptionStatus } from '@/lib/billing'
+import { applyLateSurcharge, isFirstMonth, subscriptionDisplayStatus, subscriptionStatus, surchargeWaiver } from '@/lib/billing'
 import { isNoAccessEmail } from '@/lib/auth-username'
 import { todayART } from '@/lib/dates'
 import type { StudentRow } from '@/app/admin/alumnos/types'
@@ -19,7 +19,7 @@ export async function loadStudentRows(supabase: SupabaseClient): Promise<{ rows:
       .order('created_at', { ascending: false }),
     supabase
       .from('subscriptions')
-      .select('id, student_id, plan_id, end_date, comp, plans(name, price)')
+      .select('*, plans(name, price)')
       .eq('status', 'active'),
     supabase.from('studio_settings').select('payment_reminder_days_before, payment_due_day').single(),
     supabase
@@ -83,7 +83,9 @@ export async function loadStudentRows(supabase: SupabaseClient): Promise<{ rows:
     const status = baseStatus === 'sin_plan' && dropIn.count > 0 ? ('sueltas' as const) : baseStatus
     // El recargo sale del estado "real" (con margen de gracia): el mismo cálculo de la ficha de cuota.
     const billing = subscriptionStatus(sub, reminderDays, dueDay)
+    const waiver = surchargeWaiver(sub as Parameters<typeof surchargeWaiver>[0])
     const surcharge = applyLateSurcharge(plan?.price ?? 0, billing)
+    const lastPayment = lastPaymentByStudent.get(s.id) ?? null
     return {
       id: s.id,
       fullName: s.full_name,
@@ -94,8 +96,11 @@ export async function loadStudentRows(supabase: SupabaseClient): Promise<{ rows:
       phone: s.phone,
       active: s.active,
       status,
-      hasSurcharge: status === 'vencido' && surcharge.hasSurcharge,
-      surchargeAmount: surcharge.hasSurcharge ? surcharge.amount : null,
+      hasSurcharge: status === 'vencido' && surcharge.hasSurcharge && !waiver,
+      surchargeAmount: surcharge.hasSurcharge && !waiver ? surcharge.amount : null,
+      surchargeWaived: Boolean(waiver),
+      // Alumno nuevo que todavía no hizo su primer pago: no es un atraso, es el primer cobro pendiente.
+      firstPayment: status === 'vencido' && isFirstMonth(sub as Parameters<typeof isFirstMonth>[0]) && !lastPayment,
       planId: sub?.plan_id ?? null,
       planName: plan?.name ?? null,
       planPrice: plan?.price ?? 0,
