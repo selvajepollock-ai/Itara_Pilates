@@ -20,6 +20,8 @@ Los puntos 2 y 4 pueden resolverse en la presentación si los datos ya traen lo 
 | 5 | Plan "1x clase" | Dice "$ 10.000 / mes" pero parece una clase suelta. Definir si es un plan o un cobro suelto (hoy existe en los dos lugares) |
 | 6 | Precio del plan 4x | Sale $ 4.625 por clase, más caro que el 3x ($ 3.833), lo que desincentiva subir de plan. Confirmar si es intencional |
 | 7 | Recargo del 10% | Confirmar si es único (no se acumula), si se puede perdonar caso por caso y cómo se aplica si se deben dos meses |
+| 15 | Vigencia de clases sueltas | Hoy la escala de precios es por compra. A evaluar: hasta cuándo se pueden tomar las clases ya pagadas (¿vencen?) y qué pasa si se compran en dos veces |
+| 16 | Feriados en el panel de la alumna | **Falla:** el panel no lee los feriados. Ese día la clase le sigue apareciendo y, si toca "Avisar que no voy" con tiempo, gana una recuperación aunque sea feriado. Hoy el bloqueo solo existe al elegir una recuperación. Corregir: ocultar la clase / mostrar "Feriado" y rechazar el aviso en `cancelSession`. Definir qué pasa con avisos ya hechos cuando se carga un feriado |
 
 ## Funciones nuevas (opcionales, más adelante)
 

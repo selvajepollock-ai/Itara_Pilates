@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { RotateCcw, Trash2 } from 'lucide-react'
+import { Copy, RotateCcw, Trash2 } from 'lucide-react'
 import { DropdownMenu, type MenuItem } from '@/app/components/dropdown-menu'
 import { deleteAnnouncement, reactivateAnnouncement } from './actions'
 
@@ -19,7 +19,7 @@ export type HistoryItem = {
 
 type Filter = 'visibles' | 'ocultos' | 'todos'
 
-export function AnnouncementsHistory({ items }: { items: HistoryItem[] }) {
+export function AnnouncementsHistory({ items, onUseAsModel }: { items: HistoryItem[]; onUseAsModel: (text: string) => void }) {
   const router = useRouter()
   const [filter, setFilter] = useState<Filter>('visibles')
   const [, startTransition] = useTransition()
@@ -47,6 +47,7 @@ export function AnnouncementsHistory({ items }: { items: HistoryItem[] }) {
   }
 
   const menuFor = (a: HistoryItem): MenuItem[] => [
+    { key: 'model', label: 'Usar como modelo', icon: <Copy size={15} />, onSelect: () => onUseAsModel(a.message) },
     ...(a.hidden ? [{ key: 'reactivate', label: 'Reactivar', icon: <RotateCcw size={15} />, onSelect: () => reactivate(a) }] : []),
     { key: 'delete', label: 'Eliminar', icon: <Trash2 size={15} />, danger: true, onSelect: () => remove(a) },
   ]
@@ -87,8 +88,10 @@ export function AnnouncementsHistory({ items }: { items: HistoryItem[] }) {
         ) : (
           <ul>
             {shown.map((a) => (
-              <li key={a.id} className="flex items-start justify-between gap-3 border-t border-edge-row px-5 py-4 first:border-t-0">
-                <div className="min-w-0">
+              <li key={a.id} className="flex items-start gap-3 border-t border-edge-row px-5 py-4 first:border-t-0">
+                {/* TODO: el modelo usado no se guarda, por eso siempre 💬 */}
+                <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-edge-row text-lg">💬</span>
+                <div className="min-w-0 flex-1">
                   <p className={`text-[15px] leading-snug ${a.hidden ? 'text-muted' : 'text-ink'}`}>{a.message}</p>
                   <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-muted">
                     <span

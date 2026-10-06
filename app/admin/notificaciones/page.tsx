@@ -1,9 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { formatTime } from '@/lib/day-names'
 import { PageHeader } from '@/app/components/page-header'
-import { dayLong, dayMonthLabel, shortName, todayART } from '../horarios/slots'
-import { AnnouncementsHistory, type HistoryItem } from './announcements-history'
-import { NewAnnouncementForm, type ClassOption } from './new-announcement-form'
+import { dayLong, dayMonthLabel, todayART } from '../horarios/slots'
+import type { HistoryItem } from './announcements-history'
+import { ComunicadosView } from './comunicados-view'
+import type { ClassOption, UpcomingBirthday } from './new-announcement-form'
+import { daysUntilNextBirthday } from '@/lib/birthdays'
 import type { Person } from './people-picker'
 
 const ART = 'America/Argentina/Buenos_Aires'
@@ -24,7 +26,7 @@ export default async function ComunicadosPage() {
       .eq('active', true)
       .order('day_of_week')
       .order('start_time'),
-    supabase.from('profiles').select('id, full_name, username, roles, active'),
+    supabase.from('profiles').select('id, full_name, username, roles, active, birth_date'),
     supabase.from('enrollments').select('class_id').eq('status', 'active'),
   ])
 
@@ -46,6 +48,7 @@ export default async function ComunicadosPage() {
   const people: Person[] = []
   let students = 0
   let instructors = 0
+  const birthdays: (UpcomingBirthday & { days: number })[] = []
   for (const p of profiles ?? []) {
     const roles = (p.roles as string[] | null) ?? []
     const isStudent = roles.includes('student')
@@ -53,6 +56,16 @@ export default async function ComunicadosPage() {
     if (isStudent && p.active !== false) students++
     if (isInstructor) instructors++
     if (p.username && (isStudent || isInstructor)) {
+      const bd = p.birth_date as string | null
+      if (bd) {
+        const days = daysUntilNextBirthday(bd)
+        if (days <= 7) {
+          const target = new Date(`${today}T12:00:00Z`)
+          target.setUTCDate(target.getUTCDate() + days)
+          const label = new Intl.DateTimeFormat('es-AR', { timeZone: 'UTC', weekday: 'short', day: 'numeric' }).format(target).replace('.', '')
+          birthdays.push({ username: String(p.username).toLowerCase(), name: (p.full_name as string).trim().split(/s+/)[0], label, days })
+        }
+      }
       people.push({
         username: String(p.username).toLowerCase(),
         name: p.full_name as string,
@@ -65,11 +78,15 @@ export default async function ComunicadosPage() {
 
   const recipientLabel = (a: NonNullable<typeof announcements>[number]) => {
     if (a.target_type === 'people') {
-      const names = ((a.target_usernames ?? []) as string[]).map((u) => shortName(nameByUsername.get(u.toLowerCase()) ?? u))
+      const names = ((a.target_usernames ?? []) as string[]).map((u) => nameByUsername.get(u.toLowerCase()) ?? u)
+      const short = (n: string) => {
+        const parts = n.trim().split(/s+/)
+        return parts.length > 1 ? `${parts[0]} ${parts[parts.length - 1][0].toUpperCase()}.` : n
+      }
       if (names.length === 0) return 'Personas puntuales'
       if (names.length === 1) return names[0]
-      if (names.length === 2) return `${names[0]} y ${names[1]}`
-      return `${names[0]} y ${names.length - 1} más`
+      if (names.length === 2) return `${short(names[0])} y ${short(names[1])}`
+      return `${short(names[0])} y ${names.length - 1} más`
     }
     if (a.target_type === 'class') return classLabelById.get(a.target_class_id ?? '') ?? 'Clase eliminada'
     return 'Todos'
@@ -96,13 +113,14 @@ export default async function ComunicadosPage() {
           Avisos que aparecen en el panel de alumnos e instructores al entrar a la app.
         </p>
       </div>
-      <NewAnnouncementForm
+      <ComunicadosView
         classOptions={classOptions}
         people={people}
         counts={{ students, instructors }}
         today={today}
+        birthdays={birthdays.sort((a, b) => a.days - b.days).map((b) => ({ username: b.username, name: b.name, label: b.label }))}
+        items={items}
       />
-      <AnnouncementsHistory items={items} />
     </div>
   )
 }
