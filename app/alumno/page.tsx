@@ -144,7 +144,8 @@ export default async function AlumnoDashboard() {
 
   const isExpired = (c: Credit) => c.status === 'available' && c.week_end < today
   const fridayOf = (weekEnd: string) => addDaysISO(weekEnd, -2)
-  const creditUntilFor = (date: string) => dayDate(addDaysISO(mondayOf(date), 4))
+  // Vale la semana de la clase y la siguiente: vence el viernes de la semana siguiente.
+  const creditUntilFor = (date: string) => dayDate(addDaysISO(mondayOf(date), 11))
 
   /** Nota y acciones según el estado del crédito de un aviso (o de una clase cancelada por el estudio). */
   function creditState(creditId: string | null | undefined): { state: ClassState; note: string; chooseCreditId?: string } {

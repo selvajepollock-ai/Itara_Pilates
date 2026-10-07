@@ -39,6 +39,13 @@ async function assertAdmin() {
   return { ok: true as const, supabase, userId: user.id }
 }
 
+/** La recuperación vale la semana de la clase y la siguiente: vence el domingo de la semana siguiente (efectivamente, el viernes). */
+const creditEnd = (sunday: Date) => {
+  const d = new Date(sunday)
+  d.setDate(d.getDate() + 7)
+  return d
+}
+
 const weekdayOf = (iso: string) => new Date(`${iso}T12:00:00Z`).getUTCDay()
 
 export async function cancelSession({
@@ -126,7 +133,7 @@ export async function cancelSession({
         class_type_id: classInfo.class_type_id,
         instructor_id: classInfo.instructor_id,
         week_start: toISODate(monday),
-        week_end: toISODate(sunday),
+        week_end: toISODate(creditEnd(sunday)),
         status: 'available',
       })
       .select('id')
@@ -269,7 +276,7 @@ export async function bookRecovery({
     return { error: 'Esa clase a recuperar ya fue usada o venció. Volvé a tu horario para ver el estado actual.' }
   }
   if (sessionDate > credit.week_end || sessionDate < credit.week_start) {
-    return { error: 'Esa fecha está fuera de la semana en la que podés recuperar.' }
+    return { error: 'Esa fecha está fuera del plazo en el que podés recuperar.' }
   }
 
   const { data: targetClass } = await supabase
@@ -836,7 +843,7 @@ export async function cancelClassOccurrence({
         class_type_id: classInfo.class_type_id,
         instructor_id: classInfo.instructor_id,
         week_start: toISODate(monday),
-        week_end: toISODate(sunday),
+        week_end: toISODate(creditEnd(sunday)),
         status: 'available',
       })
       .select('id')

@@ -128,7 +128,7 @@ export function ClassesSection({
 
   function cancelRec(r: NonNullable<ClassRowData['recoveryCancel']>) {
     const msg = r.onTime
-      ? `¿Cancelar tu recuperación ${r.whenLabel} a las ${r.start}? Tu recuperación vuelve a estar disponible para elegir otro horario esta semana.`
+      ? `¿Cancelar tu recuperación ${r.whenLabel} a las ${r.start}? Tu recuperación vuelve a estar disponible para elegir otro horario.`
       : `Faltan menos de ${minHoursText}: si cancelás tu recuperación ${r.whenLabel} a las ${r.start}, la perdés y no vuelve a estar disponible. ¿Querés cancelarla igual?`
     if (!confirm(msg)) return
     startTransition(async () => {
