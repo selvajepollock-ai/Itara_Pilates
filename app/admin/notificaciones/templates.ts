@@ -36,7 +36,7 @@ export const ANNOUNCEMENT_MODELS: AnnouncementModel[] = [
     name: 'Clase cancelada',
     hint: 'Una clase · con recuperación',
     recipient: 'class',
-    text: 'La clase del {día} a las {hora} se suspende. Ya tenés tu recuperación disponible en la app para usar esta semana.',
+    text: 'La clase del {día} a las {hora} se suspende. Ya tenés tu recuperación disponible en la app para usar esa semana o la siguiente.',
   },
   {
     id: 'cierre',

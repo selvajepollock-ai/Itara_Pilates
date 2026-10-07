@@ -88,7 +88,7 @@ export function RecoveryPicker({
   if (days.length === 0) {
     return (
       <p className="rounded-2xl border border-dashed border-edge-strong px-5 py-8 text-center text-sm text-muted">
-        No quedan clases con lugar esta semana. Mantenés tu recuperación hasta el viernes y te avisamos apenas se libere un lugar.
+        No quedan clases con lugar en estos días. Mantenés tu recuperación hasta el viernes y te avisamos apenas se libere un lugar.
       </p>
     )
   }

@@ -226,7 +226,7 @@ export function FeriadosView({
               </>
             ) : (
               <>
-                ⚠️ <b>Se cancelan {impact.classes} {impact.classes === 1 ? 'clase' : 'clases'} · {impact.students} {impact.students === 1 ? 'alumno recibe' : 'alumnos reciben'} recuperación.</b> Van a poder elegir otra clase con lugar de esa misma semana. El estudio aprueba cada pedido.
+                ⚠️ <b>Se cancelan {impact.classes} {impact.classes === 1 ? 'clase' : 'clases'} · {impact.students} {impact.students === 1 ? 'alumno recibe' : 'alumnos reciben'} recuperación.</b> Van a poder elegir otra clase con lugar esa semana o la siguiente. El estudio aprueba cada pedido.
               </>
             )}
           </div>
@@ -333,7 +333,7 @@ export function FeriadosView({
           onCancel={() => setConfirmClose(false)}
           onConfirm={save}
         >
-          Se cancelan <b>{impact.classes} {impact.classes === 1 ? 'clase' : 'clases'}</b> y <b>{impact.students} {impact.students === 1 ? 'alumno' : 'alumnos'}</b> reciben una recuperación para usar esa semana.
+          Se cancelan <b>{impact.classes} {impact.classes === 1 ? 'clase' : 'clases'}</b> y <b>{impact.students} {impact.students === 1 ? 'alumno' : 'alumnos'}</b> reciben una recuperación para usar esa semana o la siguiente.
         </ConfirmDialog>
       )}
 

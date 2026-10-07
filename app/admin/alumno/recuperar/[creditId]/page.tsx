@@ -129,7 +129,7 @@ export default async function RecuperarPage({
 
       {optionsByDay.every((d) => d.options.length === 0) && (
         <p className="mt-4 rounded-2xl border border-dashed border-sand bg-white/50 px-5 py-6 text-center text-sm text-ink/50">
-          Tu profesor no tiene horarios libres esta semana para recuperar.
+          Tu profesor no tiene horarios libres en estos días para recuperar.
         </p>
       )}
 

@@ -18,7 +18,7 @@ export function NextClassCard({ data, minHoursText }: { data: NextClassData | nu
             {data.instructor ? ` · con ${data.instructor}` : ''}
           </p>
           <p className="mt-4 hidden text-[13px] text-white/70 lg:block">
-            Si no podés ir, avisá hasta {minHoursText} antes y recuperás esa semana.
+            Si no podés ir, avisá hasta {minHoursText} antes y la recuperás esa semana o la siguiente.
           </p>
         </>
       ) : (
