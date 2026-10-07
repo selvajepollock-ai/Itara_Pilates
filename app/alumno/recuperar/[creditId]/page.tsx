@@ -123,7 +123,10 @@ export default async function RecuperarPage({
     .eq('active', true)
   if (credit.instructor_id) classesQuery = classesQuery.eq('instructor_id', credit.instructor_id)
   const { data: classesData } = await classesQuery
-  const classes = (classesData ?? []) as unknown as ClassOption[]
+  // No se ofrecen las clases en las que ya tiene su lugar fijo (incluida la que canceló).
+  const { data: ownEnrollments } = await supabase.from('enrollments').select('class_id').eq('student_id', studentId).eq('status', 'active')
+  const ownClassIds = new Set((ownEnrollments ?? []).map((e) => e.class_id as string))
+  const classes = ((classesData ?? []) as unknown as ClassOption[]).filter((c) => !ownClassIds.has(c.id))
 
   // Días que quedan en la semana de la recuperación.
   const days: string[] = []
