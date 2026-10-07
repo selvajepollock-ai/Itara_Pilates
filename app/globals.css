@@ -115,3 +115,8 @@
 @media (prefers-reduced-motion: reduce) {
   .itara-breath, .itara-breath2 { animation: none; }
 }
+
+/* Que nada más ancho que la pantalla agrande la página en el celular. */
+html {
+  overflow-x: hidden;
+}

@@ -339,15 +339,8 @@ export async function bookRecovery({
     .eq('student_id', studentId)
     .eq('status', 'active')
     .maybeSingle()
-  if (ownEnrollment) {
-    const { data: ownAbsence } = await admin
-      .from('session_cancellations')
-      .select('id')
-      .eq('enrollment_id', ownEnrollment.id)
-      .eq('session_date', sessionDate)
-      .maybeSingle()
-    if (!ownAbsence) return { error: 'Ya tenés tu lugar fijo en esa clase.' }
-  }
+  // Tampoco su propia clase aunque la haya cancelado ese día: si cambió de idea, desde su panel puede avisar que al final va.
+  if (ownEnrollment) return { error: 'Es tu propia clase: ya tenés tu lugar fijo. Si querés ir, avisá que al final venís desde tu panel.' }
 
   // Queda confirmada al instante (sin aprobación del estudio). Se escribe con permisos del servidor
   // porque la alumna no puede insertar asistencia directamente; antes se verificó que el crédito es suyo.
@@ -506,8 +499,19 @@ async function notifyFreedSpot(classId: string, sessionDate: string) {
       .lte('week_start', sessionDate)
       .gte('week_end', sessionDate)
     q = cls.instructor_id ? q.or(`instructor_id.is.null,instructor_id.eq.${cls.instructor_id}`) : q
-    const { data: waiting } = await q
-    if (!waiting || waiting.length === 0) return
+    const { data: waitingAll } = await q
+    if (!waitingAll || waitingAll.length === 0) return
+
+    // No se avisa a quienes tienen su lugar fijo en esta clase (incluida la alumna que acaba de cancelarla):
+    // el lugar liberado es el suyo y no tiene sentido ofrecérselo como recuperación.
+    const { data: owners } = await admin
+      .from('enrollments')
+      .select('student_id')
+      .eq('class_id', classId)
+      .eq('status', 'active')
+    const ownerIds = new Set((owners ?? []).map((o) => o.student_id as string))
+    const waiting = waitingAll.filter((w) => !ownerIds.has(w.student_id as string))
+    if (waiting.length === 0) return
 
     const typeName = (cls.class_types as unknown as { name: string } | null)?.name ?? 'Clase'
     for (const w of waiting) {

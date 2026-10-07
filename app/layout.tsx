@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Fraunces, Work_Sans } from 'next/font/google'
 import { InstallPrompt } from '@/app/components/install-prompt'
 import './globals.css'
@@ -15,6 +15,13 @@ const workSans = Work_Sans({
   variable: '--font-sans',
   weight: ['400', '500', '600'],
 })
+
+// minimumScale 1: el navegador del celular no "achica" la página para que entre algo más ancho que la pantalla.
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  minimumScale: 1,
+}
 
 export const metadata: Metadata = {
   title: 'Itara Pilates',
