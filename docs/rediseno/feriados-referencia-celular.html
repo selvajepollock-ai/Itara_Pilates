@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Itara · Feriados y cierres (celular)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400;1,9..144,500&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#3F5B46}a:hover{color:#2F4A36}
+button,input{font-family:inherit}
+button{cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 1640px; box-sizing: border-box; background: #FFFFFF; font-family: 'Work Sans', system-ui, sans-serif; color: #2B2A26; font-variant-numeric: tabular-nums; overflow: hidden">
+
+  <header style="display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid #F0EAE1">
+    <a href="SemanaMobile.dc.html" aria-label="Volver a Horarios" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #E2D9CC; display: flex; align-items: center; justify-content: center; text-decoration: none; color: #2B2A26; font-size: 18px">‹</a>
+    <span style="font-size: 16px; font-weight: 600">Feriados y cierres</span>
+  </header>
+
+  <div style="padding: 18px 16px 180px; display: flex; flex-direction: column; gap: 14px">
+    <span style="font-size: 14px; color: #4A463F; line-height: 1.45">Días en que el estudio no abre. El tipo define si las alumnas pueden recuperar.</span>
+
+    <div role="radiogroup" aria-label="Tipo de día" style="display: flex; flex-direction: column; gap: 10px">
+      <sc-for list="{{types}}" as="t" hint-placeholder-count="2">
+        <button type="button" role="radio" aria-checked="{{t.active}}" onClick="{{t.pick}}" style="{{t.style}}">
+          <span style="{{t.bubble}}">{{t.emoji}}</span>
+          <span style="display: flex; flex-direction: column; gap: 4px; text-align: left">
+            <span style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><span style="font-size: 15.5px; font-weight: 600; color: #2B2A26">{{t.label}}</span><span style="{{t.chipStyle}}">{{t.chip}}</span></span>
+            <span style="font-size: 13px; color: #4A463F; line-height: 1.4">{{t.desc}}</span>
+          </span>
+        </button>
+      </sc-for>
+    </div>
+
+    <label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Fecha
+      <button type="button" style="height: 48px; padding: 0 14px; border: 1px solid #E2D9CC; border-radius: 12px; background: #FFFFFF; display: flex; align-items: center; justify-content: space-between; font-size: 16px; font-weight: 400; color: #2B2A26">Lunes 12/10/2026 <span aria-hidden="true">📅</span></button>
+    </label>
+    <label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Motivo (opcional)
+      <input type="text" value="{{motivo}}" onInput="{{onMotivo}}" placeholder="{{motivoPh}}" style="height: 48px; padding: 0 14px; border: 1px solid #E2D9CC; border-radius: 12px; font-size: 16px; font-weight: 400; box-sizing: border-box">
+    </label>
+
+    <div style="{{impactStyle}}">
+      <span style="font-size: 20px; line-height: 1">{{impactEmoji}}</span>
+      <div style="display: flex; flex-direction: column; gap: 3px">
+        <span style="font-size: 14px; font-weight: 600">{{impactTitle}}</span>
+        <span style="font-size: 13px; line-height: 1.45">{{impactText}}</span>
+      </div>
+    </div>
+
+    <label style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; border-radius: 14px; background: #FAF8F5">
+      <input type="checkbox" checked="{{notify}}" onChange="{{toggleNotify}}" style="width: 20px; height: 20px; margin-top: 1px; accent-color: #4F6B55; flex-shrink: 0">
+      <span style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 14px; font-weight: 600">📣 Avisar con un comunicado</span>
+        <span style="font-size: 13px; color: #4A463F">Te llevamos a Comunicados con el modelo listo.</span>
+      </span>
+    </label>
+
+    <h2 style="margin: 10px 0 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 500; font-size: 22px">Días cargados</h2>
+    <div role="tablist" aria-label="Filtrar" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 3px; background: #F5F1EB; border-radius: 12px">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="2">
+        <button type="button" role="tab" aria-selected="{{t.active}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button>
+      </sc-for>
+    </div>
+    <div style="border: 1px solid #EEE8DF; border-radius: 16px; overflow: hidden">
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="2">
+        <div style="{{r.rowStyle}}">
+          <span aria-hidden="true" style="{{r.bubble}}">{{r.emoji}}</span>
+          <div style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0">
+            <span style="font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 18px">{{r.date}}</span>
+            <span style="{{r.chipStyle}}">{{r.chip}}</span>
+            <span style="font-size: 13px; color: #4A463F">{{r.motivo}} · {{r.when}}</span>
+          </div>
+          <button type="button" aria-label="Acciones de {{r.date}}" style="width: 44px; height: 44px; border-radius: 10px; border: none; background: transparent; color: #6B6459">⋯</button>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 76px; padding: 12px 16px; background: #FFFFFF; border-top: 1px solid #EEE8DF; box-shadow: 0 -8px 20px rgba(43,42,38,0.06)">
+    <button type="button" onClick="{{submit}}" style="{{ctaStyle}}">{{ctaLabel}}</button>
+  </div>
+
+  <nav aria-label="Navegación principal" style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; background: #FFFFFF; border-top: 1px solid #EEE8DF; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding-bottom: 8px; box-sizing: border-box; font-size: 11px">
+    <a href="Mobile.dc.html" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: #6B6459">Inicio</a>
+    <a href="SemanaMobile.dc.html" aria-current="page" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: {{accent}}; font-weight: 600">Horarios</a>
+    <a href="AlumnosMobile.dc.html" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: #6B6459">Alumnos</a>
+    <a href="PagosRegistroMobile.dc.html" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: #6B6459">Pagos</a>
+    <a href="#" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: #6B6459">Más</a>
+  </nav>
+
+  <sc-if value="{{confirmOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: rgba(43,42,38,0.35); display: flex; align-items: flex-end">
+      <div role="dialog" aria-modal="true" aria-label="Confirmar cierre" style="width: 100%; background: #FFFFFF; border-radius: 22px 22px 0 0; padding: 22px 20px 30px; display: flex; flex-direction: column; gap: 14px; box-sizing: border-box">
+        <span style="width: 40px; height: 4px; border-radius: 999px; background: #E2D9CC; align-self: center"></span>
+        <h2 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 500; font-size: 24px">⚠️ ¿Cerrar el estudio el lunes 12?</h2>
+        <span style="font-size: 14px; color: #4A463F; line-height: 1.5">Se cancelan <strong style="font-weight: 600">11 clases</strong> y <strong style="font-weight: 600">75 alumnos</strong> reciben una recuperación para usar esa semana.</span>
+        <button type="button" onClick="{{closeConfirm}}" style="height: 50px; border-radius: 14px; border: none; background: #9A3420; color: #FFFFFF; font-size: 15px; font-weight: 600">Sí, cerrar y dar recuperaciones</button>
+        <button type="button" onClick="{{closeConfirm}}" style="height: 50px; border-radius: 14px; border: 1px solid #E2D9CC; background: #FFFFFF; color: #2B2A26; font-size: 15px">Volver</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#4F6B55","options":["#4F6B55","#3F5B46","#6B5B45"]},"$preview":{"width":390,"height":1640}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { type: 'feriado', motivo: 'Día del Respeto a la Diversidad Cultural', notify: true, tab: 'proximos', confirm: false };
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#4F6B55';
+    const st = this.state || {};
+    const type = st.type || 'feriado';
+    const isCierre = type === 'cierre';
+    const typeDefs = [
+      { id: 'feriado', emoji: '🗓️', bg: '#FDF0D5', label: 'Feriado', chip: 'Sin recuperación', chipBg: '#F1EDE6', chipFg: '#5E584F', desc: 'El calendario aparece cerrado. Las clases no se recuperan.' },
+      { id: 'cierre', emoji: '⚠️', bg: '#FDE6E1', label: 'Cierre del estudio', chip: 'Con recuperación', chipBg: '#E1EBE2', chipFg: '#2F4A36', desc: 'Fuerza mayor. Cada alumno anotado recibe su recuperación.' }
+    ];
+    const types = typeDefs.map((t) => {
+      const on = type === t.id;
+      return {
+        emoji: t.emoji, label: t.label, chip: t.chip, desc: t.desc, active: on,
+        pick: () => this.setState({ type: t.id, motivo: t.id === 'cierre' ? '' : 'Día del Respeto a la Diversidad Cultural' }),
+        style: 'display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:16px;text-align:left;' + (on ? 'background:#F4F8F4;border:2px solid ' + accent : 'background:#FFFFFF;border:1px solid #E2D9CC;margin:1px'),
+        bubble: 'width:42px;height:42px;flex-shrink:0;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1;background:' + t.bg,
+        chipStyle: 'font-size:11px;font-weight:600;border-radius:999px;padding:2px 8px;background:' + t.chipBg + ';color:' + t.chipFg
+      };
+    });
+    const tab = st.tab || 'proximos';
+    const all = [
+      { date: 'Lunes 12 de octubre', type: 'feriado', motivo: 'Día del Respeto a la Diversidad Cultural', when: 'en 6 días', past: false },
+      { date: 'Lunes 17 de agosto', type: 'feriado', motivo: 'San Martín', when: 'ya pasó', past: true },
+      { date: 'Jueves 9 de julio', type: 'feriado', motivo: 'Día de la Independencia', when: 'ya pasó', past: true }
+    ];
+    const rows = all.filter((r) => tab === 'proximos' ? !r.past : r.past).map((r) => {
+      const t = typeDefs.find((x) => x.id === r.type);
+      return {
+        date: r.date, motivo: r.motivo, when: r.when, emoji: t.emoji, chip: 'Feriado · sin recuperación',
+        chipStyle: 'align-self:flex-start;font-size:11px;font-weight:600;border-radius:999px;padding:2px 8px;background:' + t.chipBg + ';color:' + t.chipFg,
+        bubble: 'width:38px;height:38px;flex-shrink:0;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:19px;background:' + t.bg,
+        rowStyle: 'display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-bottom:1px solid #F3EEE6;' + (r.past ? 'opacity:0.65' : '')
+      };
+    });
+    return {
+      accent, types, rows,
+      motivo: st.motivo || '',
+      onMotivo: (e) => this.setState({ motivo: e.target.value }),
+      motivoPh: isCierre ? 'Ej: Corte de luz' : 'Ej: Día de la Independencia',
+      impactEmoji: isCierre ? '⚠️' : 'ℹ️',
+      impactTitle: isCierre ? 'Se cancelan 11 clases · 75 alumnos reciben recuperación' : 'Ese día hay 11 clases con 75 alumnos',
+      impactText: isCierre ? 'Pueden elegir otra clase con lugar esa semana. El estudio aprueba cada pedido.' : 'El calendario aparece cerrado. No se generan recuperaciones.',
+      impactStyle: 'display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;' + (isCierre ? 'background:#FBEFEC;border:1px solid #F1CFC6;color:#7A2E1C' : 'background:#F4F8F4;border:1px solid #DCE7DE;color:#2F4A36'),
+      notify: st.notify !== false,
+      toggleNotify: () => this.setState({ notify: st.notify === false }),
+      ctaLabel: isCierre ? 'Cerrar el estudio ese día' : 'Agregar feriado',
+      ctaStyle: 'width:100%;height:50px;border-radius:14px;border:none;font-size:15px;font-weight:600;color:#FFFFFF;background:' + (isCierre ? '#9A3420' : accent),
+      submit: () => { if (isCierre) this.setState({ confirm: true }); },
+      confirmOpen: !!st.confirm,
+      closeConfirm: () => this.setState({ confirm: false }),
+      tabs: [['proximos', 'Próximos'], ['pasados', 'Pasados']].map((t) => ({ label: t[1], active: tab === t[0], pick: () => this.setState({ tab: t[0] }), style: 'height:38px;border-radius:9px;border:none;font-size:14px;' + (tab === t[0] ? 'background:#FFFFFF;color:#2B2A26;font-weight:600;box-shadow:0 1px 3px rgba(43,42,38,0.12)' : 'background:transparent;color:#4A463F') }))
+    };
+  }
+}
+</script>
+</body>
+</html>

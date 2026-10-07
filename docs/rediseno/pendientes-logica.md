@@ -10,6 +10,7 @@ Cambios que **no** son de presentación: tocan consultas, cálculos o datos. Van
 | 2 | Reportes · "Con más lugares libres" | Incluye clases canceladas (el viernes 19:00 aparecía como 0/8) | Excluir las clases canceladas de todas las métricas de ocupación |
 | 3 | Reportes · "Clases más demandadas" | Parece mostrar la foto de una semana (8/8) y no el promedio del período elegido | Calcular la ocupación promedio por horario a lo largo de todas las semanas del período |
 | 4 | Pagos · gráfico "Cobrado por mes" | El eje incluye un mes futuro (noviembre) | Mostrar los últimos 6 meses terminando en el mes actual |
+| 4b | Feriados vs. cancelaciones | **Probablemente resuelto:** la pantalla de Feriados ya separa "Feriado" (sin recuperación) de "Cerrar el estudio un día" (con recuperación). Falta confirmar en el código que el feriado no genere recuperaciones |
 
 Los puntos 2 y 4 pueden resolverse en la presentación si los datos ya traen lo necesario (la marca de cancelada, las fechas). Claude Code lo va a confirmar en el plan de cada rama; si no se pudo, quedan acá.
 
@@ -20,8 +21,15 @@ Los puntos 2 y 4 pueden resolverse en la presentación si los datos ya traen lo 
 | 5 | Plan "1x clase" | Dice "$ 10.000 / mes" pero parece una clase suelta. Definir si es un plan o un cobro suelto (hoy existe en los dos lugares) |
 | 6 | Precio del plan 4x | Sale $ 4.625 por clase, más caro que el 3x ($ 3.833), lo que desincentiva subir de plan. Confirmar si es intencional |
 | 7 | Recargo del 10% | Confirmar si es único (no se acumula), si se puede perdonar caso por caso y cómo se aplica si se deben dos meses |
-| 15 | Vigencia de clases sueltas | Hoy la escala de precios es por compra. A evaluar: hasta cuándo se pueden tomar las clases ya pagadas (¿vencen?) y qué pasa si se compran en dos veces |
-| 16 | Feriados en el panel de la alumna | **Corregido en la rama feriados-y-cierres.** Antes: el panel no lee los feriados. Ese día la clase le sigue apareciendo y, si toca "Avisar que no voy" con tiempo, gana una recuperación aunque sea feriado. Hoy el bloqueo solo existe al elegir una recuperación. Corregir: ocultar la clase / mostrar "Feriado" y rechazar el aviso en `cancelSession`. Definir qué pasa con avisos ya hechos cuando se carga un feriado |
+
+## Ajustes de configuración (decididos)
+
+| # | Ajuste | Detalle |
+|---|---|---|
+| C1 | Plazo para avisar con recuperación | Pasa de **12 h a 2 h** antes de la clase. Si es configurable, se cambia desde la configuración del estudio; si está fijo en el código, va en la rama de lógica |
+| C2 | Nombre del tipo de clase | Que la alumna vea el mismo nombre que el estudio ("Reformer"), no "Pilates" |
+
+Decisiones confirmadas que **no** cambian: la aprobación de recuperaciones sigue siendo manual, y el crédito vale solo para la semana de la clase que no fue.
 
 ## Funciones nuevas (opcionales, más adelante)
 
@@ -34,9 +42,13 @@ Los puntos 2 y 4 pueden resolverse en la presentación si los datos ya traen lo 
 | 12 | Recordatorio de pago | Si no existe, enviar un aviso a quienes tienen la cuota vencida (individual y masivo) |
 | 13 | Buscador global (Ctrl + K) | Saltar a cualquier alumno o acción desde cualquier pantalla |
 | 14 | Lectura de comunicados | Ver "visto por N de M" en cada comunicado enviado |
+| 15 | "Al final voy" (deshacer un aviso) | La alumna puede deshacer su aviso hasta el plazo antes de la clase, **solo si nadie tomó su lugar**. Si el crédito ya se usó o está solicitado, no se puede deshacer |
+| 16 | Aviso por mail de aprobación o rechazo | Hoy la alumna se entera solo entrando al panel. **Decidido para más adelante** |
 
 ## Cómo encararlos
 
 1. Primero las **correcciones (1 a 4)**: son chicas y mejoran la confianza en los números.
 2. Después, definir con la clienta los puntos **5 a 7**.
 3. Las **funciones nuevas** se priorizan según lo que pida el estudio, una rama por función.
+| 17 | Vigencia de clases sueltas | Hoy la escala de precios es por compra. A evaluar: hasta cuándo se pueden tomar las clases ya pagadas (¿vencen?) y qué pasa si se compran en dos veces |
+| 18 | Feriados en el panel de la alumna | **Corregido** (PR #27): el panel lee los feriados, no deja avisar ausencia y el cierre del estudio se hace aparte, con recuperación. Falta definir qué pasa con avisos ya hechos cuando se carga un feriado después |

@@ -1,3 +1,4 @@
+import { BackLink } from '@/app/components/back-link'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
@@ -49,9 +50,7 @@ export default async function AdminRecuperarPage({
   if (credit.status !== 'available') {
     return (
       <div className="max-w-md">
-        <Link href={`/admin/alumnos/${studentId}`} className="text-sm text-moss hover:text-moss-dark">
-          ← Volver
-        </Link>
+        <BackLink href={`/admin/alumnos/${studentId}`} label="Alumno" />
         <p className="mt-6 text-sm text-ink/60">Esta clase a recuperar ya fue usada o venció.</p>
       </div>
     )
@@ -121,9 +120,7 @@ export default async function AdminRecuperarPage({
 
   return (
     <div className="max-w-md">
-      <Link href={`/admin/alumnos/${studentId}`} className="text-sm text-moss hover:text-moss-dark">
-        ← Volver a {student?.full_name}
-      </Link>
+      <BackLink href={`/admin/alumnos/${studentId}`} label={student?.full_name ?? 'Alumno'} />
 
       <p className="eyebrow mt-4">Recuperar clase</p>
       <h1 className="page-title mt-2">{typeName}</h1>

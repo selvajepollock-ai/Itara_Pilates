@@ -1,3 +1,4 @@
+import { BackLink } from '@/app/components/back-link'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
@@ -77,9 +78,7 @@ export default async function AlumnoCalendarioPage({
 
   return (
     <div>
-      <Link href="/alumno" className="text-sm text-moss hover:text-moss-dark">
-        ← Volver a tu horario
-      </Link>
+      <BackLink href="/alumno" label="Inicio" />
 
       <div className="mt-4 flex items-center justify-between">
         <div>

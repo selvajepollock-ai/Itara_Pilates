@@ -9,6 +9,7 @@ export type ClassItem = {
   start: string
   end: string
   capacity: number
+  room?: string
   typeName: string
   instructorName: string | null
   fixed: FixedStudent[]
@@ -28,4 +29,4 @@ export type OccurrenceData = {
 
 export type DayColumn = { dow: number; date: string; holiday: string | null }
 
-export type Vista = 'semana' | 'fijo'
+export type Vista = 'semana' | 'fijo' | 'clases'

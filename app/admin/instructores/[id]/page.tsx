@@ -1,3 +1,4 @@
+import { BackLink } from '@/app/components/back-link'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
@@ -25,9 +26,7 @@ export default async function EditarInstructorPage({
 
   return (
     <div className="max-w-md">
-      <Link href="/admin/instructores" className="text-sm text-moss hover:text-moss-dark">
-        ← Volver al equipo
-      </Link>
+      <BackLink href="/admin/instructores" label="Equipo" />
 
       <p className="eyebrow mt-4">Equipo</p>
       <h1 className="page-title mt-2">{instructor.full_name}</h1>
