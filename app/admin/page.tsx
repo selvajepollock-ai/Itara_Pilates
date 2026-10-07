@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { daysUntilNextBirthday } from '@/lib/birthdays'
 import { suggestNextPaymentDate, getDisplayStatus, subscriptionDisplayStatus } from '@/lib/billing'
 import { collectionSummary } from '@/lib/payments'
+import { loadStudentRows } from '@/lib/student-rows'
 import { artMonthStart, todayART } from '@/lib/dates'
 import { formatARS } from '@/lib/currency'
 import { PageHeader } from '@/app/components/page-header'
@@ -122,7 +123,10 @@ export default async function AdminDashboard() {
   const subs = [...subsByStudent.values()]
   const overdueCount = subs.filter((s) => !s.comp && getDisplayStatus(s.end_date) === 'vencido').length
   const alDiaCount = subs.filter((s) => subscriptionDisplayStatus(s, reminderDays) === 'al_dia').length
-  const sinPlanCount = (studentsData ?? []).filter((s) => !subsByStudent.has(s.id)).length
+  // Igual que en Pagos: quienes no tienen plan pero compraron clases sueltas se cuentan aparte, no como "sin plan".
+  const { rows: studentRows } = await loadStudentRows(supabase)
+  const sueltasCount = studentRows.filter((r) => r.status === 'sueltas').length
+  const sinPlanCount = Math.max((studentsData ?? []).filter((s) => !subsByStudent.has(s.id)).length - sueltasCount, 0)
 
   // Cobrado vs esperado del mes (mismo cálculo que Pagos).
   type PlanRef = { name: string; price: number } | null
@@ -228,8 +232,8 @@ export default async function AdminDashboard() {
       icon: <Wallet size={16} />,
       title: `${overdueCount} ${overdueCount === 1 ? 'cuota sin pagar' : 'cuotas sin pagar'}`,
       subtitle: `Recargo desde el ${dueDay + 1}/${monthNumber}`,
-      href: '/admin/pagos',
-      actionLabel: 'Ver pagos',
+      href: '/admin/alumnos?estado=vencido',
+      actionLabel: 'Ver alumnos',
     },
     sinPlanCount > 0 && {
       key: 'sin-plan',
