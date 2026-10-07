@@ -8,6 +8,7 @@ import { PageHeader } from '@/app/components/page-header'
 import { BottomSheet } from '@/app/components/bottom-sheet'
 import { ActivateAllExtraCapacityButton } from './activate-all-extra-capacity-button'
 import { ClassPanel } from './class-panel'
+import { ClassesTab } from './classes-tab'
 import { FixedTab } from './fixed-tab'
 import { SlotChip } from './slot-chip'
 import { WeekTab, weekTotals } from './week-tab'
@@ -57,7 +58,8 @@ export function HorariosView({
   }, [])
   const params = useMemo(() => new URLSearchParams(search), [search])
 
-  const vista: Vista = params.get('vista') === 'fijo' && isAdmin ? 'fijo' : 'semana'
+  const vistaParam = params.get('vista')
+  const vista: Vista = vistaParam === 'fijo' && isAdmin ? 'fijo' : vistaParam === 'clases' ? 'clases' : 'semana'
   const claseId = params.get('clase')
   const fecha = params.get('fecha')
   const router = useRouter()
@@ -122,12 +124,12 @@ export function HorariosView({
   const headerLinks = [
     { key: 'holidays', emoji: '🗓️', bg: '#FDF0D5', long: 'Feriados y cierres', short: 'Feriados', desc: 'Días en que el estudio no abre', href: '/admin/horarios/feriados' },
     { key: 'types', emoji: '🏷️', bg: '#EFE7FB', long: 'Tipos de clase', short: 'Tipos', desc: 'Reformer, cupos y duración', href: '/admin/tipos-de-clase' },
-    { key: 'list', emoji: '📋', bg: '#E3F4E6', long: 'Lista', short: 'Lista', desc: 'Todas las clases en una tabla', href: '/admin/horarios/lista' },
   ]
 
   const tabs: { key: Vista; label: string }[] = [
     { key: 'semana', label: 'Esta semana' },
     ...(isAdmin ? [{ key: 'fijo' as const, label: 'Horario fijo' }] : []),
+    { key: 'clases', label: 'Clases' },
   ]
 
   return (
@@ -181,7 +183,7 @@ export function HorariosView({
               type="button"
               role="tab"
               aria-selected={active}
-              onClick={() => updateUrl({ vista: t.key === 'semana' ? null : t.key, clase: null, fecha: null })}
+              onClick={() => updateUrl({ vista: t.key === 'semana' ? null : t.key, clase: null, fecha: null, dia: null, prof: null })}
               className={`min-h-[40px] flex-1 rounded-[9px] px-4 text-sm lg:-mb-px lg:flex-none lg:rounded-none lg:border-b-2 lg:bg-transparent lg:px-1 lg:shadow-none ${
                 active
                   ? 'bg-white font-semibold text-ink shadow-sm lg:border-moss'
@@ -239,6 +241,8 @@ export function HorariosView({
               onOpen={(classId, date) => updateUrl({ clase: classId, fecha: date }, 'push')}
             />
           </>
+        ) : vista === 'clases' ? (
+          <ClassesTab classes={classes} today={today} day={params.get('dia')} prof={params.get('prof')} onChange={(c) => updateUrl(c)} />
         ) : (
           <FixedTab
             classes={classes}

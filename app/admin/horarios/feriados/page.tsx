@@ -1,59 +1,61 @@
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { NewHolidayForm } from './new-holiday-form'
-import { DeleteHolidayButton } from './delete-holiday-button'
-import { CloseDayForm } from './close-day-form'
+import { BackLink } from '@/app/components/back-link'
+import { todayART } from '../slots'
+import { FeriadosView, type DayEntry } from './feriados-view'
 
 export default async function FeriadosPage() {
   const supabase = await createClient()
-  const { data: holidays } = await supabase
-    .from('holidays')
-    .select('id, date, label')
-    .order('date', { ascending: true })
+  const [{ data: holidays }, { data: cancellations }, { data: classes }, { data: enrollments }] = await Promise.all([
+    supabase.from('holidays').select('id, date, label'),
+    supabase.from('class_cancellations').select('class_id, session_date, reason'),
+    supabase.from('classes').select('id, day_of_week').eq('active', true),
+    supabase.from('enrollments').select('class_id').eq('status', 'active'),
+  ])
+
+  const studentsByClass = new Map<string, number>()
+  for (const e of enrollments ?? []) studentsByClass.set(e.class_id as string, (studentsByClass.get(e.class_id as string) ?? 0) + 1)
+
+  const classIdsByDow = new Map<number, string[]>()
+  const impactByDow: Record<number, { classes: number; students: number }> = {}
+  for (const c of classes ?? []) {
+    const dow = c.day_of_week as number
+    classIdsByDow.set(dow, [...(classIdsByDow.get(dow) ?? []), c.id as string])
+    const cur = impactByDow[dow] ?? { classes: 0, students: 0 }
+    impactByDow[dow] = { classes: cur.classes + 1, students: cur.students + (studentsByClass.get(c.id as string) ?? 0) }
+  }
+
+  const entries: DayEntry[] = (holidays ?? []).map((h) => ({
+    kind: 'feriado' as const,
+    date: h.date as string,
+    label: (h.label as string | null) ?? null,
+    holidayId: h.id as string,
+  }))
+
+  // Un cierre no se guarda como tal: son las clases del día canceladas. Se considera cierre cuando están todas.
+  // TODO: si hace falta distinguirlo mejor (por ejemplo una sola clase cancelada), guardar el cierre en una tabla propia.
+  const byDate = new Map<string, { classIds: string[]; reason: string | null }>()
+  for (const c of cancellations ?? []) {
+    const date = c.session_date as string
+    const cur = byDate.get(date) ?? { classIds: [], reason: null }
+    cur.classIds.push(c.class_id as string)
+    cur.reason = cur.reason ?? ((c.reason as string | null) || null)
+    byDate.set(date, cur)
+  }
+  for (const [date, info] of byDate) {
+    const dow = new Date(`${date}T12:00:00Z`).getUTCDay()
+    const dayClasses = classIdsByDow.get(dow) ?? []
+    if (dayClasses.length > 0 && dayClasses.every((id) => info.classIds.includes(id))) {
+      entries.push({ kind: 'cierre', date, label: info.reason, classIds: dayClasses })
+    }
+  }
 
   return (
-    <div className="max-w-lg">
-      <Link href="/admin/horarios" className="text-sm text-moss hover:text-moss-dark">
-        ← Volver al calendario
-      </Link>
-
-      <p className="eyebrow mt-4">Horarios</p>
-      <h1 className="page-title mt-2">Feriados y días sin clase</h1>
-      <p className="mt-2 text-sm text-ink/60">
-        Ese día, el calendario va a aparecer cerrado (no reemplaza cancelar una clase puntual).
-      </p>
-
-      <NewHolidayForm />
-
-      <h2 className="mt-10 font-display text-xl italic text-ink">Cerrar el estudio un día (con recuperación)</h2>
-      <p className="mt-1 text-sm text-ink/60">
-        Para un día que no es feriado pero no hay clases: se cancelan todas las clases de esa fecha y cada alumno anotado recibe una recuperación.
-      </p>
-      <CloseDayForm />
-
-      <ul className="mt-6 divide-y divide-sand/60 rounded-2xl border border-sand bg-white">
-        {holidays?.map((h) => (
-          <li key={h.id} className="flex items-center justify-between px-5 py-4">
-            <div>
-              <p className="font-display italic text-ink">
-                {new Date(`${h.date}T00:00:00`).toLocaleDateString('es-AR', {
-                  weekday: 'long',
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                })}
-              </p>
-              {h.label && <p className="mt-0.5 text-sm text-ink/50">{h.label}</p>}
-            </div>
-            <DeleteHolidayButton holidayId={h.id} />
-          </li>
-        ))}
-        {(!holidays || holidays.length === 0) && (
-          <li className="px-5 py-10 text-center text-sm text-ink/40">
-            No hay feriados cargados todavía.
-          </li>
-        )}
-      </ul>
+    <div className="max-w-3xl">
+      <BackLink href="/admin/horarios" label="Horarios" />
+      <h1 className="font-display text-[30px] font-normal italic leading-tight text-ink lg:text-[38px]">Feriados y cierres</h1>
+      <div className="mt-3">
+        <FeriadosView today={todayART()} entries={entries} impactByDow={impactByDow} />
+      </div>
     </div>
   )
 }

@@ -15,8 +15,19 @@ function wasRecentlyDismissed() {
   return days < DISMISS_DAYS
 }
 
+// Una sola instancia a la vez, aunque el componente se monte dos veces (modo estricto o layouts anidados).
+let activeInstances = 0
+
 export function InstallPrompt() {
   const pathname = usePathname()
+  const [primary, setPrimary] = useState(false)
+  useEffect(() => {
+    activeInstances += 1
+    setPrimary(activeInstances === 1)
+    return () => {
+      activeInstances -= 1
+    }
+  }, [])
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [showAndroid, setShowAndroid] = useState(false)
   const [showIOS, setShowIOS] = useState(false)
@@ -65,11 +76,11 @@ export function InstallPrompt() {
   }
 
   // En el panel del alumno el aviso se muestra como tarjeta al final de la página (no flotante).
-  if (pathname === '/alumno') return null
+  if (pathname === '/alumno' || !primary) return null
 
   if (showAndroid) {
     return (
-      <div className="fixed inset-x-0 bottom-0 z-50">
+      <div data-install-prompt className="fixed inset-x-0 bottom-[calc(72px+env(safe-area-inset-bottom))] z-40 lg:bottom-0">
         <div className="mx-auto max-w-md p-3">
           <div className="flex items-center gap-3 rounded-2xl border border-sand bg-white p-4 shadow-[0_4px_24px_rgba(46,43,38,0.12)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}

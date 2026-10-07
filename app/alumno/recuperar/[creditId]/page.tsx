@@ -1,3 +1,4 @@
+import { BackLink } from '@/app/components/back-link'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ChevronLeft } from 'lucide-react'
@@ -29,9 +30,7 @@ function Shell({ children, title }: { children: React.ReactNode; title: string }
         </Link>
         <p className="font-display text-lg italic text-ink">{title}</p>
       </div>
-      <Link href="/alumno" className="hidden text-sm text-moss hover:text-moss-dark lg:inline-block">
-        ← Volver a Inicio
-      </Link>
+      <BackLink href="/alumno" label="Inicio" className="hidden lg:block" />
       {children}
     </div>
   )

@@ -1,3 +1,4 @@
+import { BackLink } from '@/app/components/back-link'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
@@ -22,9 +23,7 @@ export default async function VincularPage({
 
   return (
     <div className="max-w-2xl">
-      <Link href="/admin/alumnos" className="text-sm text-moss hover:text-moss-dark">
-        ← Volver a alumnos
-      </Link>
+      <BackLink href="/admin/alumnos" label="Alumnos" />
 
       <p className="eyebrow mt-4">Solicitud de registro</p>
       <h1 className="page-title mt-2">{fullName}</h1>

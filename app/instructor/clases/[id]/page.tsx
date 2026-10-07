@@ -1,3 +1,4 @@
+import { BackLink } from '@/app/components/back-link'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { notFound } from 'next/navigation'
@@ -39,9 +40,7 @@ export default async function InstructorClassPage({
 
   return (
     <div className="max-w-lg">
-      <Link href="/instructor" className="text-sm text-moss hover:text-moss-dark">
-        ← Volver a mi agenda
-      </Link>
+      <BackLink href="/instructor" label="Mi agenda" />
 
       <div className="mt-4 flex items-center justify-between">
         <div>

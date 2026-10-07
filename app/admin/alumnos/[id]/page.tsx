@@ -1,3 +1,4 @@
+import { BackLink } from '@/app/components/back-link'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
@@ -39,7 +40,7 @@ export default async function EditarAlumnoPage({
   const { week, back } = await searchParams
   // Volver a donde vino (p.ej. la ficha de una clase), si es una ruta interna.
   const backHref = back && back.startsWith('/admin/') ? back : '/admin/alumnos'
-  const backLabel = backHref.startsWith('/admin/alumnos') ? '← Volver a alumnos' : '← Volver'
+  const backLabel = backHref.startsWith('/admin/alumnos') ? 'Alumnos' : 'Volver'
   const weekOffset = week ? parseInt(week, 10) || 0 : 0
   const supabase = await createClient()
 
@@ -89,9 +90,7 @@ export default async function EditarAlumnoPage({
 
   return (
     <div>
-      <Link href={backHref} className="text-sm text-moss hover:text-moss-dark">
-        {backLabel}
-      </Link>
+      <BackLink href={backHref} label={backLabel} />
 
       <div className="mt-4 flex items-center justify-between">
         <div>
