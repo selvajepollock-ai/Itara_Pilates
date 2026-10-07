@@ -29,6 +29,7 @@ export function MonthMoveCalendar({
   nextOffset,
   dayLabels,
   cells,
+  credits,
   dropInPrice,
   hasPlan,
   tierPrices,
@@ -39,6 +40,8 @@ export function MonthMoveCalendar({
   nextOffset: number
   dayLabels: { name: string; dayNum: number; isToday: boolean }[]
   cells: { hour: string; row: Cell[] }[]
+  /** Recuperaciones ya disponibles (sin haber cancelado recién): se eligen desde el aviso de arriba del calendario. */
+  credits: { id: string; typeName: string; sourceDate: string | null; until: string }[]
   dropInPrice: number
   hasPlan: boolean
   tierPrices: { 1: number; 2: number; 3: number; 4: number }
@@ -234,6 +237,39 @@ export function MonthMoveCalendar({
           + Agregar clases extra (pagas)
         </button>
       </div>
+
+      {!selection && mode === 'move' && credits.length > 0 && (
+        <div className="mt-3 space-y-2 rounded-xl border border-moss/30 bg-moss/5 px-3 py-2.5 text-xs">
+          <p className="font-medium text-moss-dark">
+            {credits.length === 1 ? 'Tiene 1 recuperación disponible' : `Tiene ${credits.length} recuperaciones disponibles`}
+          </p>
+          {credits.map((c) => (
+            <div key={c.id} className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-ink/70">
+                {displayClassType(c.typeName)}
+                {c.sourceDate ? ` · por la clase del ${c.sourceDate.slice(8, 10)}/${c.sourceDate.slice(5, 7)}` : ''} · vale hasta el{' '}
+                {c.until.slice(8, 10)}/{c.until.slice(5, 7)}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setError(null)
+                  setSelection({
+                    enrollmentId: '',
+                    classId: '',
+                    sessionDate: c.sourceDate ?? c.until,
+                    creditId: c.id,
+                    typeName: c.typeName,
+                  })
+                }}
+                className="btn-primary-sm"
+              >
+                Elegir clase para recuperar
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {selection && (
         <div className="mt-3 flex items-center justify-between rounded-xl bg-clay/5 border border-clay/30 px-3 py-2 text-xs">

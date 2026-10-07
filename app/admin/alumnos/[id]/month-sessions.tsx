@@ -42,6 +42,7 @@ export async function MonthSessions({
     { data: subscription },
     { data: weekCancellationsAll },
     { data: weekRecoveriesAll },
+    { data: availableCredits },
   ] = await Promise.all([
     supabase
       .from('enrollments')
@@ -90,6 +91,14 @@ export async function MonthSessions({
       .not('recovery_credit_id', 'is', null)
       .gte('session_date', weekStart)
       .lte('session_date', weekEnd),
+    // Recuperaciones que ya tiene disponibles (por ejemplo, de una clase que faltó antes): se usan desde el calendario.
+    supabase
+      .from('recovery_credits')
+      .select('id, week_end, class_types(name), session_cancellations:source_cancellation_id(session_date)')
+      .eq('student_id', studentId)
+      .eq('status', 'available')
+      .gte('week_end', toISODate(today))
+      .order('week_end'),
   ])
 
   const plan = subscription?.plans as unknown as { price: number; classes_per_week: number | null } | null
@@ -195,6 +204,23 @@ export async function MonthSessions({
     }),
   }))
 
+  const credits = ((availableCredits ?? []) as unknown as {
+    id: string
+    week_end: string
+    class_types: { name: string } | null
+    session_cancellations: { session_date: string } | { session_date: string }[] | null
+  }[]).map((c) => {
+    const src = Array.isArray(c.session_cancellations) ? c.session_cancellations[0] : c.session_cancellations
+    const friday = new Date(`${c.week_end}T00:00:00`)
+    friday.setDate(friday.getDate() - 2)
+    return {
+      id: c.id,
+      typeName: c.class_types?.name ?? 'Clase',
+      sourceDate: src?.session_date ?? null,
+      until: toISODate(friday),
+    }
+  })
+
   const prevOffset = weekOffset - 1
   const nextOffset = weekOffset + 1
 
@@ -206,6 +232,7 @@ export async function MonthSessions({
       nextOffset={nextOffset}
       dayLabels={dayLabels}
       cells={cells}
+      credits={credits}
       dropInPrice={dropInPrice}
       hasPlan={hasPlan}
       tierPrices={tierPrices}
