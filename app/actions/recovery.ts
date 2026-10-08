@@ -951,12 +951,12 @@ export async function moveStudentSession({
     return { error: 'Solo se puede mover a un horario con el mismo profesor.' }
   }
 
-  // Ventana: la semana de la clase y la siguiente.
+  // Ventana: desde hoy (puede ser antes de la clase original, por ejemplo si adelanta una clase) hasta el fin de la semana siguiente a la clase.
   const monday = toISODate(getMonday(new Date(`${fromDate}T00:00:00`)))
   const limit = new Date(`${monday}T00:00:00`)
   limit.setDate(limit.getDate() + 13)
-  if (toDate < monday || toDate > toISODate(limit)) {
-    return { error: 'Solo se puede mover a un horario de esa semana o de la siguiente.' }
+  if (toDate > toISODate(limit)) {
+    return { error: 'Solo se puede mover a un horario hasta el final de la semana siguiente a la clase.' }
   }
 
   const [{ data: holiday }, { data: studioCancelled }, { data: alreadyAbsent }, { data: ownTarget }, { data: alreadyThere }] = await Promise.all([

@@ -289,6 +289,7 @@ export function MonthMoveCalendar({
         <div className="flex items-center gap-1.5 rounded-full border border-moss/30 bg-moss/5 py-1 pl-1 pr-3">
           <Link
             href={`?week=${prevOffset}`}
+            scroll={false}
             className="icon-btn-sm h-7 w-7"
           >
             <ChevronLeft size={14} />
@@ -296,6 +297,7 @@ export function MonthMoveCalendar({
           <p className="text-sm font-semibold text-moss-dark whitespace-nowrap">Semana {weekLabel}</p>
           <Link
             href={`?week=${nextOffset}`}
+            scroll={false}
             className="icon-btn-sm h-7 w-7"
           >
             <ChevronRight size={14} />
