@@ -411,11 +411,13 @@ export async function cancelRecovery({ studentId, creditId }: { studentId: strin
   const admin = createAdminClient()
   const { data: credit } = await admin
     .from('recovery_credits')
-    .select('id, student_id, status, week_end, used_class_id, used_session_date')
+    .select('id, student_id, status, week_end, used_class_id, used_session_date, moved_by_studio')
     .eq('id', creditId)
     .maybeSingle()
 
   if (!credit || credit.student_id !== studentId) return { error: 'Esa recuperación no existe.' }
+  // Una clase movida por el estudio no es una recuperación: no se cancela como tal (el admin la deshace desde la ficha).
+  if (credit.moved_by_studio) return { error: 'Esta clase la movió el estudio. Si necesitás cambiarla, consultá con el estudio.' }
   if (credit.status !== 'used' || !credit.used_class_id || !credit.used_session_date) {
     return { error: 'Esa recuperación no está anotada en ninguna clase.' }
   }
@@ -906,6 +908,195 @@ export async function cancelDayOccurrences({ sessionDate, reason }: { sessionDat
   }
   if (done === 0) return { error: 'Todas las clases de ese día ya estaban canceladas.' }
   return { success: true, count: done }
+}
+
+
+// ── Mover una clase de la alumna a otro horario (solo admin, solo esa fecha) ───────────────────────
+// Es distinto de cancelar: no genera una recuperación disponible. Por dentro se registra como un aviso de ausencia
+// de la clase vieja + una recuperación ya usada en la nueva (marcada como "movida por el estudio"), para que
+// los lugares y los listados cuenten bien sin cambiar nada de la lógica de cupos.
+export async function moveStudentSession({
+  studentId,
+  fromClassId,
+  fromDate,
+  toClassId,
+  toDate,
+}: {
+  studentId: string
+  fromClassId: string
+  fromDate: string
+  toClassId: string
+  toDate: string
+}) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+  const admin = createAdminClient()
+
+  const [{ data: fromClass }, { data: toClass }, { data: enrollment }] = await Promise.all([
+    admin.from('classes').select('id, start_time, day_of_week, instructor_id, class_type_id, class_types(name)').eq('id', fromClassId).maybeSingle(),
+    admin.from('classes').select('id, start_time, day_of_week, instructor_id, capacity, active, class_types(name)').eq('id', toClassId).maybeSingle(),
+    admin.from('enrollments').select('id').eq('class_id', fromClassId).eq('student_id', studentId).eq('status', 'active').maybeSingle(),
+  ])
+
+  if (!fromClass || !toClass) return { error: 'La clase no existe.' }
+  if (!enrollment) return { error: 'La alumna no tiene lugar fijo en esa clase.' }
+  if (weekdayOf(fromDate) !== fromClass.day_of_week || weekdayOf(toDate) !== toClass.day_of_week) {
+    return { error: 'La fecha no corresponde al día de la clase.' }
+  }
+  if (isInPast(fromDate, fromClass.start_time)) return { error: 'La clase que querés mover ya empezó o ya pasó.' }
+  if (isInPast(toDate, toClass.start_time)) return { error: 'La clase nueva ya empezó o ya pasó.' }
+  if (!toClass.active) return { error: 'Esa clase ya no está activa.' }
+  if (fromClassId === toClassId && fromDate === toDate) return { error: 'Elegí otro horario.' }
+  if (!fromClass.instructor_id || toClass.instructor_id !== fromClass.instructor_id) {
+    return { error: 'Solo se puede mover a un horario con el mismo profesor.' }
+  }
+
+  // Ventana: la semana de la clase y la siguiente.
+  const monday = toISODate(getMonday(new Date(`${fromDate}T00:00:00`)))
+  const limit = new Date(`${monday}T00:00:00`)
+  limit.setDate(limit.getDate() + 13)
+  if (toDate < monday || toDate > toISODate(limit)) {
+    return { error: 'Solo se puede mover a un horario de esa semana o de la siguiente.' }
+  }
+
+  const [{ data: holiday }, { data: studioCancelled }, { data: alreadyAbsent }, { data: ownTarget }, { data: alreadyThere }] = await Promise.all([
+    admin.from('holidays').select('date').eq('date', toDate).maybeSingle(),
+    admin.from('class_cancellations').select('id').eq('class_id', toClassId).eq('session_date', toDate).maybeSingle(),
+    admin.from('session_cancellations').select('id').eq('enrollment_id', enrollment.id).eq('session_date', fromDate).maybeSingle(),
+    admin.from('enrollments').select('id').eq('class_id', toClassId).eq('student_id', studentId).eq('status', 'active').maybeSingle(),
+    admin.from('attendance').select('id').eq('class_id', toClassId).eq('session_date', toDate).eq('student_id', studentId).maybeSingle(),
+  ])
+  if (holiday) return { error: 'Ese día es feriado.' }
+  if (studioCancelled) return { error: 'Esa clase está cancelada ese día.' }
+  if (alreadyAbsent) return { error: 'Esa clase ya estaba cancelada para la alumna. Si querés, elegí una recuperación disponible.' }
+  if (ownTarget) return { error: 'Es otra clase en la que la alumna ya tiene su lugar fijo.' }
+  if (alreadyThere) return { error: 'La alumna ya está anotada en esa clase.' }
+
+  const [{ count: enrolled }, { count: cancelled }, { count: recovering }] = await Promise.all([
+    admin.from('enrollments').select('id', { count: 'exact', head: true }).eq('class_id', toClassId).eq('status', 'active'),
+    admin.from('session_cancellations').select('id', { count: 'exact', head: true }).eq('class_id', toClassId).eq('session_date', toDate),
+    admin.from('attendance').select('id', { count: 'exact', head: true }).eq('class_id', toClassId).eq('session_date', toDate).not('recovery_credit_id', 'is', null),
+  ])
+  if ((enrolled ?? 0) - (cancelled ?? 0) + (recovering ?? 0) >= toClass.capacity) return { error: 'Esa clase ya está completa.' }
+
+  // 1) Aviso de ausencia de la clase vieja (libera el lugar).
+  const { data: cancellation, error: cancelError } = await admin
+    .from('session_cancellations')
+    .insert({ enrollment_id: enrollment.id, student_id: studentId, class_id: fromClassId, session_date: fromDate, within_deadline: true })
+    .select('id')
+    .maybeSingle()
+  if (cancelError || !cancellation) return { error: cancelError?.message ?? 'No se pudo liberar la clase anterior.' }
+
+  const rollback = async (creditId?: string) => {
+    if (creditId) await admin.from('recovery_credits').delete().eq('id', creditId)
+    await admin.from('session_cancellations').delete().eq('id', cancellation.id)
+  }
+
+  // 2) Crédito ya usado, marcado como movido por el estudio (no queda nada disponible).
+  const sunday = getSunday(getMonday(new Date(`${fromDate}T00:00:00`)))
+  const { data: credit, error: creditError } = await admin
+    .from('recovery_credits')
+    .insert({
+      student_id: studentId,
+      source_cancellation_id: cancellation.id,
+      class_type_id: fromClass.class_type_id,
+      instructor_id: fromClass.instructor_id,
+      week_start: monday,
+      week_end: toISODate(sunday),
+      status: 'used',
+      used_class_id: toClassId,
+      used_session_date: toDate,
+      moved_by_studio: true,
+    })
+    .select('id')
+    .maybeSingle()
+  if (creditError || !credit) {
+    await rollback()
+    return { error: creditError?.message ?? 'No se pudo mover la clase.' }
+  }
+
+  // 3) Anotada en la clase nueva.
+  const { error: attendanceError } = await admin.from('attendance').insert({
+    class_id: toClassId,
+    session_date: toDate,
+    student_id: studentId,
+    status: 'recovering',
+    recovery_credit_id: credit.id,
+  })
+  if (attendanceError) {
+    await rollback(credit.id as string)
+    return { error: attendanceError.message }
+  }
+  await admin.from('session_cancellations').update({ recovery_credit_id: credit.id }).eq('id', cancellation.id)
+
+  const when = (iso: string, time: string) => `${dayDate(iso)} a las ${String(time).slice(0, 5)}`
+  await notifyUsers([studentId], {
+    kind: 'class_moved',
+    title: 'Movimos tu clase',
+    body: `Tu clase del ${when(fromDate, fromClass.start_time)} pasó al ${when(toDate, toClass.start_time)}.`,
+    url: '/alumno',
+    tag: `moved-${credit.id}`,
+  })
+  await notifyFreedSpot(fromClassId, fromDate)
+
+  revalidatePath('/alumno')
+  revalidatePath(`/admin/alumnos/${studentId}`)
+  revalidatePath('/admin/horarios')
+  return { success: true, creditId: credit.id as string }
+}
+
+// Deshace un movimiento: la alumna vuelve a su clase de siempre y se libera la clase nueva.
+export async function undoMovedSession({ studentId, creditId }: { studentId: string; creditId: string }) {
+  const auth = await assertAdmin()
+  if (!auth.ok) return { error: auth.error }
+  const admin = createAdminClient()
+
+  const { data: credit } = await admin
+    .from('recovery_credits')
+    .select('id, student_id, status, moved_by_studio, source_cancellation_id, used_class_id, used_session_date')
+    .eq('id', creditId)
+    .maybeSingle()
+  if (!credit || credit.student_id !== studentId || !credit.moved_by_studio || credit.status !== 'used') {
+    return { error: 'Ese movimiento no existe.' }
+  }
+
+  const toClassId = credit.used_class_id as string
+  const toDate = credit.used_session_date as string
+  const { data: toClass } = await admin.from('classes').select('start_time').eq('id', toClassId).maybeSingle()
+  if (toClass && isInPast(toDate, toClass.start_time)) return { error: 'La clase nueva ya empezó o ya pasó.' }
+
+  const { data: cancellation } = await admin
+    .from('session_cancellations')
+    .select('id, class_id, session_date')
+    .eq('id', credit.source_cancellation_id as string)
+    .maybeSingle()
+  if (!cancellation) return { error: 'No encuentro la clase original.' }
+
+  // Que su lugar de siempre siga libre (nadie lo tomó mientras tanto).
+  const fromClassId = cancellation.class_id as string
+  const fromDate = cancellation.session_date as string
+  const [{ data: fromClass }, { count: enrolled }, { count: cancelled }, { count: recovering }] = await Promise.all([
+    admin.from('classes').select('capacity, start_time').eq('id', fromClassId).maybeSingle(),
+    admin.from('enrollments').select('id', { count: 'exact', head: true }).eq('class_id', fromClassId).eq('status', 'active'),
+    admin.from('session_cancellations').select('id', { count: 'exact', head: true }).eq('class_id', fromClassId).eq('session_date', fromDate),
+    admin.from('attendance').select('id', { count: 'exact', head: true }).eq('class_id', fromClassId).eq('session_date', fromDate).not('recovery_credit_id', 'is', null),
+  ])
+  if (fromClass && isInPast(fromDate, fromClass.start_time)) return { error: 'La clase original ya pasó.' }
+  if (fromClass && (enrolled ?? 0) - (cancelled ?? 0) + (recovering ?? 0) >= fromClass.capacity) {
+    return { error: 'Alguien ya tomó el lugar de la clase original: no se puede deshacer.' }
+  }
+
+  await admin.from('attendance').delete().eq('class_id', toClassId).eq('session_date', toDate).eq('student_id', studentId).eq('recovery_credit_id', creditId)
+  await admin.from('session_cancellations').update({ recovery_credit_id: null }).eq('id', cancellation.id)
+  await admin.from('recovery_credits').delete().eq('id', creditId)
+  await admin.from('session_cancellations').delete().eq('id', cancellation.id)
+
+  await notifyFreedSpot(toClassId, toDate)
+
+  revalidatePath('/alumno')
+  revalidatePath(`/admin/alumnos/${studentId}`)
+  revalidatePath('/admin/horarios')
+  return { success: true }
 }
 
 // Admin deshace la cancelación de una fecha puntual (por si fue un error).

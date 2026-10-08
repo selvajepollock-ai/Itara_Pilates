@@ -4,12 +4,20 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
-import { cancelSession, bookRecovery, addExtraClassesBatch, undoSessionCancellation } from '@/app/actions/recovery'
+import {
+  cancelSession,
+  bookRecovery,
+  addExtraClassesBatch,
+  undoSessionCancellation,
+  moveStudentSession,
+  undoMovedSession,
+} from '@/app/actions/recovery'
 import { formatTime } from '@/lib/day-names'
 import { displayClassType } from '@/lib/class-type-display'
 
 type Cell = {
   date: string
+  hour: string
   classId: string
   enrollmentId: string | null
   typeName: string
@@ -17,10 +25,19 @@ type Cell = {
   isMyFixedSlot: boolean
   isMyCancelledToday: boolean
   hasRoom: boolean
+  instructorId: string | null
+  isPast: boolean
+  /** Su clase de siempre de esta fecha, que el estudio le movió a otro horario. */
+  movedAway: boolean
+  /** Esta clase es una que el estudio le movió (id para deshacerlo). */
+  movedCreditId: string | null
 } | null
 
 type Selection = { enrollmentId: string; classId: string; sessionDate: string; creditId: string; typeName: string }
 type ExtraSelection = { classId: string; sessionDate: string; typeName: string }
+
+const dayText = (iso: string) =>
+  new Date(`${iso}T12:00:00`).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'numeric' })
 
 export function MonthMoveCalendar({
   studentId,
@@ -51,10 +68,15 @@ export function MonthMoveCalendar({
   const [selection, setSelection] = useState<Selection | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [pendingConfirm, setPendingConfirm] = useState<Cell | null>(null)
-  const [mode, setMode] = useState<'move' | 'extra'>('move')
+  // 'move' = cancelar (y recuperar ahora o más tarde); 'swap' = mover a otro horario en un solo paso; 'extra' = clases pagas.
+  const [mode, setMode] = useState<'move' | 'swap' | 'extra'>('move')
+  const [moveFrom, setMoveFrom] = useState<Cell>(null)
+  const [moveTarget, setMoveTarget] = useState<Cell>(null)
+  const [undoTarget, setUndoTarget] = useState<Cell>(null)
   const [extraSelections, setExtraSelections] = useState<ExtraSelection[]>([])
   const [extraDone, setExtraDone] = useState(false)
   const [undoneDone, setUndoneDone] = useState(false)
+  const [movedDone, setMovedDone] = useState(false)
 
   function formatPrice(n: number) {
     return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n)
@@ -147,9 +169,80 @@ export function MonthMoveCalendar({
     })
   }
 
+  // En "Mover clase": la clase de origen es una clase fija suya que todavía no empezó; el destino, un horario libre
+  // con el mismo profesor que todavía no empezó. El servidor vuelve a validar todo.
+  function swapTarget(cell: Cell) {
+    return (
+      !!cell &&
+      !!moveFrom &&
+      cell.hasRoom &&
+      !cell.isScheduled &&
+      !cell.isMyFixedSlot &&
+      !cell.isPast &&
+      !!cell.instructorId &&
+      cell.instructorId === moveFrom.instructorId
+    )
+  }
+
+  function confirmMove() {
+    if (!moveFrom || !moveTarget) return
+    const from = moveFrom
+    const to = moveTarget
+    setError(null)
+    startTransition(async () => {
+      const res = await moveStudentSession({
+        studentId,
+        fromClassId: from.classId,
+        fromDate: from.date,
+        toClassId: to.classId,
+        toDate: to.date,
+      })
+      if (res?.error) {
+        setError(res.error)
+        setMoveTarget(null)
+        return
+      }
+      setMoveFrom(null)
+      setMoveTarget(null)
+      setMovedDone(true)
+      router.refresh()
+    })
+  }
+
+  function confirmUndoMove() {
+    if (!undoTarget?.movedCreditId) return
+    const creditId = undoTarget.movedCreditId
+    setError(null)
+    startTransition(async () => {
+      const res = await undoMovedSession({ studentId, creditId })
+      if (res?.error) setError(res.error)
+      else setMovedDone(true)
+      setUndoTarget(null)
+      router.refresh()
+    })
+  }
+
   function handleCellClick(cell: Cell) {
     if (!cell) return
     setError(null)
+    setMovedDone(false)
+
+    if (mode === 'swap') {
+      if (!moveFrom) {
+        if (cell.movedCreditId) {
+          setUndoTarget(cell)
+          return
+        }
+        if (cell.isMyFixedSlot && cell.isScheduled && !cell.isPast) setMoveFrom(cell)
+        return
+      }
+      if (cell.date === moveFrom.date && cell.classId === moveFrom.classId) {
+        setMoveFrom(null)
+        return
+      }
+      if (swapTarget(cell)) setMoveTarget(cell)
+      return
+    }
 
     if (mode === 'extra') {
       if (cell.isScheduled || !cell.hasRoom) return
@@ -214,12 +307,14 @@ export function MonthMoveCalendar({
         <button
           type="button"
           onClick={() => {
-            setMode('move')
+            setMode('swap')
             setSelection(null)
             setExtraSelections([])
+            setMoveFrom(null)
+            setMoveTarget(null)
           }}
           className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-            mode === 'move' ? 'border-moss bg-moss text-white' : 'border-sand text-ink/50 hover:border-moss'
+            mode === 'swap' ? 'border-moss bg-moss text-white' : 'border-sand text-ink/50 hover:border-moss'
           }`}
         >
           Mover clase
@@ -227,8 +322,25 @@ export function MonthMoveCalendar({
         <button
           type="button"
           onClick={() => {
+            setMode('move')
+            setSelection(null)
+            setExtraSelections([])
+            setMoveFrom(null)
+            setMoveTarget(null)
+          }}
+          className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+            mode === 'move' ? 'border-moss bg-moss text-white' : 'border-sand text-ink/50 hover:border-moss'
+          }`}
+        >
+          Cancelar clase
+        </button>
+        <button
+          type="button"
+          onClick={() => {
             setMode('extra')
             setSelection(null)
+            setMoveFrom(null)
+            setMoveTarget(null)
           }}
           className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
             mode === 'extra' ? 'border-clay bg-clay text-white' : 'border-sand text-ink/50 hover:border-clay'
@@ -237,6 +349,60 @@ export function MonthMoveCalendar({
           + Agregar clases extra (pagas)
         </button>
       </div>
+
+      {mode === 'swap' && (
+        <div className="mt-3 space-y-2 rounded-xl border border-moss/30 bg-moss/5 px-3 py-2.5 text-xs">
+          {movedDone && <p className="font-medium text-moss-dark">Listo ✓</p>}
+          {!moveFrom && !undoTarget && (
+            <p className="text-ink/70">
+              Tocá la clase de la alumna que querés mover (✓). Después elegí el horario nuevo: tiene que ser con el mismo profesor y con lugar.
+              No usa ninguna recuperación. Para deshacer un cambio, tocá la clase movida.
+            </p>
+          )}
+          {moveFrom && !moveTarget && (
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-ink/70">
+                Moviendo la clase del {dayText(moveFrom.date)} {formatTime(moveFrom.hour)}: elegí el horario nuevo (mismo profesor, con lugar).
+              </span>
+              <button onClick={() => setMoveFrom(null)} className="font-medium text-clay hover:underline">
+                Cancelar
+              </button>
+            </div>
+          )}
+          {moveFrom && moveTarget && (
+            <div>
+              <p className="text-ink">
+                Se libera la clase del <strong>{dayText(moveFrom.date)} {formatTime(moveFrom.hour)}</strong> y se anota en la del{' '}
+                <strong>{dayText(moveTarget.date)} {formatTime(moveTarget.hour)}</strong>. No usa ninguna recuperación.
+              </p>
+              <div className="mt-2 flex gap-2">
+                <button onClick={confirmMove} disabled={isPending} className="btn-primary-sm">
+                  {isPending ? 'Moviendo...' : 'Sí, mover'}
+                </button>
+                <button onClick={() => setMoveTarget(null)} className="btn-secondary-sm">
+                  No
+                </button>
+              </div>
+            </div>
+          )}
+          {undoTarget && (
+            <div>
+              <p className="text-ink">
+                ¿Deshacer el cambio? La alumna vuelve a su clase de siempre y se libera la del{' '}
+                <strong>{dayText(undoTarget.date)} {formatTime(undoTarget.hour)}</strong>.
+              </p>
+              <div className="mt-2 flex gap-2">
+                <button onClick={confirmUndoMove} disabled={isPending} className="btn-primary-sm">
+                  {isPending ? 'Deshaciendo...' : 'Sí, deshacer'}
+                </button>
+                <button onClick={() => setUndoTarget(null)} className="btn-secondary-sm">
+                  No
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {!selection && mode === 'move' && credits.length > 0 && (
         <div className="mt-3 space-y-2 rounded-xl border border-moss/30 bg-moss/5 px-3 py-2.5 text-xs">
@@ -274,8 +440,8 @@ export function MonthMoveCalendar({
       {selection && (
         <div className="mt-3 flex items-center justify-between rounded-xl bg-clay/5 border border-clay/30 px-3 py-2 text-xs">
           <span className="text-clay">
-            Moviendo {displayClassType(selection.typeName)} del {selection.sessionDate.slice(8, 10)} —
-            elegí el casillero nuevo (click en la misma celda para cancelar el movimiento)
+            Recuperando {displayClassType(selection.typeName)} (por la clase del {selection.sessionDate.slice(8, 10)}) —
+            elegí el casillero nuevo
           </span>
           <button onClick={() => setSelection(null)} className="font-medium text-clay hover:underline">
             Cancelar
@@ -358,6 +524,7 @@ export function MonthMoveCalendar({
                 const isSelected =
                   selection && selection.sessionDate === cell.date && selection.classId === cell.classId
                 const isValidTarget = selection && !isSelected && cell.hasRoom
+                const isMoveFrom = mode === 'swap' && !!moveFrom && moveFrom.date === cell.date && moveFrom.classId === cell.classId
                 const isExtraSelected = extraSelections.some(
                   (s) => s.classId === cell.classId && s.sessionDate === cell.date
                 )
@@ -365,25 +532,31 @@ export function MonthMoveCalendar({
                 const isClickable =
                   mode === 'extra'
                     ? isExtraTarget
-                    : selection
-                      ? isSelected || isValidTarget
-                      : cell.isMyCancelledToday || (cell.isMyFixedSlot && cell.isScheduled)
+                    : mode === 'swap'
+                      ? moveFrom
+                        ? isMoveFrom || swapTarget(cell)
+                        : !!cell.movedCreditId || (cell.isMyFixedSlot && cell.isScheduled && !cell.isPast)
+                      : selection
+                        ? isSelected || isValidTarget
+                        : (cell.isMyCancelledToday && !cell.movedAway) || (cell.isMyFixedSlot && cell.isScheduled)
 
                 return (
                   <button
                     key={di}
                     type="button"
-                    disabled={isPending || (!isClickable && !isSelected && !isExtraSelected)}
+                    disabled={isPending || (!isClickable && !isSelected && !isExtraSelected && !isMoveFrom)}
                     onClick={() => handleCellClick(cell)}
                     title={
-                      cell.isMyCancelledToday && mode !== 'extra'
+                      cell.movedAway
+                        ? `${cell.date.slice(8, 10)} — ${displayClassType(cell.typeName)} ${formatTime(hour)} — se la movió el estudio a otro horario`
+                        : cell.isMyCancelledToday && mode !== 'extra'
                         ? `${cell.date.slice(8, 10)} — ${displayClassType(cell.typeName)} ${formatTime(hour)} — avisó que no venía: click para deshacer (al final viene, sin cargo)`
                         : `${cell.date.slice(8, 10)} — ${displayClassType(cell.typeName)} ${formatTime(hour)}${
                             cell.isScheduled ? '' : cell.hasRoom ? ' — libre' : ' — completo'
                           }`
                     }
                     className={`h-8 rounded-md border text-[11px] transition ${
-                      isSelected
+                      isSelected || isMoveFrom
                         ? 'border-clay bg-clay text-white animate-pulse'
                         : isExtraSelected
                           ? 'border-clay bg-clay text-white'
@@ -394,13 +567,13 @@ export function MonthMoveCalendar({
                               : cell.hasRoom
                                 ? isExtraTarget
                                   ? 'border-clay/50 bg-clay/10 text-clay hover:bg-clay/20'
-                                  : isValidTarget || !selection
+                                  : isValidTarget || (!selection && !(mode === 'swap' && moveFrom && !swapTarget(cell)))
                                     ? 'border-moss/40 bg-moss/10 text-moss hover:bg-moss/20'
                                     : 'border-sand/40 bg-transparent text-ink/15'
                                 : 'border-clay/30 bg-clay/5 text-clay/60'
                     } ${isPending ? 'opacity-50' : ''}`}
                   >
-                    {isSelected
+                    {isSelected || isMoveFrom
                       ? '↕'
                       : isExtraSelected
                         ? '✓'
