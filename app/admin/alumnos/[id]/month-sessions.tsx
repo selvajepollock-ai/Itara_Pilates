@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { toISODate } from '@/lib/sessions'
+import { toISODate, isInPast } from '@/lib/sessions'
 import { MonthMoveCalendar } from './month-move-calendar'
 
 export async function MonthSessions({
@@ -43,6 +43,7 @@ export async function MonthSessions({
     { data: weekCancellationsAll },
     { data: weekRecoveriesAll },
     { data: availableCredits },
+    { data: movedCredits },
   ] = await Promise.all([
     supabase
       .from('enrollments')
@@ -51,17 +52,17 @@ export async function MonthSessions({
       .eq('status', 'active'),
     supabase
       .from('classes')
-      .select('id, day_of_week, start_time, capacity, class_types(name)')
+      .select('id, day_of_week, start_time, capacity, instructor_id, class_types(name)')
       .eq('active', true),
     supabase
       .from('session_cancellations')
-      .select('enrollment_id, class_id, session_date')
+      .select('enrollment_id, class_id, session_date, recovery_credit_id')
       .eq('student_id', studentId)
       .gte('session_date', weekStart)
       .lte('session_date', weekEnd),
     supabase
       .from('attendance')
-      .select('id, class_id, session_date')
+      .select('id, class_id, session_date, recovery_credit_id')
       .eq('student_id', studentId)
       .not('recovery_credit_id', 'is', null)
       .gte('session_date', weekStart)
@@ -99,7 +100,10 @@ export async function MonthSessions({
       .eq('status', 'available')
       .gte('week_end', toISODate(today))
       .order('week_end'),
+    // Clases que el estudio le movió (para poder deshacerlas).
+    supabase.from('recovery_credits').select('id').eq('student_id', studentId).eq('moved_by_studio', true).eq('status', 'used'),
   ])
+  const movedIds = new Set((movedCredits ?? []).map((c) => c.id as string))
 
   const plan = subscription?.plans as unknown as { price: number; classes_per_week: number | null } | null
   const hasPlan = Boolean(plan?.classes_per_week && plan.classes_per_week > 0)
@@ -124,6 +128,7 @@ export async function MonthSessions({
     day_of_week: number
     start_time: string
     capacity: number
+    instructor_id: string | null
     class_types: { name: string } | null
   }
 
@@ -155,9 +160,16 @@ export async function MonthSessions({
   }
 
   const cancelledKeys = new Set((cancellations ?? []).map((c) => `${c.class_id}_${c.session_date}`))
+  const movedAwayKeys = new Set(
+    (cancellations ?? []).filter((c) => c.recovery_credit_id && movedIds.has(c.recovery_credit_id as string)).map((c) => `${c.class_id}_${c.session_date}`)
+  )
   const recoveryByDateClass = new Map<string, string>()
+  const movedCreditByDateClass = new Map<string, string>()
   for (const r of recoveries ?? []) {
     recoveryByDateClass.set(`${r.class_id}_${r.session_date}`, r.id)
+    if (r.recovery_credit_id && movedIds.has(r.recovery_credit_id as string)) {
+      movedCreditByDateClass.set(`${r.class_id}_${r.session_date}`, r.recovery_credit_id as string)
+    }
   }
 
   const myEnrollmentByClassId = new Map(
@@ -193,12 +205,17 @@ export async function MonthSessions({
 
       return {
         date,
+        hour,
         classId: classForSlot.id,
         enrollmentId: isMyFixedSlot ? myEnrollmentByClassId.get(classForSlot.id)! : null,
         typeName: classForSlot.class_types?.name ?? 'Clase',
         isScheduled,
         isMyFixedSlot,
         isMyCancelledToday: isMyFixedSlot && isCancelledThisDate,
+        instructorId: classForSlot.instructor_id,
+        isPast: isInPast(date, classForSlot.start_time),
+        movedAway: movedAwayKeys.has(key),
+        movedCreditId: movedCreditByDateClass.get(key) ?? null,
         hasRoom: hasRoom || isScheduled,
       }
     }),

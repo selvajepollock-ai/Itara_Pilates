@@ -52,6 +52,7 @@ type Credit = {
   status: string
   week_end: string
   is_paid_extra?: boolean | null
+  moved_by_studio?: boolean | null
   requested_session_date: string | null
   requested: { start_time: string; day_of_week: number } | null
 }
@@ -104,7 +105,7 @@ export default async function AlumnoDashboard() {
       .lte('session_date', nextSunday),
     supabase
       .from('recovery_credits')
-      .select('id, status, week_end, requested_session_date, is_paid_extra, requested:requested_class_id(start_time, day_of_week)')
+      .select('id, status, week_end, requested_session_date, is_paid_extra, moved_by_studio, requested:requested_class_id(start_time, day_of_week)')
       .eq('student_id', studentId)
       .gte('week_end', since),
     supabase.from('plans').select('id, name, price').eq('active', true).order('price'),
@@ -163,6 +164,12 @@ export default async function AlumnoDashboard() {
     }
     if (credit.status === 'used') {
       const att = recoveryByCredit.get(credit.id)
+      if (credit.moved_by_studio) {
+        return {
+          state: 'avisaste-usada',
+          note: att ? `El estudio la movió al ${dayDate(att.session_date)} a las ${formatTime(att.classes?.start_time ?? '')}` : 'El estudio la movió a otro horario',
+        }
+      }
       return {
         state: 'avisaste-usada',
         note: att ? `Recuperaste el ${dayDate(att.session_date)} a las ${formatTime(att.classes?.start_time ?? '')}` : 'Ya usaste esta recuperación',
@@ -273,6 +280,8 @@ export default async function AlumnoDashboard() {
       const origin = r.recovery_credit_id ? cancByCredit.get(r.recovery_credit_id) : undefined
       // Una clase suelta comprada se guarda como una reserva: no es una recuperación y no se puede cancelar desde acá.
       const isDropIn = Boolean(r.recovery_credit_id && creditById.get(r.recovery_credit_id)?.is_paid_extra)
+      // Una clase que le movió el estudio: se ve como clase suya, sin cancelarla como recuperación.
+      const isMoved = Boolean(r.recovery_credit_id && creditById.get(r.recovery_credit_id)?.moved_by_studio)
       const start = formatTime(r.classes.start_time)
       const past = isInPast(r.session_date, r.classes.start_time)
       rows.push({
@@ -285,9 +294,9 @@ export default async function AlumnoDashboard() {
         typeName: r.classes.class_types?.name ?? 'Clase',
         instructor: r.classes.profiles?.full_name ?? null,
         state: isDropIn ? 'suelta' : 'recovery',
-        note: isDropIn ? 'Clase suelta' : origin ? `Por tu clase del ${dayDate(origin.session_date)}` : 'Recuperación confirmada',
+        note: isDropIn ? 'Clase suelta' : isMoved ? (origin ? `El estudio te movió la clase del ${dayDate(origin.session_date)}` : 'Clase movida por el estudio') : origin ? `Por tu clase del ${dayDate(origin.session_date)}` : 'Recuperación confirmada',
         recoveryCancel:
-          !isDropIn && !past && r.recovery_credit_id
+          !isDropIn && !isMoved && !past && r.recovery_credit_id
             ? {
                 creditId: r.recovery_credit_id,
                 onTime: hoursUntil(r.session_date, r.classes.start_time) >= minHours,
