@@ -17,6 +17,13 @@ export async function createSignupRequest(formData: FormData) {
   if (!firstName || !lastName || !email) {
     return { error: 'Completá nombre, apellido y email.' }
   }
+  // Tope de largo y formato: el formulario es público y no tiene que aceptar cualquier cosa.
+  if (firstName.length > 60 || lastName.length > 60 || email.length > 120 || phone.length > 30) {
+    return { error: 'Alguno de los datos es demasiado largo.' }
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { error: 'Revisá el email: no parece válido.' }
+  }
   if (!username || !isValidUsername(username)) {
     return { error: 'Elegí un usuario válido: minúsculas, números, "_" o ".", entre 3 y 20 caracteres.' }
   }
