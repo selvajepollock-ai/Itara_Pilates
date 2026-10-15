@@ -2,13 +2,9 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
-import { isEmailLike } from '@/lib/auth-username'
-import { resolveLoginEmail } from '@/app/actions/auth-helpers'
-import { siteUrlForHost } from '@/lib/site-url'
+import { requestPasswordReset } from '@/app/actions/auth-helpers'
 
 export default function ForgotPasswordPage() {
-  const supabase = createClient()
   const [identifier, setIdentifier] = useState('')
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
@@ -17,14 +13,7 @@ export default function ForgotPasswordPage() {
     e.preventDefault()
     setLoading(true)
 
-    const email = isEmailLike(identifier) ? identifier : await resolveLoginEmail(identifier)
-
-    if (email) {
-      const siteUrl = siteUrlForHost(window.location.host)
-      await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${siteUrl}/auth/confirm?next=/auth/set-password`,
-      })
-    }
+    await requestPasswordReset(identifier.trim())
 
     // Mostramos el mismo mensaje exista o no la cuenta, por seguridad.
     setLoading(false)
