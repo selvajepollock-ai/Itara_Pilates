@@ -3,10 +3,13 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { signInWithIdentifier } from '@/app/actions/auth-helpers'
+import { createClient } from '@/lib/supabase/client'
+import { isEmailLike } from '@/lib/auth-username'
+import { resolveLoginEmail } from '@/app/actions/auth-helpers'
 
 export default function LoginPage() {
   const router = useRouter()
+  const supabase = createClient()
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -24,13 +27,20 @@ export default function LoginPage() {
     const rawIdentifier = String(formData.get('identifier') ?? identifier).trim()
     const rawPassword = String(formData.get('password') ?? password)
 
-    // El usuario se traduce a email en el servidor: el email real nunca llega al navegador.
-    const result = await signInWithIdentifier(rawIdentifier, rawPassword)
+    const email = isEmailLike(rawIdentifier) ? rawIdentifier : await resolveLoginEmail(rawIdentifier)
+
+    if (!email) {
+      setError('Email/usuario o contraseña incorrectos.')
+      setLoading(false)
+      return
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password: rawPassword })
 
     setLoading(false)
 
-    if (result.error) {
-      setError(result.error)
+    if (error) {
+      setError('Email/usuario o contraseña incorrectos.')
       return
     }
 
