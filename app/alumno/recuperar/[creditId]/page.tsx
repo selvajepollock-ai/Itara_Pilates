@@ -9,6 +9,7 @@ import { formatTime } from '@/lib/day-names'
 import { addDaysISO, todayART } from '../../../admin/horarios/slots'
 import { dayDate, dayDateCap, dowOf } from '../../format'
 import { RecoveryPicker, type PickerDay } from './recovery-picker'
+import { UsedRecoveryCard, closedRecoveryText, usedRecoveryOf } from './used-recovery'
 
 type ClassOption = {
   id: string
@@ -52,7 +53,7 @@ export default async function RecuperarPage({
   const { data: credit } = await supabase
     .from('recovery_credits')
     .select(
-      'id, student_id, status, class_type_id, instructor_id, week_start, week_end, requested_session_date, class_types(name), requested:requested_class_id(start_time), profiles!recovery_credits_instructor_id_fkey(full_name)'
+      'id, student_id, status, class_type_id, instructor_id, week_start, week_end, requested_session_date, used_session_date, class_types(name), requested:requested_class_id(start_time), used:used_class_id(start_time), profiles!recovery_credits_instructor_id_fkey(full_name)'
     )
     .eq('id', creditId)
     .maybeSingle()
@@ -108,9 +109,16 @@ export default async function RecuperarPage({
   }
 
   if (credit.status !== 'available') {
+    const used = usedRecoveryOf(credit)
     return (
       <Shell title="Recuperar clase">
-        <p className="mt-6 text-sm text-muted">Esta recuperación ya fue usada o venció.</p>
+        {used ? (
+          <div className="mt-6">
+            <UsedRecoveryCard label={used.label} past={used.past} backHref="/alumno" backLabel="Volver a Inicio" />
+          </div>
+        ) : (
+          <p className="mt-6 text-sm text-muted">{closedRecoveryText(credit)}</p>
+        )}
       </Shell>
     )
   }
