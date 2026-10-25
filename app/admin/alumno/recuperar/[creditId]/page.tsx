@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { toISODate, isInPast } from '@/lib/sessions'
 import { DayAccordion } from './day-accordion'
+import { UsedRecoveryCard, closedRecoveryText, usedRecoveryOf } from '@/app/alumno/recuperar/[creditId]/used-recovery'
 
 type ClassOption = {
   id: string
@@ -29,17 +30,24 @@ export default async function RecuperarPage({
 
   const { data: credit } = await supabase
     .from('recovery_credits')
-    .select('id, student_id, status, class_type_id, instructor_id, week_start, week_end, class_types(name), profiles!recovery_credits_instructor_id_fkey(full_name)')
+    .select('id, student_id, status, class_type_id, instructor_id, week_start, week_end, used_session_date, used:used_class_id(start_time), class_types(name), profiles!recovery_credits_instructor_id_fkey(full_name)')
     .eq('id', creditId)
     .maybeSingle()
 
   if (!credit || credit.student_id !== studentId) notFound()
 
   if (credit.status !== 'available') {
+    const used = usedRecoveryOf(credit)
     return (
       <div className="max-w-md">
         <BackLink href="/alumno" label="Inicio" />
-        <p className="mt-6 text-sm text-ink/60">Esta clase a recuperar ya fue usada o venció.</p>
+        {used ? (
+          <div className="mt-6">
+            <UsedRecoveryCard label={used.label} past={used.past} backHref="/alumno" backLabel="Volver a Inicio" />
+          </div>
+        ) : (
+          <p className="mt-6 text-sm text-ink/60">{closedRecoveryText(credit)}</p>
+        )}
       </div>
     )
   }

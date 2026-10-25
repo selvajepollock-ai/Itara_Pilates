@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { bookRecovery } from '@/app/actions/recovery'
+import { UsedRecoveryCard } from './used-recovery'
 
 export type PickerOption = { classId: string; time: string; places: number }
 export type PickerDay = { date: string; title: string; options: PickerOption[] }
@@ -23,30 +23,13 @@ export function RecoveryPicker({
   /** Si el crédito ya tiene un pedido pendiente: "el jueves 15 a las 15:00". */
   pendingLabel?: string
 }) {
-  const router = useRouter()
   const [selected, setSelected] = useState<Selected | null>(null)
   const [sentLabel, setSentLabel] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [confirming, setConfirming] = useState(false)
 
-  if (sentLabel) {
-    return (
-      <div className="rounded-2xl border border-[#DCE7DE] bg-moss-soft p-6">
-        <span className="rounded-full bg-slot-free px-2.5 py-0.5 text-[11px] font-semibold text-slot-free-ink">Confirmada</span>
-        <p className="mt-3 font-display text-2xl italic text-ink">Listo, te esperamos {sentLabel}</p>
-        <p className="mt-2 text-sm text-muted">
-          Tu recuperación quedó confirmada. La vas a ver en "Tus clases". Si no podés ir, avisá con tiempo desde tu panel.
-        </p>
-        <Link
-          href="/alumno"
-          className="mt-5 inline-flex h-11 items-center justify-center rounded-[12px] bg-[#2B2A26] px-5 text-sm font-semibold text-white hover:bg-black max-sm:w-full"
-        >
-          Volver a Inicio
-        </Link>
-      </div>
-    )
-  }
+  if (sentLabel) return <UsedRecoveryCard label={sentLabel} backHref="/alumno" backLabel="Volver a Inicio" />
 
   const shownLabel = pendingLabel ?? null
   if (shownLabel) {
@@ -80,8 +63,8 @@ export function RecoveryPicker({
         setError(res.error)
         return
       }
+      // No hace falta refrescar: la acción ya revalida la página, que muestra la misma tarjeta de confirmada.
       setSentLabel(selected.label)
-      router.refresh()
     })
   }
 
