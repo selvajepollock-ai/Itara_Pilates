@@ -2,10 +2,11 @@ import { createClient } from '@/lib/supabase/server'
 import { PlansView } from './plans-view'
 import type { PlanItem } from './plan-math'
 import { loadPriceSchedule, planPriceAt, upcomingPrice } from '@/lib/plan-prices'
+import { dropInTiersAt, loadDropInSchedule, upcomingDropIn } from '@/lib/drop-in-prices'
 
 export default async function PlanesPage() {
   const supabase = await createClient()
-  const [{ data: plans }, { data: subs }, { data: students }, { data: settings }, priceSchedule] = await Promise.all([
+  const [{ data: plans }, { data: subs }, { data: students }, { data: settings }, priceSchedule, dropInSchedule] = await Promise.all([
     supabase.from('plans').select('id, name, price, active, category, classes_per_week').order('price'),
     // Solo lectura: suscripciones activas, para contar alumnos por plan.
     supabase.from('subscriptions').select('student_id, plan_id, comp').eq('status', 'active'),
@@ -15,6 +16,7 @@ export default async function PlanesPage() {
       .select('drop_in_price_1, drop_in_price_2, drop_in_price_3, drop_in_price_4_plus')
       .maybeSingle(),
     loadPriceSchedule(supabase),
+    loadDropInSchedule(supabase),
   ])
 
   const activeStudents = new Set((students ?? []).filter((s) => s.active !== false).map((s) => s.id as string))
@@ -40,12 +42,9 @@ export default async function PlanesPage() {
     history: priceSchedule.get(p.id as string) ?? [],
   }))
 
-  const dropIn = {
-    p1: Number(settings?.drop_in_price_1 ?? 10000),
-    p2: Number(settings?.drop_in_price_2 ?? 9000),
-    p3: Number(settings?.drop_in_price_3 ?? 8000),
-    p4: Number(settings?.drop_in_price_4_plus ?? 7000),
-  }
+  const tiers = dropInTiersAt(dropInSchedule, settings)
+  const dropIn = { p1: tiers[1], p2: tiers[2], p3: tiers[3], p4: tiers[4] }
+  const nextDropIn = upcomingDropIn(dropInSchedule)
 
-  return <PlansView plans={items} dropIn={dropIn} />
+  return <PlansView plans={items} dropIn={dropIn} upcomingDropIn={nextDropIn} />
 }

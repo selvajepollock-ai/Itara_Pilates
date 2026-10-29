@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { toISODate, isInPast } from '@/lib/sessions'
 import { loadPriceSchedule, planPriceAt } from '@/lib/plan-prices'
+import { dropInTiersAt, loadDropInSchedule } from '@/lib/drop-in-prices'
 import { MonthMoveCalendar } from './month-move-calendar'
 
 export async function MonthSessions({
@@ -108,17 +109,13 @@ export async function MonthSessions({
 
   const plan = subscription?.plans as unknown as { id: string; price: number; classes_per_week: number | null } | null
   const hasPlan = Boolean(plan?.classes_per_week && plan.classes_per_week > 0)
-  const planPrice = plan ? planPriceAt(await loadPriceSchedule(supabase), plan.id, plan.price) : 0
+  // Precios vigentes en la semana que se muestra (respeta los aumentos con fecha de vigencia).
+  const planPrice = plan ? planPriceAt(await loadPriceSchedule(supabase), plan.id, plan.price, weekStart) : 0
   const dropInPrice = hasPlan
     ? Math.round((planPrice / (plan!.classes_per_week! * 4)) * 100) / 100
     : 0
 
-  const tierPrices = {
-    1: settings?.drop_in_price_1 ?? 10000,
-    2: settings?.drop_in_price_2 ?? 9000,
-    3: settings?.drop_in_price_3 ?? 8000,
-    4: settings?.drop_in_price_4_plus ?? 7000,
-  }
+  const tierPrices = dropInTiersAt(await loadDropInSchedule(supabase), settings, weekStart)
 
   type MyEnrollment = {
     id: string

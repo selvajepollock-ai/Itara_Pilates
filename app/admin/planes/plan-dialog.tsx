@@ -6,7 +6,7 @@ import { useSidePanel } from '@/app/components/use-side-panel'
 import { formatARS } from '@/lib/currency'
 import { todayART } from '@/lib/dates'
 import { cancelScheduledPrice, createPlan, updatePlan } from './actions'
-import { CATEGORY_LABEL, monthLabel, pricePerClass, shortDate, type PlanItem } from './plan-math'
+import { CATEGORY_LABEL, monthLabel, priceMonthOptions, pricePerClass, shortDate, type PlanItem } from './plan-math'
 
 const LABEL = 'block text-sm font-semibold text-ink'
 const FIELD =
@@ -29,11 +29,7 @@ export function PlanDialog({
   const [error, setError] = useState<string | null>(null)
   // Al editar: si ya hay un aumento programado, se muestra ese para poder corregirlo.
   const [price, setPrice] = useState(plan ? String(plan.upcoming?.price ?? plan.price) : '')
-  // Meses desde los que puede regir el precio: este y los 3 siguientes (siempre el 1° del mes).
-  const monthOptions = (() => {
-    const [y, m] = todayART().split('-').map(Number)
-    return [0, 1, 2, 3].map((i) => new Date(Date.UTC(y, m - 1 + i, 1)).toISOString().slice(0, 10))
-  })()
+  const monthOptions = priceMonthOptions(todayART())
   const [validFrom, setValidFrom] = useState(plan?.upcoming?.validFrom ?? monthOptions[1])
 
   function cancelUpcoming() {

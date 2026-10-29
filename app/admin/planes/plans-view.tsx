@@ -15,7 +15,15 @@ const GRID = 'grid-cols-[minmax(0,1.6fr)_90px_130px_110px_minmax(0,1.3fr)_130px_
 
 export type DropInPrices = { p1: number; p2: number; p3: number; p4: number }
 
-export function PlansView({ plans, dropIn }: { plans: PlanItem[]; dropIn: DropInPrices }) {
+export function PlansView({
+  plans,
+  dropIn,
+  upcomingDropIn,
+}: {
+  plans: PlanItem[]
+  dropIn: DropInPrices
+  upcomingDropIn: { validFrom: string; tiers: { 1: number; 2: number; 3: number; 4: number } } | null
+}) {
   const router = useRouter()
   const [, startTransition] = useTransition()
   const [dialog, setDialog] = useState<{ plan: PlanItem | null } | null>(null)
@@ -221,6 +229,12 @@ export function PlansView({ plans, dropIn }: { plans: PlanItem[]; dropIn: DropIn
             </div>
           ))}
         </dl>
+        {upcomingDropIn && (
+          <p className="mt-3 text-[13px] font-medium tabular-nums text-clay">
+            Desde {shortDate(upcomingDropIn.validFrom)}: {formatARS(upcomingDropIn.tiers[1])} · {formatARS(upcomingDropIn.tiers[2])} ·{' '}
+            {formatARS(upcomingDropIn.tiers[3])} · {formatARS(upcomingDropIn.tiers[4])} c/u
+          </p>
+        )}
         <Link href="/admin/perfil" className="mt-3 inline-block text-[13px] font-medium text-moss hover:text-moss-dark">
           Cambiar los precios en Ajustes del estudio →
         </Link>

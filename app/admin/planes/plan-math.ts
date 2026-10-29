@@ -26,6 +26,12 @@ export function sortPlans<T extends { classesPerWeek: number | null; price: numb
   return [...plans].sort((a, b) => (a.classesPerWeek ?? 0) - (b.classesPerWeek ?? 0) || a.price - b.price)
 }
 
+/** Meses desde los que puede regir un precio nuevo: este y los 3 siguientes (siempre el 1° del mes). */
+export function priceMonthOptions(today: string) {
+  const [y, m] = today.split('-').map(Number)
+  return [0, 1, 2, 3].map((i) => new Date(Date.UTC(y, m - 1 + i, 1)).toISOString().slice(0, 10))
+}
+
 /** "2026-11-01" → "noviembre 2026". */
 export function monthLabel(isoDate: string) {
   return new Intl.DateTimeFormat('es-AR', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${isoDate}T12:00:00Z`))

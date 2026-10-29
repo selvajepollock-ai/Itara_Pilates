@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getMonday, getSunday, toISODate, hoursUntil, isInPast } from '@/lib/sessions'
 import { todayART } from '@/lib/dates'
 import { loadPriceSchedule, planPriceAt } from '@/lib/plan-prices'
+import { dropInTiersAt, loadDropInSchedule, tierPrice } from '@/lib/drop-in-prices'
 import { notifyAdmins, notifyUsers } from '@/lib/push'
 import { dayDate } from '../alumno/format'
 
@@ -577,20 +578,15 @@ export async function addExtraClassesBatch({
   const plan = subscription?.plans as unknown as { id: string; price: number; classes_per_week: number | null } | null
   const hasPlan = Boolean(plan?.classes_per_week && plan.classes_per_week > 0)
 
+  // Rige el precio vigente en la fecha de la clase (la primera de la tanda), no el del día de la compra:
+  // si se cargó un aumento desde el 1/11, una clase de noviembre comprada en octubre ya va con el precio nuevo.
+  const priceDate = selections.map((s) => s.sessionDate).sort()[0]
   let unitPrice: number
   if (hasPlan) {
-    const planPrice = planPriceAt(await loadPriceSchedule(supabase), plan!.id, plan!.price)
+    const planPrice = planPriceAt(await loadPriceSchedule(supabase), plan!.id, plan!.price, priceDate)
     unitPrice = Math.round((planPrice / (plan!.classes_per_week! * 4)) * 100) / 100
   } else {
-    const count = selections.length
-    unitPrice =
-      count === 1
-        ? settings?.drop_in_price_1 ?? 10000
-        : count === 2
-          ? settings?.drop_in_price_2 ?? 9000
-          : count === 3
-            ? settings?.drop_in_price_3 ?? 8000
-            : settings?.drop_in_price_4_plus ?? 7000
+    unitPrice = tierPrice(dropInTiersAt(await loadDropInSchedule(supabase), settings, priceDate), selections.length)
   }
 
   const batchId = crypto.randomUUID()
