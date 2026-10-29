@@ -29,7 +29,8 @@ export default function LoginPage() {
 
     setLoading(false)
 
-    if (result.error) {
+    // Si el login sale bien, el middleware redirige la respuesta y la acción no devuelve nada.
+    if (result?.error) {
       setError(result.error)
       return
     }

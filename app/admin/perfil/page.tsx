@@ -1,6 +1,7 @@
 import { Settings2, User } from 'lucide-react'
 import { PushToggle } from '@/app/components/push-toggle'
 import { createClient } from '@/lib/supabase/server'
+import { dropInTiersAt, loadDropInSchedule, upcomingDropIn } from '@/lib/drop-in-prices'
 import { EditMyProfileForm } from './edit-profile-form'
 import { SetMyPasswordForm } from './set-password-form'
 import { StudioSettingsForm } from './studio-settings-form'
@@ -9,7 +10,7 @@ export default async function PerfilPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  const [{ data: profile }, { data: settings }] = await Promise.all([
+  const [{ data: profile }, { data: settings }, dropInSchedule] = await Promise.all([
     supabase.from('profiles').select('full_name, email, username').eq('id', user?.id ?? '').single(),
     supabase
       .from('studio_settings')
@@ -17,7 +18,10 @@ export default async function PerfilPage() {
         'cancellation_min_hours, payment_due_day, payment_reminder_days_before, drop_in_price_1, drop_in_price_2, drop_in_price_3, drop_in_price_4_plus'
       )
       .single(),
+    loadDropInSchedule(supabase),
   ])
+  const dropIn = dropInTiersAt(dropInSchedule, settings)
+  const nextDropIn = upcomingDropIn(dropInSchedule)
   return (
     <div className="max-w-4xl">
       <p className="eyebrow">Tu cuenta</p>
@@ -42,11 +46,12 @@ export default async function PerfilPage() {
               cancellation_min_hours: settings?.cancellation_min_hours ?? 4,
               payment_due_day: settings?.payment_due_day ?? 10,
               payment_reminder_days_before: settings?.payment_reminder_days_before ?? 3,
-              drop_in_price_1: settings?.drop_in_price_1 ?? 10000,
-              drop_in_price_2: settings?.drop_in_price_2 ?? 9000,
-              drop_in_price_3: settings?.drop_in_price_3 ?? 8000,
-              drop_in_price_4_plus: settings?.drop_in_price_4_plus ?? 7000,
+              drop_in_price_1: dropIn[1],
+              drop_in_price_2: dropIn[2],
+              drop_in_price_3: dropIn[3],
+              drop_in_price_4_plus: dropIn[4],
             }}
+            upcomingDropIn={nextDropIn}
           />
         </div>
       </div>

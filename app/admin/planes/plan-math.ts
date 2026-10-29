@@ -9,6 +9,10 @@ export type PlanItem = {
   students: number
   /** Alumnos activos con este plan, sin bonificados. */
   paying: number
+  /** Aumento ya cargado que todavía no rige (el más próximo). */
+  upcoming: { price: number; validFrom: string } | null
+  /** Precios cargados, del más reciente al más viejo. */
+  history: { price: number; validFrom: string }[]
 }
 
 /** Precio por clase: mensualidad ÷ (clases por semana × 4 semanas). Solo para mostrar. */
@@ -20,6 +24,23 @@ export function pricePerClass(price: number, classesPerWeek: number | null) {
 /** Por clases por semana (ascendente); los planes sin clases por semana van primero. */
 export function sortPlans<T extends { classesPerWeek: number | null; price: number }>(plans: T[]) {
   return [...plans].sort((a, b) => (a.classesPerWeek ?? 0) - (b.classesPerWeek ?? 0) || a.price - b.price)
+}
+
+/** Meses desde los que puede regir un precio nuevo: este y los 3 siguientes (siempre el 1° del mes). */
+export function priceMonthOptions(today: string) {
+  const [y, m] = today.split('-').map(Number)
+  return [0, 1, 2, 3].map((i) => new Date(Date.UTC(y, m - 1 + i, 1)).toISOString().slice(0, 10))
+}
+
+/** "2026-11-01" → "noviembre 2026". */
+export function monthLabel(isoDate: string) {
+  return new Intl.DateTimeFormat('es-AR', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${isoDate}T12:00:00Z`))
+}
+
+/** "2026-11-01" → "1/11". */
+export function shortDate(isoDate: string) {
+  const [, m, d] = isoDate.split('-').map(Number)
+  return `${d}/${m}`
 }
 
 export const CATEGORY_LABEL: Record<string, string> = {

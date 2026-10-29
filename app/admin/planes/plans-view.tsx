@@ -9,13 +9,21 @@ import { PageHeader } from '@/app/components/page-header'
 import { formatARS } from '@/lib/currency'
 import { setPlanActive } from './actions'
 import { PlanDialog } from './plan-dialog'
-import { CATEGORY_LABEL, pricePerClass, sortPlans, type PlanItem } from './plan-math'
+import { CATEGORY_LABEL, pricePerClass, shortDate, sortPlans, type PlanItem } from './plan-math'
 
 const GRID = 'grid-cols-[minmax(0,1.6fr)_90px_130px_110px_minmax(0,1.3fr)_130px_44px]'
 
 export type DropInPrices = { p1: number; p2: number; p3: number; p4: number }
 
-export function PlansView({ plans, dropIn }: { plans: PlanItem[]; dropIn: DropInPrices }) {
+export function PlansView({
+  plans,
+  dropIn,
+  upcomingDropIn,
+}: {
+  plans: PlanItem[]
+  dropIn: DropInPrices
+  upcomingDropIn: { validFrom: string; tiers: { 1: number; 2: number; 3: number; 4: number } } | null
+}) {
   const router = useRouter()
   const [, startTransition] = useTransition()
   const [dialog, setDialog] = useState<{ plan: PlanItem | null } | null>(null)
@@ -65,6 +73,13 @@ export function PlansView({ plans, dropIn }: { plans: PlanItem[]; dropIn: DropIn
     return v === null ? '—' : formatARS(Math.round(v))
   }
 
+  const upcomingLabel = (p: PlanItem) =>
+    p.upcoming && (
+      <p className="mt-0.5 text-xs font-medium tabular-nums text-clay">
+        Desde {shortDate(p.upcoming.validFrom)}: {formatARS(p.upcoming.price)}
+      </p>
+    )
+
   const rows = (list: PlanItem[], dim: boolean) =>
     list.map((p) => (
       <div
@@ -80,7 +95,10 @@ export function PlansView({ plans, dropIn }: { plans: PlanItem[]; dropIn: DropIn
           )}
         </div>
         <p className="text-sm tabular-nums text-ink">{p.classesPerWeek ?? '—'}</p>
-        <p className="text-sm font-semibold tabular-nums text-ink">{formatARS(p.price)} / mes</p>
+        <div>
+          <p className="text-sm font-semibold tabular-nums text-ink">{formatARS(p.price)} / mes</p>
+          {upcomingLabel(p)}
+        </div>
         <p className="text-sm tabular-nums text-muted">{perClassLabel(p)}</p>
         <div className="flex items-center gap-3">
           <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-edge-divider" aria-hidden>
@@ -117,6 +135,7 @@ export function PlansView({ plans, dropIn }: { plans: PlanItem[]; dropIn: DropIn
         <div className="min-w-0">
           <p className="font-display text-lg italic text-ink">{p.name}</p>
           <p className="mt-0.5 text-sm font-semibold tabular-nums text-ink">{formatARS(p.price)} / mes</p>
+          {upcomingLabel(p)}
           <p className="mt-1 text-[13px] text-muted">
             {perClassLabel(p) !== '—' ? `${perClassLabel(p)} por clase · ` : ''}
             <Link href={`/admin/alumnos?plan=${p.id}`} className="font-medium text-moss">
@@ -210,6 +229,12 @@ export function PlansView({ plans, dropIn }: { plans: PlanItem[]; dropIn: DropIn
             </div>
           ))}
         </dl>
+        {upcomingDropIn && (
+          <p className="mt-3 text-[13px] font-medium tabular-nums text-clay">
+            Desde {shortDate(upcomingDropIn.validFrom)}: {formatARS(upcomingDropIn.tiers[1])} · {formatARS(upcomingDropIn.tiers[2])} ·{' '}
+            {formatARS(upcomingDropIn.tiers[3])} · {formatARS(upcomingDropIn.tiers[4])} c/u
+          </p>
+        )}
         <Link href="/admin/perfil" className="mt-3 inline-block text-[13px] font-medium text-moss hover:text-moss-dark">
           Cambiar los precios en Ajustes del estudio →
         </Link>

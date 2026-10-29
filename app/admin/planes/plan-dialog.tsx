@@ -4,8 +4,9 @@ import { useRef, useState, useTransition } from 'react'
 import { X } from 'lucide-react'
 import { useSidePanel } from '@/app/components/use-side-panel'
 import { formatARS } from '@/lib/currency'
-import { createPlan, updatePlan } from './actions'
-import { CATEGORY_LABEL, pricePerClass, type PlanItem } from './plan-math'
+import { todayART } from '@/lib/dates'
+import { cancelScheduledPrice, createPlan, updatePlan } from './actions'
+import { CATEGORY_LABEL, monthLabel, priceMonthOptions, pricePerClass, shortDate, type PlanItem } from './plan-math'
 
 const LABEL = 'block text-sm font-semibold text-ink'
 const FIELD =
@@ -26,7 +27,24 @@ export function PlanDialog({
   useSidePanel(panelRef, { isMobile: true, onClose, resetKey: plan?.id ?? 'new' })
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
-  const [price, setPrice] = useState(plan ? String(plan.price) : '')
+  // Al editar: si ya hay un aumento programado, se muestra ese para poder corregirlo.
+  const [price, setPrice] = useState(plan ? String(plan.upcoming?.price ?? plan.price) : '')
+  const monthOptions = priceMonthOptions(todayART())
+  const [validFrom, setValidFrom] = useState(plan?.upcoming?.validFrom ?? monthOptions[1])
+
+  function cancelUpcoming() {
+    if (!plan?.upcoming) return
+    if (!confirm(`¿Cancelar el aumento a ${formatARS(plan.upcoming.price)} desde el ${shortDate(plan.upcoming.validFrom)}? El plan sigue a ${formatARS(plan.price)}.`)) return
+    setError(null)
+    startTransition(async () => {
+      const result = await cancelScheduledPrice(plan.id, plan.upcoming!.validFrom)
+      if (result?.error) {
+        setError(result.error)
+        return
+      }
+      onSaved('Aumento cancelado')
+    })
+  }
   const [cpw, setCpw] = useState(plan?.classesPerWeek ? String(plan.classesPerWeek) : '')
 
   // Solo "Pilates" (Fuerza ya no existe). Si el plan guardado tuviera otra categoría, se conserva al editar.
@@ -126,6 +144,45 @@ export function PlanDialog({
             </div>
           </div>
 
+          {plan && (
+            <div>
+              <label htmlFor="plan-valid-from" className={LABEL}>
+                El precio rige desde
+              </label>
+              <select
+                id="plan-valid-from"
+                name="valid_from"
+                value={validFrom}
+                onChange={(e) => setValidFrom(e.target.value)}
+                className={FIELD}
+              >
+                {monthOptions.map((d, i) => (
+                  <option key={d} value={d}>
+                    1° de {monthLabel(d)}
+                    {i === 0 ? ' (este mes)' : ''}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1.5 text-[13px] text-muted">
+                Las cuotas de {monthLabel(validFrom)} en adelante se cobran a este precio, aunque se cobren antes. Los meses
+                anteriores y las deudas mantienen el precio que tenían.
+              </p>
+            </div>
+          )}
+
+          {plan?.upcoming && (
+            <div className="rounded-[12px] border border-edge-divider px-4 py-3 text-[13px] text-ink">
+              <p>
+                Hoy cuesta <span className="font-semibold tabular-nums">{formatARS(plan.price)}</span>. Aumento programado:{' '}
+                <span className="font-semibold tabular-nums">{formatARS(plan.upcoming.price)}</span> desde el{' '}
+                {shortDate(plan.upcoming.validFrom)}.
+              </p>
+              <button type="button" onClick={cancelUpcoming} disabled={isPending} className="mt-1 font-medium text-clay hover:underline">
+                Cancelar el aumento
+              </button>
+            </div>
+          )}
+
           <div>
             <label htmlFor="plan-category" className={LABEL}>
               Categoría
@@ -144,6 +201,20 @@ export function PlanDialog({
               ? `Equivale a ${formatARS(Math.round(perClass))} por clase (4 semanas por mes).`
               : 'Completá el precio y las clases por semana para ver cuánto sale cada clase.'}
           </p>
+
+          {plan && plan.history.length > 1 && (
+            <details className="text-[13px] text-muted">
+              <summary className="cursor-pointer font-medium text-ink">Historial de precios</summary>
+              <ul className="mt-2 space-y-1">
+                {plan.history.map((h) => (
+                  <li key={h.validFrom} className="flex justify-between tabular-nums">
+                    <span>{h.validFrom <= '2000-12-31' ? 'Precio inicial' : `Desde ${monthLabel(h.validFrom)}`}</span>
+                    <span className="text-ink">{formatARS(h.price)}</span>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
 
           {error && <p className="text-sm text-danger">{error}</p>}
 

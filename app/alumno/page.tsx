@@ -3,6 +3,7 @@ import { AlertTriangle, CalendarDays } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { formatTime } from '@/lib/day-names'
 import { subscriptionStatus, surchargeWaiver } from '@/lib/billing'
+import { loadPriceSchedule, planPriceAt } from '@/lib/plan-prices'
 import { hoursUntil, isInPast } from '@/lib/sessions'
 import { getDailyQuote } from '@/lib/quotes'
 import { AnnouncementsBanner } from '@/app/components/announcements-banner'
@@ -79,7 +80,7 @@ export default async function AlumnoDashboard() {
     { data: settings },
     { data: cancellationsData },
     { data: creditsData },
-    { data: activePlans },
+    { data: activePlansData },
     { data: recoveriesData },
     { data: studioCancellations },
     { data: holidaysData },
@@ -119,6 +120,9 @@ export default async function AlumnoDashboard() {
     supabase.from('class_cancellations').select('class_id, session_date, reason').gte('session_date', since).lte('session_date', nextSunday),
     supabase.from('holidays').select('date, label').gte('date', since).lte('date', nextSunday),
   ])
+  // Precios de hoy de los planes (para pedir un cambio de plan).
+  const priceSchedule = await loadPriceSchedule(supabase)
+  const activePlans = (activePlansData ?? []).map((p) => ({ ...p, price: planPriceAt(priceSchedule, p.id, p.price) }))
   const holidayByDate = new Map((holidaysData ?? []).map((h) => [h.date as string, (h.label as string | null) ?? null]))
 
   const firstName = profile?.full_name?.split(' ')[0] ?? null
