@@ -11,6 +11,7 @@ import {
 } from '@/lib/billing'
 import { formatARS } from '@/lib/currency'
 import { todayART } from '@/lib/dates'
+import { chargeDate, loadPriceSchedule, planPriceAt } from '@/lib/plan-prices'
 import Link from 'next/link'
 import { AssignPlanForm } from './assign-plan-form'
 import { WaiveSurchargeButton } from './waive-surcharge-button'
@@ -21,7 +22,7 @@ import { PaymentRowActions } from '../../pagos/registro/payment-row-actions'
 export async function StudentBilling({ studentId, studentName }: { studentId: string; studentName: string }) {
   const supabase = await createClient()
 
-  const [{ data: plans }, { data: subscription }, { data: settings }] = await Promise.all([
+  const [{ data: plansData }, { data: subscription }, { data: settings }, priceSchedule] = await Promise.all([
     supabase.from('plans').select('id, name, price').eq('active', true).order('price'),
     supabase
       .from('subscriptions')
@@ -30,7 +31,10 @@ export async function StudentBilling({ studentId, studentName }: { studentId: st
       .eq('status', 'active')
       .maybeSingle(),
     supabase.from('studio_settings').select('payment_due_day, payment_reminder_days_before').single(),
+    loadPriceSchedule(supabase),
   ])
+  // Precios de hoy (para elegir plan).
+  const plans = (plansData ?? []).map((p) => ({ ...p, price: planPriceAt(priceSchedule, p.id, p.price) }))
 
   const { data: payments } = subscription
     ? await supabase
@@ -55,9 +59,11 @@ export async function StudentBilling({ studentId, studentName }: { studentId: st
   const planInfo = subscription?.plans as unknown as { name: string; price: number } | null
   // El recargo no corre en el primer mes de un alumno nuevo ni cuando el estudio lo perdonó para esta cuota.
   const waiver = surchargeWaiver(subscription as Parameters<typeof surchargeWaiver>[0])
-  const raw = applyLateSurcharge(planInfo?.price ?? 0, billingStatus)
+  // Precio del mes que se cobra (puede tener un aumento programado).
+  const planPrice = subscription ? planPriceAt(priceSchedule, subscription.plan_id, planInfo?.price, chargeDate(subscription.end_date)) : 0
+  const raw = applyLateSurcharge(planPrice, billingStatus)
   const hasSurcharge = raw.hasSurcharge && !waiver
-  const amountWithSurcharge = hasSurcharge ? raw.amount : planInfo?.price ?? 0
+  const amountWithSurcharge = hasSurcharge ? raw.amount : planPrice
   const firstPayment = status === 'vencido' && isFirstMonth(subscription as Parameters<typeof isFirstMonth>[0]) && (payments ?? []).length === 0
 
   // Fecha de vencimiento real (con margen de gracia): día `dueDay` del mes siguiente

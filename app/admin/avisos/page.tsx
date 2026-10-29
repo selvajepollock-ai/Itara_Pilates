@@ -2,6 +2,7 @@ import { CalendarX, RefreshCw, Repeat, Clock, Bell, ChevronRight } from 'lucide-
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, formatTime } from '@/lib/day-names'
 import { formatARS } from '@/lib/currency'
+import { loadPriceSchedule, planPriceAt } from '@/lib/plan-prices'
 import { relativeTime } from '@/lib/relative-time'
 import { ResolvePlanRequestButton } from './resolve-plan-request-button'
 import { RecoveryRequestActions } from './recovery-request-actions'
@@ -80,10 +81,11 @@ export default async function AvisosPage() {
 
   const { data: planRequests } = await supabase
     .from('plan_change_requests')
-    .select('id, note, created_at, profiles(full_name), plans(name, price)')
+    .select('id, note, created_at, profiles(full_name), plans(id, name, price)')
     .eq('status', 'pending')
     .order('created_at', { ascending: false })
 
+  const priceSchedule = await loadPriceSchedule(supabase)
   const cancellations = (cancellationsData ?? []) as unknown as CancellationRow[]
   const recoveries = (recoveriesData ?? []) as unknown as RecoveryRow[]
 
@@ -232,7 +234,7 @@ export default async function AvisosPage() {
                     <span className="font-medium">
                       {(r.plans as unknown as { name: string } | null)?.name}
                     </span>{' '}
-                    ({formatARS((r.plans as unknown as { price: number } | null)?.price ?? 0)})
+                    ({formatARS(planPriceAt(priceSchedule, (r.plans as unknown as { id: string } | null)?.id, (r.plans as unknown as { price: number } | null)?.price))})
                   </p>
                   {r.note && <p className="mt-0.5 text-xs text-ink/50">"{r.note}"</p>}
                   <p className="mt-0.5 text-xs text-ink/40">{relativeTime(r.created_at)}</p>

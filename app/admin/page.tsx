@@ -6,6 +6,7 @@ import { suggestNextPaymentDate, getDisplayStatus, subscriptionDisplayStatus } f
 import { collectionSummary } from '@/lib/payments'
 import { loadStudentRows } from '@/lib/student-rows'
 import { artMonthStart, todayART } from '@/lib/dates'
+import { chargeDate, currentMonthStart, loadPriceSchedule, planPriceAt } from '@/lib/plan-prices'
 import { formatARS } from '@/lib/currency'
 import { PageHeader } from '@/app/components/page-header'
 import { StatCard } from '@/app/components/stat-card'
@@ -77,7 +78,7 @@ export default async function AdminDashboard() {
       .contains('roles', ['student'])
       .not('birth_date', 'is', null),
     supabase.from('profiles').select('full_name').eq('id', user?.id ?? '').single(),
-    supabase.from('subscriptions').select('id, student_id, end_date, comp, plans(name, price)').eq('status', 'active'),
+    supabase.from('subscriptions').select('id, student_id, plan_id, end_date, comp, plans(name, price)').eq('status', 'active'),
     supabase.from('studio_settings').select('payment_due_day, payment_reminder_days_before').single(),
     supabase.from('enrollments').select('class_id').eq('status', 'active'),
     supabase
@@ -130,7 +131,12 @@ export default async function AdminDashboard() {
 
   // Cobrado vs esperado del mes (mismo cálculo que Pagos).
   type PlanRef = { name: string; price: number } | null
-  const expected = subs.reduce((sum, s) => sum + (s.comp ? 0 : Number((s.plans as unknown as PlanRef)?.price ?? 0)), 0)
+  const priceSchedule = await loadPriceSchedule(supabase)
+  const monthDate = currentMonthStart()
+  const expected = subs.reduce(
+    (sum, s) => sum + (s.comp ? 0 : planPriceAt(priceSchedule, s.plan_id, (s.plans as unknown as PlanRef)?.price, monthDate)),
+    0
+  )
   const payments = monthPayments ?? []
   const collected = payments.reduce((sum, p) => sum + Number(p.amount), 0)
   const summary = collectionSummary(expected, collected)
@@ -219,7 +225,7 @@ export default async function AdminDashboard() {
       full_name: s.full_name,
       subscriptionId: sub?.id ?? null,
       planName: planInfo?.name ?? null,
-      planPrice: planInfo?.price ?? 0,
+      planPrice: sub ? planPriceAt(priceSchedule, sub.plan_id, planInfo?.price, chargeDate(sub.end_date)) : 0,
       endDate: sub?.end_date ?? null,
       suggestedNextDate: suggestNextPaymentDate(sub?.end_date ?? null),
     }

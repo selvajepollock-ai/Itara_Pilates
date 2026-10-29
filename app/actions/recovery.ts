@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getMonday, getSunday, toISODate, hoursUntil, isInPast } from '@/lib/sessions'
 import { todayART } from '@/lib/dates'
+import { loadPriceSchedule, planPriceAt } from '@/lib/plan-prices'
 import { notifyAdmins, notifyUsers } from '@/lib/push'
 import { dayDate } from '../alumno/format'
 
@@ -567,18 +568,19 @@ export async function addExtraClassesBatch({
       .maybeSingle(),
     supabase
       .from('subscriptions')
-      .select('plans(price, classes_per_week)')
+      .select('plans(id, price, classes_per_week)')
       .eq('student_id', studentId)
       .eq('status', 'active')
       .maybeSingle(),
   ])
 
-  const plan = subscription?.plans as unknown as { price: number; classes_per_week: number | null } | null
+  const plan = subscription?.plans as unknown as { id: string; price: number; classes_per_week: number | null } | null
   const hasPlan = Boolean(plan?.classes_per_week && plan.classes_per_week > 0)
 
   let unitPrice: number
   if (hasPlan) {
-    unitPrice = Math.round((plan!.price / (plan!.classes_per_week! * 4)) * 100) / 100
+    const planPrice = planPriceAt(await loadPriceSchedule(supabase), plan!.id, plan!.price)
+    unitPrice = Math.round((planPrice / (plan!.classes_per_week! * 4)) * 100) / 100
   } else {
     const count = selections.length
     unitPrice =

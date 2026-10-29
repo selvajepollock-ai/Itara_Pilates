@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { artMonthStart } from './dates'
+import { loadPriceSchedule, planPriceAt } from './plan-prices'
 
 export const COMMISSION_RATE = 0.6
 
@@ -54,7 +55,7 @@ export async function buildReparto(supabase: SupabaseClient, month: string): Pro
     { data: payouts },
   ] = await Promise.all([
     supabase.from('profiles').select('id, full_name, roles'),
-    supabase.from('subscriptions').select('student_id, comp, plans(name, price)').eq('status', 'active'),
+    supabase.from('subscriptions').select('student_id, plan_id, comp, plans(name, price)').eq('status', 'active'),
     supabase
       .from('payments')
       .select('amount, subscriptions(student_id)')
@@ -85,10 +86,12 @@ export async function buildReparto(supabase: SupabaseClient, month: string): Pro
   }
 
   const studentIds = new Set<string>()
+  const priceSchedule = await loadPriceSchedule(supabase)
   const subByStudent = new Map<string, { comp: boolean; planName: string; price: number }>()
   for (const s of subs ?? []) {
     const plan = s.plans as unknown as { name: string; price: number } | null
-    subByStudent.set(s.student_id, { comp: Boolean(s.comp), planName: plan?.name ?? '', price: Number(plan?.price ?? 0) })
+    const price = planPriceAt(priceSchedule, s.plan_id, plan?.price, `${month}-01`)
+    subByStudent.set(s.student_id, { comp: Boolean(s.comp), planName: plan?.name ?? '', price })
     studentIds.add(s.student_id)
   }
 

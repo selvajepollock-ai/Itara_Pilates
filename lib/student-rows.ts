@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { applyLateSurcharge, isFirstMonth, subscriptionDisplayStatus, subscriptionStatus, surchargeWaiver } from '@/lib/billing'
 import { isNoAccessEmail } from '@/lib/auth-username'
 import { todayART } from '@/lib/dates'
+import { chargeDate, loadPriceSchedule, planPriceAt } from '@/lib/plan-prices'
 import type { StudentRow } from '@/app/admin/alumnos/types'
 
 const PAYMENTS_PAGE = 1000
@@ -11,7 +12,7 @@ const PAYMENTS_PAGE = 1000
  * La usan Alumnos y Horarios, así la ficha lateral muestra lo mismo en las dos pantallas.
  */
 export async function loadStudentRows(supabase: SupabaseClient): Promise<{ rows: StudentRow[]; dueDay: number }> {
-  const [{ data: students }, { data: subscriptions }, { data: settings }, { data: enrollments }, { data: dropIns }] = await Promise.all([
+  const [{ data: students }, { data: subscriptions }, { data: settings }, { data: enrollments }, { data: dropIns }, priceSchedule] = await Promise.all([
     supabase
       .from('profiles')
       .select('id, full_name, nickname, email, contact_email, phone, active, created_at')
@@ -28,6 +29,7 @@ export async function loadStudentRows(supabase: SupabaseClient): Promise<{ rows:
       .eq('status', 'active'),
     // Clases sueltas compradas (solo lectura): sirven para distinguir "sin plan" de "con clases sueltas".
     supabase.from('extra_charges').select('student_id, paid, comp, recovery_credits(used_session_date)'),
+    loadPriceSchedule(supabase),
   ])
 
   // Último pago de cada alumno. PostgREST devuelve de a 1000 filas: se pide por tandas.
@@ -77,6 +79,8 @@ export async function loadStudentRows(supabase: SupabaseClient): Promise<{ rows:
   const rows: StudentRow[] = (students ?? []).map((s) => {
     const sub = subByStudent.get(s.id) ?? null
     const plan = sub?.plans as unknown as { name: string; price: number } | null
+    // Precio del mes que se cobra en el próximo pago (puede tener un aumento programado).
+    const planPrice = sub ? planPriceAt(priceSchedule, sub.plan_id, plan?.price, chargeDate(sub.end_date)) : 0
     const baseStatus = subscriptionDisplayStatus(sub, reminderDays)
     const dropIn = dropInByStudent.get(s.id) ?? { count: 0, unpaid: 0 }
     // Sin plan mensual pero con clases sueltas compradas: no es lo mismo que "sin plan" a secas.
@@ -84,7 +88,7 @@ export async function loadStudentRows(supabase: SupabaseClient): Promise<{ rows:
     // El recargo sale del estado "real" (con margen de gracia): el mismo cálculo de la ficha de cuota.
     const billing = subscriptionStatus(sub, reminderDays, dueDay)
     const waiver = surchargeWaiver(sub as Parameters<typeof surchargeWaiver>[0])
-    const surcharge = applyLateSurcharge(plan?.price ?? 0, billing)
+    const surcharge = applyLateSurcharge(planPrice, billing)
     const lastPayment = lastPaymentByStudent.get(s.id) ?? null
     return {
       id: s.id,
@@ -103,7 +107,7 @@ export async function loadStudentRows(supabase: SupabaseClient): Promise<{ rows:
       firstPayment: status === 'vencido' && isFirstMonth(sub as Parameters<typeof isFirstMonth>[0]) && !lastPayment,
       planId: sub?.plan_id ?? null,
       planName: plan?.name ?? null,
-      planPrice: plan?.price ?? 0,
+      planPrice,
       subscriptionId: sub?.id ?? null,
       endDate: sub?.end_date ?? null,
       comp: Boolean(sub?.comp),

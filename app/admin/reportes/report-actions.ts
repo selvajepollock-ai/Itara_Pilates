@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { DAY_NAMES, formatTime } from '@/lib/day-names'
 import { subscriptionDisplayStatus, STATUS_LABEL } from '@/lib/billing'
+import { chargeDate, loadPriceSchedule, planPriceAt } from '@/lib/plan-prices'
 
 async function assertAdmin() {
   const supabase = await createClient()
@@ -45,7 +46,7 @@ export async function buildPeriodReport({
     { data: absences },
   ] = await Promise.all([
     s.from('profiles').select('id, full_name, phone, roles'),
-    s.from('subscriptions').select('student_id, end_date, comp, comp_reason, plans(name, price)').eq('status', 'active'),
+    s.from('subscriptions').select('student_id, plan_id, end_date, comp, comp_reason, plans(name, price)').eq('status', 'active'),
     s.from('studio_settings').select('payment_reminder_days_before').maybeSingle(),
     s
       .from('payments')
@@ -72,6 +73,7 @@ export async function buildPeriodReport({
   ])
 
   const reminderDays = settings?.payment_reminder_days_before ?? 3
+  const priceSchedule = await loadPriceSchedule(s)
 
   const nameById = new Map<string, string>()
   const phoneById = new Map<string, string>()
@@ -139,7 +141,7 @@ export async function buildPeriodReport({
     }
     alumnosRows.push(row)
     if (status === 'vencido' || status === 'por_vencer') {
-      deudoresRows.push({ ...row, 'Precio plan': Number(plan?.price ?? 0) })
+      deudoresRows.push({ ...row, 'Precio plan': planPriceAt(priceSchedule, sub?.plan_id, plan?.price, chargeDate(sub?.end_date)) })
     }
   }
   alumnosRows.sort((a, b) => String(a.Alumno).localeCompare(String(b.Alumno)))
@@ -211,7 +213,7 @@ export async function buildPeriodReport({
     if (sub?.comp) continue // bonificado: no genera comision
 
     const plan = (sub?.plans as unknown as PlanRef) ?? null
-    const planValue = plan?.price ?? 0
+    const planValue = planPriceAt(priceSchedule, sub?.plan_id, plan?.price, from)
     const extraValue = extraByStudent.get(id) ?? 0
     const totalValue = planValue + extraValue
     if (totalValue <= 0) continue

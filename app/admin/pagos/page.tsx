@@ -5,6 +5,7 @@ import { formatARS } from '@/lib/currency'
 import { subscriptionDisplayStatus, type PaymentStatus } from '@/lib/billing'
 import { collectionSummary } from '@/lib/payments'
 import { artMonthStart } from '@/lib/dates'
+import { chargeDate, loadPriceSchedule, planPriceAt } from '@/lib/plan-prices'
 import { groupPurchases, type ChargeRow } from '@/lib/purchases'
 import { loadQuickPaymentStudents } from '@/lib/quick-payment-students'
 import { loadStudentRows } from '@/lib/student-rows'
@@ -61,7 +62,7 @@ export default async function PagosResumenPage({ searchParams }: { searchParams:
     supabase.from('profiles').select('id, full_name').contains('roles', ['student']),
     supabase
       .from('subscriptions')
-      .select('id, student_id, end_date, comp, plans(name, price)')
+      .select('id, student_id, plan_id, end_date, comp, plans(name, price)')
       .eq('status', 'active'),
     supabase.from('studio_settings').select('payment_due_day, payment_reminder_days_before').single(),
     supabase
@@ -95,7 +96,12 @@ export default async function PagosResumenPage({ searchParams }: { searchParams:
   const rowById = new Map(studentRows.map((r) => [r.id, r]))
 
   // Esperado vs cobrado — los bonificados no se esperan cobrar.
-  const expected = subs.reduce((sum, s) => sum + (s.comp ? 0 : Number((s.plans as unknown as PlanRef)?.price ?? 0)), 0)
+  // Precio de cada plan en el mes elegido (respeta los aumentos con fecha de vigencia).
+  const priceSchedule = await loadPriceSchedule(supabase)
+  const expected = subs.reduce(
+    (sum, s) => sum + (s.comp ? 0 : planPriceAt(priceSchedule, s.plan_id, (s.plans as unknown as PlanRef)?.price, `${label}-01`)),
+    0
+  )
   const payments = monthPayments ?? []
   const collected = payments.reduce((sum, p) => sum + Number(p.amount), 0)
   const summary = collectionSummary(expected, collected)
@@ -113,7 +119,7 @@ export default async function PagosResumenPage({ searchParams }: { searchParams:
     counts[status] += 1
     if (status === 'vencido') {
       const plan = s.plans as unknown as PlanRef
-      overdue.push({ studentId: s.student_id, endDate: s.end_date, planName: plan?.name ?? null, amount: Number(plan?.price ?? 0) })
+      overdue.push({ studentId: s.student_id, endDate: s.end_date, planName: plan?.name ?? null, amount: planPriceAt(priceSchedule, s.plan_id, plan?.price, chargeDate(s.end_date)) })
     }
   }
   counts.sin_plan = students.filter((s) => !studentsWithSub.has(s.id)).length

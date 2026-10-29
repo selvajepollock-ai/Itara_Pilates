@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { suggestNextDueDate } from '@/lib/billing'
 import { todayART } from '@/lib/dates'
+import { loadPriceSchedule, planPriceAt } from '@/lib/plan-prices'
 import { DAY_ORDER } from '@/lib/day-names'
 import { NewStudentForm } from './new-student-form'
 import type { ClassOption } from '../[id]/schedule-form'
@@ -34,7 +35,7 @@ export default async function NuevoAlumnoPage({
   const params = await searchParams
   const supabase = await createClient()
 
-  const [{ data: plans }, { data: settings }, { data: classesData }, { data: enrollments }] = await Promise.all([
+  const [{ data: plansData }, { data: settings }, { data: classesData }, { data: enrollments }, priceSchedule] = await Promise.all([
     supabase.from('plans').select('id, name, price, classes_per_week').eq('active', true).order('price'),
     supabase.from('studio_settings').select('payment_due_day').single(),
     supabase
@@ -45,7 +46,10 @@ export default async function NuevoAlumnoPage({
       .eq('active', true)
       .order('start_time'),
     supabase.from('enrollments').select('class_id').eq('status', 'active'),
+    loadPriceSchedule(supabase),
   ])
+  // Precios de hoy (para elegir plan).
+  const plans = (plansData ?? []).map((p) => ({ ...p, price: planPriceAt(priceSchedule, p.id, p.price) }))
 
   const dueDay = settings?.payment_due_day ?? 10
   const defaultEndDate = suggestNextDueDate(new Date(`${todayART()}T12:00:00`), dueDay)
