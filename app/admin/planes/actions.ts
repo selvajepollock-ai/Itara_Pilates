@@ -89,7 +89,8 @@ export async function updatePlan(planId: string, formData: FormData) {
     if (priceError) return { error: priceError.message }
   }
 
-  revalidatePath('/admin', 'layout')
+  revalidatePath('/admin/planes')
+  revalidatePath('/admin/alumnos')
   return { success: true }
 }
 
@@ -102,7 +103,8 @@ export async function cancelScheduledPrice(planId: string, validFrom: string) {
   const { error } = await auth.supabase.from('plan_prices').delete().eq('plan_id', planId).eq('valid_from', validFrom)
   if (error) return { error: error.message }
 
-  revalidatePath('/admin', 'layout')
+  revalidatePath('/admin/planes')
+  revalidatePath('/admin/alumnos')
   return { success: true }
 }
 

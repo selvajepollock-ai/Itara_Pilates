@@ -90,7 +90,8 @@ export async function updateStudioSettings(formData: FormData) {
     )
     if (priceError) return { error: priceError.message }
   }
-  revalidatePath('/admin', 'layout')
+  revalidatePath('/admin/perfil')
+  revalidatePath('/admin/planes')
   return { success: true }
 }
 /** Cancela un aumento de sueltas que todavía no entró en vigencia. */
@@ -106,7 +107,8 @@ export async function cancelScheduledDropIn(validFrom: string) {
 
   const { error } = await supabase.from('drop_in_prices').delete().eq('valid_from', validFrom)
   if (error) return { error: error.message }
-  revalidatePath('/admin', 'layout')
+  revalidatePath('/admin/perfil')
+  revalidatePath('/admin/planes')
   return { success: true }
 }
 export async function updateMyPassword(formData: FormData) {
